@@ -1,3 +1,27 @@
 packages:
   - "apps/*"
   - "packages/*"
+
+catalog:
+  '@eslint/eslintrc': ^3
+  '@phosphor-icons/react': ^2.1.10
+  '@tailwindcss/postcss': ^4
+  '@types/node': ^20
+  '@types/pg': ^8.15.5
+  '@types/react-dom': ^19
+  '@types/react': ^19
+  dotenv: ^17.2.2
+  drizzle-kit: ^0.31.4
+  drizzle-orm: ^0.44.4
+  eslint-config-next: 15.5.4
+  eslint: ^9
+  lodash: ^4.17.21
+  next: 15.5.4
+  pg: ^8.13.1
+  prettier: ^3.6.2
+  react-dom: 19.1.0
+  react: 19.1.0
+  tailwindcss: ^4
+  turbo: ^2.5.8
+  typescript: 5.9.2
+  zod: ^4.1.11
