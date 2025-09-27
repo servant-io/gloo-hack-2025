@@ -24,12 +24,22 @@ export async function middleware(request: NextRequest) {
       // Add profile ID to headers for server components
       response.headers.set('x-profile-id', existingProfileId);
     } else {
-      // No existing profile, create a new one
+      // No existing profile, create a new one with retry logic
       const profileData: UpsertProfileParams = {
         clientIp: await getClientIp(request),
       };
 
-      const result = await upsertProfile(profileData);
+      // Implement retry logic for database connection issues
+      const result = await retryWithBackoff(
+        async () => {
+          return await upsertProfile(profileData);
+        },
+        {
+          maxRetries: 3,
+          initialDelay: 100,
+          maxDelay: 2000,
+        }
+      );
 
       if (result && Array.isArray(result) && result[0]?.id) {
         // Set cookie with the new profile ID
@@ -46,6 +56,12 @@ export async function middleware(request: NextRequest) {
   } catch (error) {
     console.error('Error in personalization middleware:', error);
     // Don't throw error - continue with request even if personalization fails
+    // Log specific database connection errors for monitoring
+    if (isDatabaseConnectionError(error)) {
+      console.warn(
+        'Database connection error in middleware - continuing without personalization'
+      );
+    }
   }
 
   return response;
@@ -178,4 +194,80 @@ async function fetchPublicIp(): Promise<string> {
       throw new Error(`Failed to fetch public IP: ${fallbackError}`);
     }
   }
+}
+
+/**
+ * Retry function with exponential backoff
+ */
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  options: {
+    maxRetries: number;
+    initialDelay: number;
+    maxDelay: number;
+  }
+): Promise<T> {
+  const { maxRetries, initialDelay, maxDelay } = options;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (attempt === maxRetries) {
+        throw error;
+      }
+
+      // Check if this is a database connection error that should be retried
+      if (!isDatabaseConnectionError(error)) {
+        throw error;
+      }
+
+      // Calculate delay with exponential backoff and jitter
+      const delay = Math.min(
+        initialDelay * Math.pow(2, attempt) + Math.random() * 100,
+        maxDelay
+      );
+
+      console.warn(
+        `Database connection error, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`
+      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+
+  // This should never be reached, but TypeScript requires a return
+  throw new Error('Retry logic failed unexpectedly');
+}
+
+/**
+ * Check if an error is a database connection error
+ */
+function isDatabaseConnectionError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+
+  const errorMessage = String(error);
+
+  // Common database connection error patterns
+  const connectionErrorPatterns = [
+    /connection.*refused/i,
+    /ECONNREFUSED/i,
+    /timeout/i,
+    /ETIMEDOUT/i,
+    /database.*unavailable/i,
+    /host.*unreachable/i,
+    /network.*error/i,
+    /getaddrinfo.*failed/i,
+    /ENOTFOUND/i,
+    /pool.*exhausted/i,
+    /too many clients/i,
+    /connection.*closed/i,
+    /connection.*reset/i,
+    /ECONNRESET/i,
+    /SSL.*error/i,
+    /certificate.*error/i,
+  ];
+
+  return connectionErrorPatterns.some((pattern) => pattern.test(errorMessage));
 }
