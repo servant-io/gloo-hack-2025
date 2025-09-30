@@ -1,5 +1,5 @@
 import { db } from '@/db/db';
-import { profiles } from '@/db/schema';
+import { profiles } from '@/db/schemas/personalization';
 import { eq } from 'drizzle-orm';
 
 export type UpsertProfileParams = typeof profiles.$inferInsert;

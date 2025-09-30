@@ -2,7 +2,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { getEnv } from '../lib/env';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import * as contentProxySchemas from '@/db/schema';
+import * as contentProxySchemas from '@/db/schemas/personalization';
 
 const { POSTGRES_URL } = getEnv();
 

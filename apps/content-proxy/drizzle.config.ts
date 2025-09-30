@@ -4,7 +4,7 @@ import { getEnv } from '@/lib/env';
 const { POSTGRES_URL } = getEnv();
 
 export default defineConfig({
-  schema: ['./db/schema.ts'],
+  schema: ['./db/schemas/personalization.ts'],
   out: './db/migrations',
   dialect: 'postgresql',
   dbCredentials: {
