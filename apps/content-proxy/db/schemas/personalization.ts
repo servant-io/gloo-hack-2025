@@ -1,7 +1,6 @@
 import { sql } from 'drizzle-orm';
-import { jsonb, pgSchema, timestamp, varchar } from 'drizzle-orm/pg-core';
-
-export const contentProxySchema = pgSchema('content_proxy');
+import { jsonb, timestamp, varchar } from 'drizzle-orm/pg-core';
+import { contentProxySchema } from '../schema';
 
 export const profiles = contentProxySchema.table('profiles', {
   /**
