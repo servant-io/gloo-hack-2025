@@ -11,11 +11,16 @@
     "db:local:down": "docker-compose down",
     "db:generate:migration": "drizzle-kit generate --config drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
-    "db:push": "drizzle-kit push --config drizzle.config.ts"
+    "db:push": "drizzle-kit push --config drizzle.config.ts",
+    "db:seed": "tsx db/seed/index.ts",
+    "db:seed:content": "tsx db/seed/content.ts",
+    "db:reset": "tsx db/reset/index.ts",
+    "db:reset:content": "tsx db/reset/content.ts",
+    "db:reset:personalization": "tsx db/reset/personalization.ts"
   },
   "dependencies": {
     "@phosphor-icons/react": "catalog:",
-    "ajv": "^8.17.1",
+    "ajv": "catalog:",
     "dotenv": "catalog:",
     "drizzle-kit": "catalog:",
     "drizzle-orm": "catalog:",
@@ -33,9 +38,11 @@
     "@types/pg": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "bun": "catalog:",
     "eslint": "catalog:",
     "eslint-config-next": "catalog:",
     "tailwindcss": "catalog:",
+    "tsx": "catalog:",
     "typescript": "catalog:"
   }
 }
