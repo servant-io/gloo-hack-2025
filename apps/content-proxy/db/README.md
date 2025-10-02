@@ -143,7 +143,9 @@ flowchart TD
 
     %% API Layer
     API[Next.js API Routes]
-    ContentAPI[/api/content<br/>/api/content/search]
+    ContentAPI[Content API]
+    ContentListAPI["GET /api/content"]
+    ContentSearchAPI["GET /api/content/search"]
     PersonalizationAPI[Personalization Actions]
 
     %% Business Logic Layer
@@ -169,12 +171,14 @@ flowchart TD
     ProfileAPIKeyLKP[profile_api_key_lkp]
 
     %% Data Flows
-    Client --> ContentAPI
+    Client --> ContentListAPI
+    Client --> ContentSearchAPI
     Client --> PersonalizationAPI
 
-    ContentAPI --> ContentService
+    ContentListAPI --> ContentService
+    ContentSearchAPI --> ContentService
     PersonalizationAPI --> PersonalizationService
-    PersonalizationService --> ProfileService
+    PersonalizationAPI --> ProfileService
 
     ContentService --> DB
     ProfileService --> DB
@@ -212,7 +216,7 @@ flowchart TD
     classDef table fill:#fce4ec
 
     class Client,ExternalContent external
-    class ContentAPI,PersonalizationAPI api
+    class ContentListAPI,ContentSearchAPI,PersonalizationAPI api
     class ContentService,PersonalizationService,ProfileService service
     class DB database
     class Publishers,ContentItems,Profiles,Metrics,MetricSchemas,Events,APIKeys,ProfileAPIKeyLKP table
