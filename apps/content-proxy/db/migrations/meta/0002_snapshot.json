@@ -48,12 +48,8 @@
           "tableFrom": "events",
           "tableTo": "profiles",
           "schemaTo": "content_proxy",
-          "columnsFrom": [
-            "profile_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["profile_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -62,12 +58,8 @@
           "tableFrom": "events",
           "tableTo": "metric_schema_versions",
           "schemaTo": "content_proxy",
-          "columnsFrom": [
-            "metric_schema_version_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["metric_schema_version_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -129,12 +121,8 @@
           "tableFrom": "metric_schema_versions",
           "tableTo": "metrics",
           "schemaTo": "content_proxy",
-          "columnsFrom": [
-            "metric_name"
-          ],
-          "columnsTo": [
-            "name"
-          ],
+          "columnsFrom": ["metric_name"],
+          "columnsTo": ["name"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -272,12 +260,8 @@
           "tableFrom": "content_items",
           "tableTo": "publishers",
           "schemaTo": "content_proxy",
-          "columnsFrom": [
-            "publisher_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["publisher_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
