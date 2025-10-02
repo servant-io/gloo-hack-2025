@@ -1,7 +1,9 @@
 import { seedContentSchemas } from './content';
+import { seedPersonalizationSchemas } from './personalization';
 
 export async function seed() {
   await seedContentSchemas();
+  await seedPersonalizationSchemas();
 }
 
 /**

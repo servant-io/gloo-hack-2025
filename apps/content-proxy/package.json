@@ -14,6 +14,7 @@
     "db:push": "drizzle-kit push --config drizzle.config.ts",
     "db:seed": "tsx db/seed/index.ts",
     "db:seed:content": "tsx db/seed/content.ts",
+    "db:seed:personalization": "tsx db/seed/personalization.ts",
     "db:reset": "tsx db/reset/index.ts",
     "db:reset:content": "tsx db/reset/content.ts",
     "db:reset:personalization": "tsx db/reset/personalization.ts"

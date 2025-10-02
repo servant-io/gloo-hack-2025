@@ -1,11 +1,10 @@
 import { db } from '@/db/db';
 import { contentItems, publishers } from '@/db/schemas/content';
-import { eq, inArray, sql, ilike, or, and, count } from 'drizzle-orm';
+import { eq, inArray, ilike, or, and, count } from 'drizzle-orm';
 import type {
   ContentItem,
   ContentItemWithPublisher,
   PublisherId,
-  Publisher,
 } from './types';
 import { PublisherIds } from './types';
 
@@ -24,7 +23,7 @@ function toPublisherId(publisherId: string): PublisherId {
 /**
  * Helper function to convert database content item to TypeScript ContentItem type
  */
-function toContentItem(dbItem: any): ContentItem {
+function toContentItem(dbItem: typeof contentItems.$inferSelect): ContentItem {
   return {
     id: dbItem.id,
     publisherId: toPublisherId(dbItem.publisherId),
@@ -33,25 +32,6 @@ function toContentItem(dbItem: any): ContentItem {
     shortDescription: dbItem.shortDescription,
     thumbnailUrl: dbItem.thumbnailUrl,
     contentUrl: dbItem.contentUrl,
-  };
-}
-
-/**
- * Helper function to convert database joined result to TypeScript ContentItemWithPublisher type
- */
-function toContentItemWithPublisher(dbItem: any): ContentItemWithPublisher {
-  return {
-    id: dbItem.id,
-    publisherId: toPublisherId(dbItem.publisherId),
-    type: dbItem.type as 'article' | 'video' | 'audio',
-    name: dbItem.name,
-    shortDescription: dbItem.shortDescription,
-    thumbnailUrl: dbItem.thumbnailUrl,
-    contentUrl: dbItem.contentUrl,
-    publisher: {
-      id: toPublisherId(dbItem.publisher.id),
-      name: dbItem.publisher.name as Publisher['name'],
-    },
   };
 }
 
