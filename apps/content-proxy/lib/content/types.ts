@@ -18,10 +18,7 @@ export type ContentItem = {
 
 export type Publisher = {
   id: PublisherId;
-  name:
-    | 'Austin Christian University (ACU)'
-    | 'Indiana Wesleyan University (IWU)'
-    | 'Bethel Tech';
+  name: string;
 };
 
 export type ContentItemWithPublisher = ContentItem & {
