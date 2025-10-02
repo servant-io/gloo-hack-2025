@@ -1,30 +1,64 @@
-import { mockContent, mockPublishers } from './mock';
-import { searchContent } from './search';
-import type { ContentItem, ContentItemWithPublisher } from './types';
+import { db } from '@/db/db';
+import { contentItems, publishers } from '@/db/schemas/content';
+import { eq, inArray, ilike, or, and, count } from 'drizzle-orm';
+import type {
+  ContentItem,
+  ContentItemWithPublisher,
+  PublisherId,
+} from './types';
+import { PublisherIds } from './types';
 
 /**
- * Get all content items with a simulated async delay
+ * Helper function to convert database publisher ID to TypeScript PublisherId type
+ */
+function toPublisherId(publisherId: string): PublisherId {
+  // Validate that the publisher ID is one of the known values
+  const validPublisherIds = Object.values(PublisherIds);
+  if (!validPublisherIds.includes(publisherId as PublisherId)) {
+    throw new Error(`Invalid publisher ID: ${publisherId}`);
+  }
+  return publisherId as PublisherId;
+}
+
+/**
+ * Helper function to convert database content item to TypeScript ContentItem type
+ */
+function toContentItem(dbItem: typeof contentItems.$inferSelect): ContentItem {
+  return {
+    id: dbItem.id,
+    publisherId: toPublisherId(dbItem.publisherId),
+    type: dbItem.type as 'article' | 'video' | 'audio',
+    name: dbItem.name,
+    shortDescription: dbItem.shortDescription,
+    thumbnailUrl: dbItem.thumbnailUrl,
+    contentUrl: dbItem.contentUrl,
+  };
+}
+
+/**
+ * Get all content items
  */
 export async function listContent(): Promise<ContentItem[]> {
-  // Simulate async operation with a delay
-  await new Promise((resolve) => setTimeout(resolve, 100));
-  return [...mockContent];
+  const dbItems = await db.select().from(contentItems);
+  return dbItems.map(toContentItem);
 }
 
 /**
- * Get content items by their IDs with a simulated async delay
+ * Get content items by their IDs
  */
 export async function getContentItems(ids: string[]): Promise<ContentItem[]> {
-  // Simulate async operation with a delay
-  await new Promise((resolve) => setTimeout(resolve, 100));
+  if (ids.length === 0) return [];
 
-  const filteredContent = mockContent.filter((item) => ids.includes(item.id));
+  const dbItems = await db
+    .select()
+    .from(contentItems)
+    .where(inArray(contentItems.id, ids));
 
-  return filteredContent;
+  return dbItems.map(toContentItem);
 }
 
 /**
- * Search content with a simulated async delay
+ * Search content using database full-text search
  */
 export async function searchContentItems(
   searchTerm: string,
@@ -34,40 +68,70 @@ export async function searchContentItems(
   totalMatches: number;
   searchTerm: string;
 }> {
-  // Simulate async operation with a delay
-  await new Promise((resolve) => setTimeout(resolve, 200));
+  if (!searchTerm.trim()) {
+    return {
+      results: [],
+      totalMatches: 0,
+      searchTerm,
+    };
+  }
 
-  return searchContent(mockContent, searchTerm, limit);
+  // Split search term into words for ILIKE matching
+  const searchWords = searchTerm
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((word) => word.length > 0);
+
+  // Build search conditions for each word
+  const searchConditions = searchWords.map((word) =>
+    or(
+      ilike(contentItems.name, `%${word}%`),
+      ilike(contentItems.shortDescription, `%${word}%`)
+    )
+  );
+
+  // Combine conditions with AND to require all words to match
+  const whereCondition = and(...searchConditions);
+
+  // Get total matches count
+  const totalMatchesResult = await db
+    .select({ count: count() })
+    .from(contentItems)
+    .where(whereCondition);
+
+  const totalMatches = totalMatchesResult[0]?.count || 0;
+
+  // Get paginated results
+  const dbResults = await db
+    .select()
+    .from(contentItems)
+    .where(whereCondition)
+    .limit(limit);
+
+  const results = dbResults.map(toContentItem);
+
+  return {
+    results,
+    totalMatches,
+    searchTerm,
+  };
 }
 
 /**
  * Get a single content item by ID
  */
 export async function getContentItem(id: string): Promise<ContentItem | null> {
-  const items = await getContentItems([id]);
-  return items.length > 0 ? items[0] : null;
+  const items = await db
+    .select()
+    .from(contentItems)
+    .where(eq(contentItems.id, id))
+    .limit(1);
+
+  return items.length > 0 ? toContentItem(items[0]) : null;
 }
 
 /**
- * Helper function to join content items with their publishers
- */
-function joinContentWithPublishers(
-  contentItems: ContentItem[]
-): ContentItemWithPublisher[] {
-  return contentItems.map((item) => {
-    const publisher = mockPublishers.find((p) => p.id === item.publisherId);
-    if (!publisher) {
-      throw new Error(`Publisher not found for content item ${item.id}`);
-    }
-    return {
-      ...item,
-      publisher,
-    };
-  });
-}
-
-/**
- * Get paginated content items with publisher information
+ * Get paginated content items with publisher information using database join
  */
 export async function listContentWithPublishersPaginated(
   page: number = 1,
@@ -79,27 +143,37 @@ export async function listContentWithPublishersPaginated(
   page: number;
   limit: number;
 }> {
-  // Simulate async operation with a delay
-  await new Promise((resolve) => setTimeout(resolve, 100));
+  const offset = (page - 1) * limit;
 
-  const allContent = [...mockContent];
-  const totalItems = allContent.length;
+  // Get total count
+  const totalResult = await db.select({ count: count() }).from(contentItems);
+  const total = totalResult[0]?.count || 0;
 
-  // Calculate pagination
-  const startIndex = (page - 1) * limit;
-  const endIndex = startIndex + limit;
+  // Get paginated content with publisher join
+  const items = await db
+    .select({
+      id: contentItems.id,
+      publisherId: contentItems.publisherId,
+      type: contentItems.type,
+      name: contentItems.name,
+      shortDescription: contentItems.shortDescription,
+      thumbnailUrl: contentItems.thumbnailUrl,
+      contentUrl: contentItems.contentUrl,
+      publisher: {
+        id: publishers.id,
+        name: publishers.name,
+      },
+    })
+    .from(contentItems)
+    .leftJoin(publishers, eq(contentItems.publisherId, publishers.id))
+    .limit(limit)
+    .offset(offset);
 
-  // Only get the items for the current page
-  const paginatedContent = allContent.slice(startIndex, endIndex);
-
-  // Join with publisher information
-  const itemsWithPublishers = joinContentWithPublishers(paginatedContent);
-
-  const hasMore = endIndex < totalItems;
+  const hasMore = offset + limit < total;
 
   return {
-    items: itemsWithPublishers,
-    total: totalItems,
+    items: items as ContentItemWithPublisher[],
+    total,
     hasMore,
     page,
     limit,
@@ -107,40 +181,90 @@ export async function listContentWithPublishersPaginated(
 }
 
 /**
- * Get all content items with publisher information
+ * Get all content items with publisher information using database join
  */
 export async function listContentWithPublishers(): Promise<
   ContentItemWithPublisher[]
 > {
-  const content = await listContent();
-  return joinContentWithPublishers(content);
+  const items = await db
+    .select({
+      id: contentItems.id,
+      publisherId: contentItems.publisherId,
+      type: contentItems.type,
+      name: contentItems.name,
+      shortDescription: contentItems.shortDescription,
+      thumbnailUrl: contentItems.thumbnailUrl,
+      contentUrl: contentItems.contentUrl,
+      publisher: {
+        id: publishers.id,
+        name: publishers.name,
+      },
+    })
+    .from(contentItems)
+    .leftJoin(publishers, eq(contentItems.publisherId, publishers.id));
+
+  return items as ContentItemWithPublisher[];
 }
 
 /**
- * Get content items by their IDs with publisher information
+ * Get content items by their IDs with publisher information using database join
  */
 export async function getContentItemsWithPublishers(
   ids: string[]
 ): Promise<ContentItemWithPublisher[]> {
-  const content = await getContentItems(ids);
-  return joinContentWithPublishers(content);
+  if (ids.length === 0) return [];
+
+  const items = await db
+    .select({
+      id: contentItems.id,
+      publisherId: contentItems.publisherId,
+      type: contentItems.type,
+      name: contentItems.name,
+      shortDescription: contentItems.shortDescription,
+      thumbnailUrl: contentItems.thumbnailUrl,
+      contentUrl: contentItems.contentUrl,
+      publisher: {
+        id: publishers.id,
+        name: publishers.name,
+      },
+    })
+    .from(contentItems)
+    .leftJoin(publishers, eq(contentItems.publisherId, publishers.id))
+    .where(inArray(contentItems.id, ids));
+
+  return items as ContentItemWithPublisher[];
 }
 
 /**
- * Get a single content item by ID with publisher information
+ * Get a single content item by ID with publisher information using database join
  */
 export async function getContentItemWithPublisher(
   id: string
 ): Promise<ContentItemWithPublisher | null> {
-  const item = await getContentItem(id);
-  if (!item) return null;
+  const items = await db
+    .select({
+      id: contentItems.id,
+      publisherId: contentItems.publisherId,
+      type: contentItems.type,
+      name: contentItems.name,
+      shortDescription: contentItems.shortDescription,
+      thumbnailUrl: contentItems.thumbnailUrl,
+      contentUrl: contentItems.contentUrl,
+      publisher: {
+        id: publishers.id,
+        name: publishers.name,
+      },
+    })
+    .from(contentItems)
+    .leftJoin(publishers, eq(contentItems.publisherId, publishers.id))
+    .where(eq(contentItems.id, id))
+    .limit(1);
 
-  const itemsWithPublishers = joinContentWithPublishers([item]);
-  return itemsWithPublishers[0];
+  return items.length > 0 ? (items[0] as ContentItemWithPublisher) : null;
 }
 
 /**
- * Search content with publisher information
+ * Search content with publisher information using database join
  */
 export async function searchContentItemsWithPublishers(
   searchTerm: string,
@@ -150,12 +274,62 @@ export async function searchContentItemsWithPublishers(
   totalMatches: number;
   searchTerm: string;
 }> {
-  const searchResult = await searchContentItems(searchTerm, limit);
-  const resultsWithPublishers = joinContentWithPublishers(searchResult.results);
+  if (!searchTerm.trim()) {
+    return {
+      results: [],
+      totalMatches: 0,
+      searchTerm,
+    };
+  }
+
+  // Split search term into words for ILIKE matching
+  const searchWords = searchTerm
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((word) => word.length > 0);
+
+  // Build search conditions for each word
+  const searchConditions = searchWords.map((word) =>
+    or(
+      ilike(contentItems.name, `%${word}%`),
+      ilike(contentItems.shortDescription, `%${word}%`)
+    )
+  );
+
+  // Combine conditions with AND to require all words to match
+  const whereCondition = and(...searchConditions);
+
+  // Get total matches count
+  const totalMatchesResult = await db
+    .select({ count: count() })
+    .from(contentItems)
+    .where(whereCondition);
+
+  const totalMatches = totalMatchesResult[0]?.count || 0;
+
+  // Get paginated results with publisher join
+  const results = await db
+    .select({
+      id: contentItems.id,
+      publisherId: contentItems.publisherId,
+      type: contentItems.type,
+      name: contentItems.name,
+      shortDescription: contentItems.shortDescription,
+      thumbnailUrl: contentItems.thumbnailUrl,
+      contentUrl: contentItems.contentUrl,
+      publisher: {
+        id: publishers.id,
+        name: publishers.name,
+      },
+    })
+    .from(contentItems)
+    .leftJoin(publishers, eq(contentItems.publisherId, publishers.id))
+    .where(whereCondition)
+    .limit(limit);
 
   return {
-    results: resultsWithPublishers,
-    totalMatches: searchResult.totalMatches,
-    searchTerm: searchResult.searchTerm,
+    results: results as ContentItemWithPublisher[],
+    totalMatches,
+    searchTerm,
   };
 }

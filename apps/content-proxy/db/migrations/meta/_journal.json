@@ -15,6 +15,20 @@
       "when": 1758924215798,
       "tag": "0001_aspiring_switch",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1759233316042,
+      "tag": "0002_dizzy_slipstream",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1759408138958,
+      "tag": "0003_bright_elektra",
+      "breakpoints": true
     }
   ]
 }

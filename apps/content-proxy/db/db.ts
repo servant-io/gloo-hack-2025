@@ -2,7 +2,9 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { getEnv } from '../lib/env';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import * as contentProxySchemas from '@/db/schema';
+import * as rootSchemas from '@/db/schema';
+import * as contentSchemas from '@/db/schemas/content';
+import * as personalizationSchemas from '@/db/schemas/personalization';
 
 const { POSTGRES_URL } = getEnv();
 
@@ -25,7 +27,9 @@ pool.on('error', (err) => {
 });
 
 const schema = {
-  ...contentProxySchemas,
+  ...rootSchemas,
+  ...contentSchemas,
+  ...personalizationSchemas,
 };
 
 export const db: NodePgDatabase<typeof schema> = drizzle(pool, {

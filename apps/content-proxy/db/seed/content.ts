@@ -1,7 +1,107 @@
-import type { ContentItem, Publisher } from './types';
-import { PublisherIds } from './types';
+import { PublisherIds } from '../../lib/content/types';
+import { db } from '../db';
+import { publishers, contentItems } from '../schemas/content';
+import { eq } from 'drizzle-orm';
 
-export const mockContent: ContentItem[] = [
+export async function seedContentSchemas() {
+  await seedPublishers();
+  await seedContentItems();
+}
+
+type Publisher = typeof publishers.$inferInsert;
+
+async function seedPublishers() {
+  console.log('Seeding publishers...');
+  let insertedCount = 0;
+  let updatedCount = 0;
+
+  for (const publisher of seededPublishers) {
+    // Check if publisher already exists
+    const existingPublisher = await db
+      .select()
+      .from(publishers)
+      .where(eq(publishers.id, publisher.id))
+      .limit(1);
+
+    if (existingPublisher.length === 0) {
+      // Publisher doesn't exist, insert it
+      await db.insert(publishers).values(publisher as Publisher);
+      insertedCount++;
+    } else {
+      // Publisher exists, check if we need to update
+      const currentPublisher = existingPublisher[0];
+      if (currentPublisher.name !== publisher.name) {
+        // Update the publisher if name changed
+        await db
+          .update(publishers)
+          .set({
+            name: publisher.name,
+            updatedAt: new Date(),
+          })
+          .where(eq(publishers.id, publisher.id));
+        updatedCount++;
+      }
+    }
+  }
+  console.log(
+    `Upserted publishers: ${insertedCount} inserted, ${updatedCount} updated, ${seededPublishers.length - insertedCount - updatedCount} unchanged`
+  );
+}
+
+type ContentItem = typeof contentItems.$inferInsert;
+
+async function seedContentItems() {
+  console.log('Seeding content items...');
+  let insertedCount = 0;
+  let updatedCount = 0;
+
+  for (const contentItem of seededContentItems) {
+    // Check if content item already exists
+    const existingContentItem = await db
+      .select()
+      .from(contentItems)
+      .where(eq(contentItems.id, contentItem.id))
+      .limit(1);
+
+    if (existingContentItem.length === 0) {
+      // Content item doesn't exist, insert it
+      await db.insert(contentItems).values(contentItem as ContentItem);
+      insertedCount++;
+    } else {
+      // Content item exists, check if we need to update
+      const currentContentItem = existingContentItem[0];
+      const needsUpdate =
+        currentContentItem.publisherId !== contentItem.publisherId ||
+        currentContentItem.type !== contentItem.type ||
+        currentContentItem.name !== contentItem.name ||
+        currentContentItem.shortDescription !== contentItem.shortDescription ||
+        currentContentItem.thumbnailUrl !== contentItem.thumbnailUrl ||
+        currentContentItem.contentUrl !== contentItem.contentUrl;
+
+      if (needsUpdate) {
+        // Update the content item if any field changed
+        await db
+          .update(contentItems)
+          .set({
+            publisherId: contentItem.publisherId,
+            type: contentItem.type,
+            name: contentItem.name,
+            shortDescription: contentItem.shortDescription,
+            thumbnailUrl: contentItem.thumbnailUrl,
+            contentUrl: contentItem.contentUrl,
+            updatedAt: new Date(),
+          })
+          .where(eq(contentItems.id, contentItem.id));
+        updatedCount++;
+      }
+    }
+  }
+  console.log(
+    `Upserted content items: ${insertedCount} inserted, ${updatedCount} updated, ${seededContentItems.length - insertedCount - updatedCount} unchanged`
+  );
+}
+
+const seededContentItems: ContentItem[] = [
   {
     id: '72f20c838bb0',
     publisherId: PublisherIds.ACU,
@@ -506,10 +606,10 @@ export const mockContent: ContentItem[] = [
   },
 ];
 
-export const mockPublishers: Publisher[] = [
+const seededPublishers: Publisher[] = [
   {
     id: PublisherIds.ACU,
-    name: 'Austin Christian University (ACU)',
+    name: 'Austin Christian University (ACU) - Updated',
   },
   {
     id: PublisherIds.BETHEL_TECH,
@@ -520,3 +620,19 @@ export const mockPublishers: Publisher[] = [
     name: 'Indiana Wesleyan University (IWU)',
   },
 ];
+
+/**
+ * Only self-invoke if this file is being run directly
+ * (not imported as a module)
+ */
+if (require.main === module) {
+  seedContentSchemas()
+    .then(() => {
+      console.log('(content schemas) Database seeding completed successfully!');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('(content schemas) Database seeding failed:', error);
+      process.exit(1);
+    });
+}

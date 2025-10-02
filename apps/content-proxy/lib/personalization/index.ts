@@ -1,5 +1,5 @@
 import { db } from '@/db/db';
-import { events } from '@/db/schema';
+import { events } from '@/db/schemas/personalization';
 import type { MetricName } from '@/lib/personalization/metric';
 import {
   upsertMetricSchemaVersion,

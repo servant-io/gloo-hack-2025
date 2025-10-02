@@ -1,5 +1,5 @@
 import { db } from '@/db/db';
-import { metrics, metricSchemaVersions } from '@/db/schema';
+import { metrics, metricSchemaVersions } from '@/db/schemas/personalization';
 import { and, eq, desc } from 'drizzle-orm';
 import viewedContentSchema from '@/lib/personalization/metricSchemas/viewedContent.schema.json';
 import Ajv from 'ajv';
