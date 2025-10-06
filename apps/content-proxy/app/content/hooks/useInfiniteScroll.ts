@@ -34,7 +34,7 @@ export function useInfiniteScroll({
   });
 
   const observerRef = useRef<IntersectionObserver | null>(null);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const fetchingRef = useRef(false);
 
   // Refs for latest state values
