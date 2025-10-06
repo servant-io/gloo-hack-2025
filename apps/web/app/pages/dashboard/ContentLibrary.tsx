@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { ContentItem } from '@/components/ContentDetailsDialog';
 import { Card } from '@repo/ui/card';
 import { Button } from '@repo/ui/button';
 import { Input } from '@repo/ui/input';
@@ -31,7 +32,9 @@ export default function ContentLibrary() {
     ? mockPublisherData[user.id as keyof typeof mockPublisherData]
     : null;
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedContent, setSelectedContent] = useState<any>(null);
+  const [selectedContent, setSelectedContent] = useState<ContentItem | null>(
+    null
+  );
   const [dialogOpen, setDialogOpen] = useState(false);
 
   if (!data) return null;

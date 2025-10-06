@@ -16,7 +16,7 @@ export interface AuthContextType {
 export async function login(
   email: string,
   password: string
-): Promise<{ success: boolean; user?: any }> {
+): Promise<{ success: boolean; user?: unknown }> {
   try {
     const response = await fetch('/api/auth/login', {
       method: 'POST',

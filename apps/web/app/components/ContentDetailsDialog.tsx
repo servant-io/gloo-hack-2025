@@ -30,8 +30,9 @@ import {
   User,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import Image from 'next/image';
 
-interface ContentItem {
+export interface ContentItem {
   id: string;
   title: string;
   type: string;
@@ -73,7 +74,7 @@ export default function ContentDetailsDialog({
       setIsEditing(false);
       setEditedContent(null);
     }
-  }, [open, content]);
+  }, [open, content, editedContent]);
 
   if (!content) return null;
 
@@ -139,11 +140,13 @@ export default function ContentDetailsDialog({
           <div className="flex justify-center">
             <div className="relative w-48 h-72 rounded-md overflow-hidden bg-muted flex items-center justify-center">
               {currentContent.coverImage ? (
-                <img
+                <Image
                   src={currentContent.coverImage}
                   alt={currentContent.title}
                   className="w-full h-full object-cover"
                   data-testid="img-cover"
+                  width={192}
+                  height={288}
                 />
               ) : (
                 <div

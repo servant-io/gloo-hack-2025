@@ -62,7 +62,8 @@ export async function getCurrentUser(): Promise<Publisher | null> {
     }
 
     // Return user without password
-    const { password: _, ...userWithoutPassword } = user;
+    const { password, ...userWithoutPassword } = user;
+    void password; // Explicitly ignore password to avoid ESLint error
     return userWithoutPassword;
   } catch (error) {
     console.error('Error getting current user:', error);
@@ -122,7 +123,8 @@ export async function loginUser(
       path: '/',
     });
 
-    const { password: _, ...userWithoutPassword } = user;
+    const { password: userPassword, ...userWithoutPassword } = user;
+    void userPassword; // Explicitly ignore password to avoid ESLint error
     return { success: true, user: userWithoutPassword };
   } catch (error) {
     console.error('Login error:', error);

@@ -1,7 +1,6 @@
 'use client';
 
 import { Card } from '@repo/ui/card';
-import { Badge } from '@repo/ui/badge';
 import { Award } from 'lucide-react';
 import LiveFeed from './LiveFeed';
 

@@ -7,8 +7,6 @@ import { TrendingUp, FileText, DollarSign, Activity } from 'lucide-react';
 import {
   LineChart,
   Line,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   Tooltip,

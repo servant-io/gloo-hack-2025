@@ -1,0 +1,14 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "env": ["NODE_ENV"]
+    },
+    "lint": {
+      "env": ["NODE_ENV"]
+    },
+    "dev": {
+      "env": ["NODE_ENV"]
+    }
+  }
+}

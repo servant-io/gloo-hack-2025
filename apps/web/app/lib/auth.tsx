@@ -7,12 +7,7 @@ import {
   useState,
   ReactNode,
 } from 'react';
-import {
-  login,
-  logout,
-  isAuthenticatedClient,
-  getCurrentUser,
-} from './auth.client';
+import { login, logout, getCurrentUser } from './auth.client';
 import { Publisher } from './auth.server';
 
 interface AuthContextType {
@@ -59,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const result = await login(email, password);
 
       if (result.success && result.user) {
-        setUser(result.user);
+        setUser(result.user as Publisher);
       }
       return result.success;
     } catch (error) {
