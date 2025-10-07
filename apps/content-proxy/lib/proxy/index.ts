@@ -3,7 +3,6 @@ import { ContentItem } from "@/lib/content/types";
 import { ContentBytesTransferParams } from "@/lib/personalization";
 import { emitContentBytesTransferEvent } from "@/lib/personalization/actions";
 import { validateEventData } from "@/lib/personalization/metric";
-import { emit } from "process";
 
 export const RELEVANT_FORWARD_HEADERS = [
   'range',
