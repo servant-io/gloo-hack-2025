@@ -1,60 +1,30 @@
+import { isAuthorized } from '@/lib/authentication';
+import { forwardRequest, isValidUrl } from '@/lib/proxy';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
     const startTime = Date.now();
+    // authorize request
+    const isRequestAuthorized = await isAuthorized(request);
+    if (!isRequestAuthorized) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+    // validate URL parameter
     const { searchParams } = new URL(request.url);
     const incomingUrl = (searchParams.get('url') || "").trim();
-    // const apiKey =
-    //   (searchParams.get('apiKey') || "").trim() ||
-    //   (request.headers.get('authorization') || "").replace(/^Bearer\s+/i, "").trim();
-
-    // validates URL presence
-    if (!incomingUrl) {
+    const urlValidation = isValidUrl(incomingUrl);
+    if (!urlValidation.valid) {
       return NextResponse.json(
-        { error: 'URL query parameter "url" is required' },
+        { error: urlValidation.error },
         { status: 400 }
       );
     }
-
-    // validates that the url params is an actual URL
-    let originalUrl: string;
-    try {
-      originalUrl = decodeURIComponent(incomingUrl);
-      new URL(originalUrl);
-    } catch (error: unknown) {
-      return NextResponse.json(
-        { error: `Invalid URL provided: ${JSON.stringify(error)}` },
-        { status: 400 }
-      );
-    }
-
-    // prepare headers for origin request
-    const fetchHeaders: HeadersInit = {};
-
-    // copy relevant headers from incoming request
-    const headersToForward = [
-      'range',
-      'if-range',
-      'if-modified-since',
-      'if-none-match',
-      'accept',
-      'accept-encoding',
-      'cache-control',
-    ];
-
-    headersToForward.forEach(headerName => {
-      const value = request.headers.get(headerName);
-      if (value) {
-        fetchHeaders[headerName] = value;
-      }
-    });
-
-    // fetch from origin with forwarded headers
-    const response = await fetch(originalUrl, {
-      headers: fetchHeaders,
-    });
-
+    const originalUrl = urlValidation.originalUrl.toString();
+    const response = await forwardRequest(request.headers, originalUrl);
     if (response.status >= 400) {
       return NextResponse.json(
         { error: 'Invalid URL provided', body: await response.text() },
@@ -66,12 +36,13 @@ export async function GET(request: NextRequest) {
     const contentLength = response.headers.get('content-length');
     const contentRange = response.headers.get('content-range');
     const acceptRanges = response.headers.get('accept-ranges');
-
     const statusCode = response.status;
     let bytes = 0;
-
+    // stream response while collecting metrics
     const transformStream = new TransformStream({
       transform(chunk, controller) {
+        // this is to show how we could collect bytes transferred in real-time
+        // the actual result is (should be) the same as content-length header
         bytes += chunk.length;
         controller.enqueue(chunk);
       },
@@ -90,7 +61,6 @@ export async function GET(request: NextRequest) {
             totalSize = match[3] !== '*' ? parseInt(match[3]) : null;
           }
         }
-
         // TODO: persist to database
         console.info("Metrics:", {
           originalUrl,
@@ -107,9 +77,7 @@ export async function GET(request: NextRequest) {
         });
       }
     });
-
     const stream = response.body?.pipeThrough(transformStream);
-
     const responseHeaders: HeadersInit = {
       'Content-Type': contentType,
     };
