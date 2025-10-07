@@ -1,5 +1,5 @@
 import { isAuthorized } from '@/lib/authentication';
-import { forwardRequest, isValidUrl } from '@/lib/proxy';
+import { forwardRequest, isValidContentUrl } from '@/lib/proxy';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -16,14 +16,14 @@ export async function GET(request: NextRequest) {
     // validate URL parameter
     const { searchParams } = new URL(request.url);
     const incomingUrl = (searchParams.get('url') || "").trim();
-    const urlValidation = isValidUrl(incomingUrl);
-    if (!urlValidation.valid) {
+    const url = await isValidContentUrl(incomingUrl);
+    if (!url.valid) {
       return NextResponse.json(
-        { error: urlValidation.error },
+        { error: url.error },
         { status: 400 }
       );
     }
-    const originalUrl = urlValidation.originalUrl.toString();
+    const originalUrl = url.originalUrl.toString();
     const response = await forwardRequest(request.headers, originalUrl);
     if (response.status >= 400) {
       return NextResponse.json(
