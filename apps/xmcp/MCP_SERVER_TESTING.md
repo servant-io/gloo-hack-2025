@@ -3,12 +3,15 @@
 ## Quick Test Commands
 
 ### 1. Check Server Status
+
 ```bash
 curl https://xmcp-sigma.vercel.app
 ```
+
 **Expected:** HTML landing page (200 OK)
 
 ### 2. Initialize MCP Connection
+
 ```bash
 curl -X POST https://xmcp-sigma.vercel.app/mcp \
   -H "Content-Type: application/json" \
@@ -27,9 +30,11 @@ curl -X POST https://xmcp-sigma.vercel.app/mcp \
     "id": 1
   }'
 ```
+
 **Expected:** Server capabilities and info
 
 ### 3. List Available Tools
+
 ```bash
 curl -X POST https://xmcp-sigma.vercel.app/mcp \
   -H "Content-Type: application/json" \
@@ -41,9 +46,11 @@ curl -X POST https://xmcp-sigma.vercel.app/mcp \
     "id": 2
   }'
 ```
+
 **Expected:** List of available tools (currently: `greet`)
 
 ### 4. Test a Tool
+
 ```bash
 curl -X POST https://xmcp-sigma.vercel.app/mcp \
   -H "Content-Type: application/json" \
@@ -60,9 +67,11 @@ curl -X POST https://xmcp-sigma.vercel.app/mcp \
     "id": 3
   }'
 ```
+
 **Expected:** `{"result":{"content":[{"type":"text","text":"Hello, TestUser!!"}]}}`
 
 ### 5. List Available Prompts
+
 ```bash
 curl -X POST https://xmcp-sigma.vercel.app/mcp \
   -H "Content-Type: application/json" \
@@ -74,9 +83,11 @@ curl -X POST https://xmcp-sigma.vercel.app/mcp \
     "id": 4
   }'
 ```
+
 **Expected:** List of available prompts (currently: `review-code`)
 
 ### 6. Test a Prompt
+
 ```bash
 curl -X POST https://xmcp-sigma.vercel.app/mcp \
   -H "Content-Type: application/json" \
@@ -93,9 +104,11 @@ curl -X POST https://xmcp-sigma.vercel.app/mcp \
     "id": 5
   }'
 ```
+
 **Expected:** Code review prompt template
 
 ### 7. List Available Resources
+
 ```bash
 curl -X POST https://xmcp-sigma.vercel.app/mcp \
   -H "Content-Type: application/json" \
@@ -107,9 +120,11 @@ curl -X POST https://xmcp-sigma.vercel.app/mcp \
     "id": 6
   }'
 ```
+
 **Expected:** List of available resources (currently: `config://app`)
 
 ### 8. Test a Resource
+
 ```bash
 curl -X POST https://xmcp-sigma.vercel.app/mcp \
   -H "Content-Type: application/json" \
@@ -123,28 +138,32 @@ curl -X POST https://xmcp-sigma.vercel.app/mcp \
     "id": 7
   }'
 ```
+
 **Expected:** Resource content
 
 ## Server Endpoint
+
 ```
 https://xmcp-sigma.vercel.app/mcp
 ```
 
 ## Expected Server Capabilities
+
 - **Protocol Version:** 2024-11-05
 - **Tools:** greet (requires name parameter)
 - **Prompts:** review-code (requires code argument)
 - **Resources:** config://app (application configuration)
 
 ## Troubleshooting
+
 - **405 Method Not Allowed:** Use POST requests, not GET
 - **Not Acceptable:** Include `Accept: application/json` header
 - **Connection refused:** Check if server is deployed and running
 
 ## Success Indicators
+
 - All commands return JSON-RPC 2.0 responses
 - No error codes in responses
 - Tools execute and return expected content
 - Prompts return formatted templates
 - Resources return data content
-

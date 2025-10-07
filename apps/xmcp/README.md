@@ -29,18 +29,18 @@ This project uses the structured approach where tools, prompts, and resources ar
 Each tool is defined in its own file with the following structure:
 
 ```typescript
-import { z } from "zod";
-import { type InferSchema, type ToolMetadata } from "xmcp";
+import { z } from 'zod';
+import { type InferSchema, type ToolMetadata } from 'xmcp';
 
 export const schema = {
-  name: z.string().describe("The name of the user to greet"),
+  name: z.string().describe('The name of the user to greet'),
 };
 
 export const metadata: ToolMetadata = {
-  name: "greet",
-  description: "Greet the user",
+  name: 'greet',
+  description: 'Greet the user',
   annotations: {
-    title: "Greet the user",
+    title: 'Greet the user',
     readOnlyHint: true,
     destructiveHint: false,
     idempotentHint: true,
@@ -57,18 +57,18 @@ export default function greet({ name }: InferSchema<typeof schema>) {
 Prompts are template definitions for AI interactions:
 
 ```typescript
-import { z } from "zod";
-import { type InferSchema, type PromptMetadata } from "xmcp";
+import { z } from 'zod';
+import { type InferSchema, type PromptMetadata } from 'xmcp';
 
 export const schema = {
-  code: z.string().describe("The code to review"),
+  code: z.string().describe('The code to review'),
 };
 
 export const metadata: PromptMetadata = {
-  name: "review-code",
-  title: "Review Code",
-  description: "Review code for best practices and potential issues",
-  role: "user",
+  name: 'review-code',
+  title: 'Review Code',
+  description: 'Review code for best practices and potential issues',
+  role: 'user',
 };
 
 export default function reviewCode({ code }: InferSchema<typeof schema>) {
@@ -81,17 +81,17 @@ export default function reviewCode({ code }: InferSchema<typeof schema>) {
 Resources provide data or content with URI-based access:
 
 ```typescript
-import { z } from "zod";
-import { type ResourceMetadata, type InferSchema } from "xmcp";
+import { z } from 'zod';
+import { type ResourceMetadata, type InferSchema } from 'xmcp';
 
 export const schema = {
-  userId: z.string().describe("The ID of the user"),
+  userId: z.string().describe('The ID of the user'),
 };
 
 export const metadata: ResourceMetadata = {
-  name: "user-profile",
-  title: "User Profile",
-  description: "User profile information",
+  name: 'user-profile',
+  title: 'User Profile',
+  description: 'User profile information',
 };
 
 export default function handler({ userId }: InferSchema<typeof schema>) {

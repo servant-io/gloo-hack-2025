@@ -5,17 +5,21 @@ This is the **SIMPLEST POSSIBLE** implementation to demonstrate HTML component r
 ## What Was Created
 
 ### 1. HTML Widget Component
+
 **File:** `src/resources/(widgets)/search-results.ts`
 
 A self-contained HTML page with:
+
 - **Inline CSS** - gradient background, card styling, different styles for each result
 - **Inline JavaScript** - reads `window.openai.toolOutput` and renders results
 - **No build step required** - everything is in one file
 
 ### 2. Updated Search Tool
+
 **File:** `src/tools/searchContent.ts`
 
 Modified to:
+
 - Reference the widget via `_meta["openai/outputTemplate"]`
 - Return structured data with 4 hardcoded podcast results
 - Provide custom status messages during invocation
@@ -25,7 +29,6 @@ Modified to:
 1. **Tool Call**: When `searchContent` is called, it returns:
    - `content`: Plain text for the model
    - `structuredContent`: JSON data with the 4 podcasts
-   
 2. **Widget Rendering**: ChatGPT:
    - Fetches the HTML template from `ui://widget/search-results.html`
    - Injects `structuredContent` as `window.openai.toolOutput`
@@ -40,11 +43,13 @@ Modified to:
 ## Testing
 
 ### Start the Server
+
 ```bash
 pnpm dev
 ```
 
 ### Connect from ChatGPT
+
 1. Open ChatGPT
 2. Add your MCP server (typically http://localhost:3000)
 3. Ask: "Search for leadership podcasts"
@@ -76,7 +81,6 @@ User sees beautiful gradient background with 4 differently styled podcast cards
 ✅ **No external files** - everything inline  
 ✅ **No API calls** - hardcoded data  
 ✅ **No state management** - just render  
-✅ **~100 lines total** - resource + tool combined  
+✅ **~100 lines total** - resource + tool combined
 
 This is a "hello world" for MCP widgets!
-

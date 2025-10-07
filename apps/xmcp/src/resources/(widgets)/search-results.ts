@@ -1,9 +1,9 @@
-import { type ResourceMetadata } from "xmcp";
+import { type ResourceMetadata } from 'xmcp';
 
 export const metadata: ResourceMetadata = {
-  name: "search-results-widget",
-  mimeType: "text/html+skybridge",
-  description: "Displays search results for podcasts",
+  name: 'search-results-widget',
+  mimeType: 'text/html+skybridge',
+  description: 'Displays search results for podcasts',
 };
 
 export default function handler() {
@@ -144,4 +144,3 @@ export default function handler() {
 </html>
   `.trim();
 }
-

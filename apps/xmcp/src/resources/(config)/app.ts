@@ -1,11 +1,11 @@
-import { type ResourceMetadata } from "xmcp";
+import { type ResourceMetadata } from 'xmcp';
 
 export const metadata: ResourceMetadata = {
-  name: "app-config",
-  title: "Application Config",
-  description: "Application configuration data",
+  name: 'app-config',
+  title: 'Application Config',
+  description: 'Application configuration data',
 };
 
 export default function handler() {
-  return "App configuration here";
+  return 'App configuration here';
 }
