@@ -35,7 +35,6 @@ export async function emitViewedContentEvent(
   );
 }
 
-
 /** @see apps/content-proxy/lib/personalization/metricSchemas/contentBytesTransfer.schema.json */
 export type ContentBytesTransferParams = {
   contentItemId: string;

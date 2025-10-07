@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest } from 'next/server';
 import { db } from '@/db/db';
 import { eq } from 'drizzle-orm';
 import { apiKeys, profileApiKeyLkp } from '@/db/schemas/personalization'; // Added profileApiKeyLkp
@@ -15,7 +15,9 @@ interface AuthResult {
  * @param key The API key string.
  * @returns The profile ID string if found, otherwise undefined.
  */
-async function lookupApiKeyAndProfileId(key: string): Promise<string | undefined> {
+async function lookupApiKeyAndProfileId(
+  key: string
+): Promise<string | undefined> {
   const result = await db
     .select({
       profileId: profileApiKeyLkp.profileId,
@@ -39,8 +41,10 @@ export async function authorize(request: NextRequest): Promise<AuthResult> {
 
   // 1. Extract the API key from query params or Authorization header
   const apiKey =
-    (searchParams.get('api_key') || "").trim() ||
-    (request.headers.get('authorization') || "").replace(/^Bearer\s+/i, "").trim();
+    (searchParams.get('api_key') || '').trim() ||
+    (request.headers.get('authorization') || '')
+      .replace(/^Bearer\s+/i, '')
+      .trim();
 
   if (!apiKey) {
     return { authorized: false };

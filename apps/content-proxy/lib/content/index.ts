@@ -133,7 +133,9 @@ export async function getContentItem(id: string): Promise<ContentItem | null> {
 /**
  * Get a single content item by content URL
  */
-export async function getContentItemByUrl(url: string): Promise<ContentItem | null> {
+export async function getContentItemByUrl(
+  url: string
+): Promise<ContentItem | null> {
   const items = await db
     .select()
     .from(contentItems)

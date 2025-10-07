@@ -1,8 +1,8 @@
-import { getContentItemByUrl } from "@/lib/content";
-import { ContentItem } from "@/lib/content/types";
-import { ContentBytesTransferParams } from "@/lib/personalization";
-import { emitContentBytesTransferEvent } from "@/lib/personalization/actions";
-import { validateEventData } from "@/lib/personalization/metric";
+import { getContentItemByUrl } from '@/lib/content';
+import { ContentItem } from '@/lib/content/types';
+import { ContentBytesTransferParams } from '@/lib/personalization';
+import { emitContentBytesTransferEvent } from '@/lib/personalization/actions';
+import { validateEventData } from '@/lib/personalization/metric';
 
 export const RELEVANT_FORWARD_HEADERS = [
   'range',
@@ -12,23 +12,43 @@ export const RELEVANT_FORWARD_HEADERS = [
   'accept',
   'accept-encoding',
   'cache-control',
-]
+];
 
 /**
  * Validate the "url" parameter
  */
-export async function isValidContentUrl(url: string):
-  Promise<
-    { valid: false; error: string, originalUrl: undefined, contentItem: ContentItem | undefined } |
-    { valid: true; error: undefined, originalUrl: string, contentItem: ContentItem }
-  >
-{
+export async function isValidContentUrl(url: string): Promise<
+  | {
+      valid: false;
+      error: string;
+      originalUrl: undefined;
+      contentItem: ContentItem | undefined;
+    }
+  | {
+      valid: true;
+      error: undefined;
+      originalUrl: string;
+      contentItem: ContentItem;
+    }
+> {
   // validates URL presence
-  if (!url) return { valid: false, error: 'URL query parameter "url" is required', originalUrl: undefined, contentItem: undefined };
+  if (!url)
+    return {
+      valid: false,
+      error: 'URL query parameter "url" is required',
+      originalUrl: undefined,
+      contentItem: undefined,
+    };
 
   // validates ContentItem presence
   const contentItem = await getContentItemByUrl(url);
-  if (!contentItem) return { valid: false, error: 'Content for provided query parameter "url" does not exist', originalUrl: undefined, contentItem: undefined };
+  if (!contentItem)
+    return {
+      valid: false,
+      error: 'Content for provided query parameter "url" does not exist',
+      originalUrl: undefined,
+      contentItem: undefined,
+    };
 
   // validates that the url params is an actual URL
   let originalUrl: string;
@@ -37,18 +57,26 @@ export async function isValidContentUrl(url: string):
     new URL(originalUrl);
     return { valid: true, originalUrl, contentItem, error: undefined };
   } catch (error: unknown) {
-    return { valid: false, error: `URL query parameter "url" is invalid: ${JSON.stringify(error)}`, originalUrl: undefined, contentItem };
+    return {
+      valid: false,
+      error: `URL query parameter "url" is invalid: ${JSON.stringify(error)}`,
+      originalUrl: undefined,
+      contentItem,
+    };
   }
 }
 
 /**
  * Forward the request to the target URL with relevant headers
  */
-export async function forwardRequest(headers: Headers, url: string): Promise<Response> {
+export async function forwardRequest(
+  headers: Headers,
+  url: string
+): Promise<Response> {
   // prepare headers for origin request
   const forwardedHeaders: HeadersInit = {};
   // copy relevant headers from incoming request
-  RELEVANT_FORWARD_HEADERS.forEach(headerName => {
+  RELEVANT_FORWARD_HEADERS.forEach((headerName) => {
     const value = headers.get(headerName);
     if (value) {
       forwardedHeaders[headerName] = value;
@@ -66,9 +94,18 @@ export async function forwardRequest(headers: Headers, url: string): Promise<Res
  * Register proxy event
  */
 export async function registerProxyEvent({
-  contentItemId, profileId, contentRange, originalUrl, contentType, contentLength, acceptRanges, bytesTransferred, statusCode, startTime
+  contentItemId,
+  profileId,
+  contentRange,
+  originalUrl,
+  contentType,
+  contentLength,
+  acceptRanges,
+  bytesTransferred,
+  statusCode,
+  startTime,
 }: {
-  contentItemId: string,
+  contentItemId: string;
   profileId: string;
   contentRange: string | null;
   originalUrl: string;
@@ -106,14 +143,16 @@ export async function registerProxyEvent({
     totalSize,
     contentType,
     statusCode,
-  }
-  const metricSchemaValidation = await validateEventData('content_bytes_transfer', eventData);
-  if (!metricSchemaValidation.success) {
-    throw Error(`Metric schema validation failed: ${metricSchemaValidation.message}`);
-  }
-
-  await emitContentBytesTransferEvent(
-    profileId,
+  };
+  const metricSchemaValidation = await validateEventData(
+    'content_bytes_transfer',
     eventData
   );
+  if (!metricSchemaValidation.success) {
+    throw Error(
+      `Metric schema validation failed: ${metricSchemaValidation.message}`
+    );
+  }
+
+  await emitContentBytesTransferEvent(profileId, eventData);
 }

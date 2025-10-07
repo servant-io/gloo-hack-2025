@@ -610,9 +610,10 @@ const seededContentItems: ContentItem[] = [
     type: 'article',
     name: 'What do Prototypes Prototype?',
     shortDescription:
-      'Prototypes answer questions about a product\'s role, look and feel, and implementation.',
+      "Prototypes answer questions about a product's role, look and feel, and implementation.",
     thumbnailUrl: 'https://picsum.photos/300/200?random=61',
-    contentUrl: 'https://hci.stanford.edu/courses/cs247/2012/readings/WhatDoPrototypesPrototype.pdf',
+    contentUrl:
+      'https://hci.stanford.edu/courses/cs247/2012/readings/WhatDoPrototypesPrototype.pdf',
   },
 ];
 
