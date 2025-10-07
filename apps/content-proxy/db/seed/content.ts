@@ -25,7 +25,8 @@ async function seedPublishers() {
 
     if (existingPublisher.length === 0) {
       // Publisher doesn't exist, insert it
-      await db.insert(publishers).values(publisher as Publisher);
+      const inserted = await db.insert(publishers).values(publisher as Publisher);
+      console.log("inserted:", inserted)
       insertedCount++;
     } else {
       // Publisher exists, check if we need to update

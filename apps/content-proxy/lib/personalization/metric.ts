@@ -5,7 +5,7 @@ import viewedContentSchema from '@/lib/personalization/metricSchemas/viewedConte
 import Ajv from 'ajv';
 import type { JSONSchemaType } from 'ajv';
 
-export type MetricName = 'viewed_content';
+export type MetricName = 'viewed_content' | 'content_bytes_transfer';
 type MetricConfig = {
   name: MetricName;
   revision: 'v0.1.0';
@@ -18,11 +18,17 @@ const metricConfigs: MetricConfig[] = [
     revision: 'v0.1.0',
     schema: viewedContentSchema,
   },
+  {
+    name: 'content_bytes_transfer',
+    revision: 'v0.1.0',
+    schema: viewedContentSchema,
+  },
 ];
 
 export type ValidationResult = {
   success: boolean;
   message: string;
+  metricSchemaVersionId: string;
 };
 
 export async function validateEventData(
@@ -46,6 +52,7 @@ export async function validateEventData(
       return {
         success: true,
         message: '',
+        metricSchemaVersionId: metricSchemaVersion.id,
       };
     } else {
       // Format validation errors for the message
@@ -57,6 +64,7 @@ export async function validateEventData(
       return {
         success: false,
         message: errorMessages,
+        metricSchemaVersionId: metricSchemaVersion.id,
       };
     }
   } catch (error) {
@@ -64,6 +72,7 @@ export async function validateEventData(
     return {
       success: false,
       message: `Validation error: ${error instanceof Error ? error.message : String(error)}`,
+      metricSchemaVersionId: metricSchemaVersion.id,
     };
   }
 }

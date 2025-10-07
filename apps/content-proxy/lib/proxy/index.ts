@@ -1,5 +1,9 @@
 import { getContentItemByUrl } from "@/lib/content";
 import { ContentItem } from "@/lib/content/types";
+import { ContentBytesTransferParams } from "@/lib/personalization";
+import { emitContentBytesTransferEvent } from "@/lib/personalization/actions";
+import { validateEventData } from "@/lib/personalization/metric";
+import { emit } from "process";
 
 export const RELEVANT_FORWARD_HEADERS = [
   'range',
@@ -57,4 +61,60 @@ export async function forwardRequest(headers: Headers, url: string): Promise<Res
   });
 
   return response;
+}
+
+/**
+ * Register proxy event
+ */
+export async function registerProxyEvent({
+  contentItemId, profileId, contentRange, originalUrl, contentType, contentLength, acceptRanges, bytesTransferred, statusCode, startTime
+}: {
+  contentItemId: string,
+  profileId: string;
+  contentRange: string | null;
+  originalUrl: string;
+  contentType: string;
+  contentLength: number | null;
+  acceptRanges: string | null;
+  bytesTransferred: number;
+  statusCode: number;
+  startTime: number;
+}) {
+  // parse range info for detailed metrics
+  let rangeStart: number | null = null;
+  let rangeEnd: number | null = null;
+  let totalSize: number | null = null;
+
+  if (contentRange) {
+    // content-Range format: "bytes 0-1023/5000" or "bytes 0-1023/*"
+    const match = contentRange.match(/bytes (\d+)-(\d+)\/(\d+|\*)/);
+    if (match) {
+      rangeStart = parseInt(match[1]);
+      rangeEnd = parseInt(match[2]);
+      totalSize = match[3] !== '*' ? parseInt(match[3]) : null;
+    }
+  }
+  const eventData: ContentBytesTransferParams = {
+    contentItemId,
+    url: originalUrl,
+    contentRange,
+    duration: Date.now() - startTime,
+    bytesTransferred,
+    contentLength,
+    acceptRanges,
+    rangeStart,
+    rangeEnd,
+    totalSize,
+    contentType,
+    statusCode,
+  }
+  const metricSchemaValidation = await validateEventData('content_bytes_transfer', eventData);
+  if (!metricSchemaValidation.success) {
+    throw Error(`Metric schema validation failed: ${metricSchemaValidation.message}`);
+  }
+
+  await emitContentBytesTransferEvent(
+    profileId,
+    eventData
+  );
 }

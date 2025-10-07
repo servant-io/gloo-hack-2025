@@ -1,18 +1,19 @@
-import { isAuthorized } from '@/lib/authentication';
-import { forwardRequest, isValidContentUrl } from '@/lib/proxy';
+import { authorize } from '@/lib/authentication';
+import { forwardRequest, isValidContentUrl, registerProxyEvent } from '@/lib/proxy';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
     const startTime = Date.now();
     // authorize request
-    const isRequestAuthorized = await isAuthorized(request);
-    if (!isRequestAuthorized) {
+    const authorization = await authorize(request);
+    if (!authorization.authorized || !authorization.profileId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
+    const profileId = authorization.profileId.toString();
     // validate URL parameter
     const { searchParams } = new URL(request.url);
     const incomingUrl = (searchParams.get('url') || "").trim();
@@ -23,6 +24,7 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
+    const contentItemId = url.contentItem.id;
     const originalUrl = url.originalUrl.toString();
     const response = await forwardRequest(request.headers, originalUrl);
     if (response.status >= 400) {
@@ -33,55 +35,39 @@ export async function GET(request: NextRequest) {
     }
 
     const contentType = response.headers.get('content-type') || 'application/octet-stream';
-    const contentLength = response.headers.get('content-length');
+    const contentLength = parseInt(response.headers.get('content-length') || '0');
     const contentRange = response.headers.get('content-range');
     const acceptRanges = response.headers.get('accept-ranges');
     const statusCode = response.status;
-    let bytes = 0;
+    let bytesTransferred = 0;
     // stream response while collecting metrics
     const transformStream = new TransformStream({
       transform(chunk, controller) {
         // this is to show how we could collect bytes transferred in real-time
         // the actual result is (should be) the same as content-length header
-        bytes += chunk.length;
+        bytesTransferred += chunk.length;
         controller.enqueue(chunk);
       },
-      flush() {
-        // parse range info for detailed metrics
-        let rangeStart: number | null = null;
-        let rangeEnd: number | null = null;
-        let totalSize: number | null = null;
-
-        if (contentRange) {
-          // content-Range format: "bytes 0-1023/5000" or "bytes 0-1023/*"
-          const match = contentRange.match(/bytes (\d+)-(\d+)\/(\d+|\*)/);
-          if (match) {
-            rangeStart = parseInt(match[1]);
-            rangeEnd = parseInt(match[2]);
-            totalSize = match[3] !== '*' ? parseInt(match[3]) : null;
-          }
-        }
-        // TODO: persist to database
-        console.info("Metrics:", {
+      async flush() {
+        await registerProxyEvent({
+          contentItemId,
+          profileId,
+          contentRange,
           originalUrl,
           contentType,
-          contentLength: contentLength ? parseInt(contentLength) : null,
-          bytesTransferred: bytes,
+          contentLength,
+          acceptRanges,
+          bytesTransferred,
           statusCode,
-          isRangeRequest: statusCode === 206,
-          rangeStart,
-          rangeEnd,
-          totalSize,
-          duration: Date.now() - startTime,
-          timestamp: new Date().toISOString(),
-        });
+          startTime,
+        })
       }
     });
     const stream = response.body?.pipeThrough(transformStream);
     const responseHeaders: HeadersInit = {
       'Content-Type': contentType,
     };
-    if (contentLength) responseHeaders['Content-Length'] = contentLength;
+    if (contentLength) responseHeaders['Content-Length'] = contentLength.toString();
     // include content-range for partial content
     if (contentRange) responseHeaders['Content-Range'] = contentRange;
     // advertise range support to clients
