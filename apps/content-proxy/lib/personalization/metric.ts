@@ -2,10 +2,16 @@ import { db } from '@/db/db';
 import { metrics, metricSchemaVersions } from '@/db/schemas/personalization';
 import { and, eq, desc } from 'drizzle-orm';
 import viewedContentSchema from '@/lib/personalization/metricSchemas/viewedContent.schema.json';
+import transferredContentBytesSchema from '@/lib/personalization/metricSchemas/transferredContentBytes.schema.json';
 import Ajv from 'ajv';
 import type { JSONSchemaType } from 'ajv';
 
-export type MetricName = 'viewed_content' | 'content_bytes_transfer';
+/**
+ * @description follow the pattern: verb_object
+ * @example viewed_content
+ * @example transferred_content_bytes
+ */
+export type MetricName = 'viewed_content' | 'transferred_content_bytes';
 type MetricConfig = {
   name: MetricName;
   revision: 'v0.1.0';
@@ -19,9 +25,9 @@ const metricConfigs: MetricConfig[] = [
     schema: viewedContentSchema,
   },
   {
-    name: 'content_bytes_transfer',
+    name: 'transferred_content_bytes',
     revision: 'v0.1.0',
-    schema: viewedContentSchema,
+    schema: transferredContentBytesSchema,
   },
 ];
 

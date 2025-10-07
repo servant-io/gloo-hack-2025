@@ -7,12 +7,15 @@
   "properties": {
     "contentItemId": {
       "type": "string",
-      "format": "uuid"
+      "description": "Unique identifier for the content item"
     },
     "url": {
       "type": "string",
-      "format": "uri",
       "description": "Streamed request URL, for historical purposes, in case the contentItem.contentUrl changes at any point."
+    },
+    "contentRange": {
+      "type": ["string", "null"],
+      "description": "Content-Range HTTP header value, if present"
     },
     "duration": {
       "type": "number",
@@ -32,15 +35,15 @@
       "enum": ["bytes", "none"]
     },
     "rangeStart": {
-      "type": "number",
+      "type": ["number", "null"],
       "description": "If the request included a range header, this is the start of the range served, derived from content-range HTTP header"
     },
     "rangeEnd": {
-      "type": "number",
+      "type": ["number", "null"],
       "description": "If the request included a range header, this is the end of the range served, derived from content-range HTTP header"
     },
     "totalSize": {
-      "type": "number",
+      "type": ["number", "null"],
       "description": "Total size of the content in bytes, if known, derived from content-range HTTP header"
     },
     "contentType": {

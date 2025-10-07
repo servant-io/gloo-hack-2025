@@ -35,7 +35,7 @@ export async function emitViewedContentEvent(
   );
 }
 
-/** @see apps/content-proxy/lib/personalization/metricSchemas/contentBytesTransfer.schema.json */
+/** @see apps/content-proxy/lib/personalization/metricSchemas/transferredContentBytes.schema.json */
 export type ContentBytesTransferParams = {
   contentItemId: string;
   url?: string;
@@ -64,7 +64,7 @@ export async function emitContentBytesTransferEvent(
 
   return await emitPersonalizationEvent(
     profileId,
-    'content_bytes_transfer',
+    'transferred_content_bytes',
     filteredParams
   );
 }

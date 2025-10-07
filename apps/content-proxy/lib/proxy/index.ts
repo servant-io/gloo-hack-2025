@@ -145,7 +145,7 @@ export async function registerProxyEvent({
     statusCode,
   };
   const metricSchemaValidation = await validateEventData(
-    'content_bytes_transfer',
+    'transferred_content_bytes',
     eventData
   );
   if (!metricSchemaValidation.success) {
