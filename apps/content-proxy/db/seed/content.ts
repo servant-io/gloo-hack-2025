@@ -604,6 +604,17 @@ const seededContentItems: ContentItem[] = [
     thumbnailUrl: 'https://picsum.photos/300/200?random=60',
     contentUrl: 'https://christianed.com/courses/crisis-care',
   },
+  {
+    id: 'd8a72f19ec8a',
+    publisherId: PublisherIds.APPLE,
+    type: 'article',
+    name: 'What do Prototypes Prototype?',
+    shortDescription:
+      "Prototypes answer questions about a product's role, look and feel, and implementation.",
+    thumbnailUrl: 'https://picsum.photos/300/200?random=61',
+    contentUrl:
+      'https://hci.stanford.edu/courses/cs247/2012/readings/WhatDoPrototypesPrototype.pdf',
+  },
 ];
 
 const seededPublishers: Publisher[] = [
@@ -618,6 +629,10 @@ const seededPublishers: Publisher[] = [
   {
     id: PublisherIds.IWU,
     name: 'Indiana Wesleyan University (IWU)',
+  },
+  {
+    id: PublisherIds.APPLE,
+    name: 'Apple Inc.',
   },
 ];
 

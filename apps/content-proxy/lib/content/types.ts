@@ -2,6 +2,7 @@ export const PublisherIds = {
   ACU: 'e1d05990811c',
   IWU: 'dffa5eca5ccc',
   BETHEL_TECH: '88c7702ddabb',
+  APPLE: '7403c2c2c373',
 } as const;
 
 export type PublisherId = (typeof PublisherIds)[keyof typeof PublisherIds];

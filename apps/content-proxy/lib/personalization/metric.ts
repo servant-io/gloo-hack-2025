@@ -2,10 +2,16 @@ import { db } from '@/db/db';
 import { metrics, metricSchemaVersions } from '@/db/schemas/personalization';
 import { and, eq, desc } from 'drizzle-orm';
 import viewedContentSchema from '@/lib/personalization/metricSchemas/viewedContent.schema.json';
+import transferredContentBytesSchema from '@/lib/personalization/metricSchemas/transferredContentBytes.schema.json';
 import Ajv from 'ajv';
 import type { JSONSchemaType } from 'ajv';
 
-export type MetricName = 'viewed_content';
+/**
+ * @description follow the pattern: verb_object
+ * @example viewed_content
+ * @example transferred_content_bytes
+ */
+export type MetricName = 'viewed_content' | 'transferred_content_bytes';
 type MetricConfig = {
   name: MetricName;
   revision: 'v0.1.0';
@@ -18,11 +24,17 @@ const metricConfigs: MetricConfig[] = [
     revision: 'v0.1.0',
     schema: viewedContentSchema,
   },
+  {
+    name: 'transferred_content_bytes',
+    revision: 'v0.1.0',
+    schema: transferredContentBytesSchema,
+  },
 ];
 
 export type ValidationResult = {
   success: boolean;
   message: string;
+  metricSchemaVersionId: string;
 };
 
 export async function validateEventData(
@@ -46,6 +58,7 @@ export async function validateEventData(
       return {
         success: true,
         message: '',
+        metricSchemaVersionId: metricSchemaVersion.id,
       };
     } else {
       // Format validation errors for the message
@@ -57,6 +70,7 @@ export async function validateEventData(
       return {
         success: false,
         message: errorMessages,
+        metricSchemaVersionId: metricSchemaVersion.id,
       };
     }
   } catch (error) {
@@ -64,6 +78,7 @@ export async function validateEventData(
     return {
       success: false,
       message: `Validation error: ${error instanceof Error ? error.message : String(error)}`,
+      metricSchemaVersionId: metricSchemaVersion.id,
     };
   }
 }

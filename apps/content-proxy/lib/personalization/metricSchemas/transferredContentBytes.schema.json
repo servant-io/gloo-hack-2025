@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Content Bytes Transfer",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contentItemId", "url"],
+  "properties": {
+    "contentItemId": {
+      "type": "string",
+      "description": "Unique identifier for the content item"
+    },
+    "url": {
+      "type": "string",
+      "description": "Streamed request URL, for historical purposes, in case the contentItem.contentUrl changes at any point."
+    },
+    "contentRange": {
+      "type": ["string", "null"],
+      "description": "Content-Range HTTP header value, if present"
+    },
+    "duration": {
+      "type": "number",
+      "description": "Proxy streaming duration of the content, in milliseconds."
+    },
+    "bytesTransferred": {
+      "type": "number",
+      "description": "Number of actual bytes transferred in the response stream. Should match contentLength if no errors."
+    },
+    "contentLength": {
+      "type": "number",
+      "description": "Derived from content-length HTTP header, if present"
+    },
+    "acceptRanges": {
+      "type": "string",
+      "description": "Derived from accept-ranges HTTP header, if present. RFC7233 defines only 'bytes' and 'none' as valid values.",
+      "enum": ["bytes", "none"]
+    },
+    "rangeStart": {
+      "type": ["number", "null"],
+      "description": "If the request included a range header, this is the start of the range served, derived from content-range HTTP header"
+    },
+    "rangeEnd": {
+      "type": ["number", "null"],
+      "description": "If the request included a range header, this is the end of the range served, derived from content-range HTTP header"
+    },
+    "totalSize": {
+      "type": ["number", "null"],
+      "description": "Total size of the content in bytes, if known, derived from content-range HTTP header"
+    },
+    "contentType": {
+      "type": "string",
+      "description": "Derived from content-type HTTP header, if present. Defaults to application/octet-stream if not present.",
+      "enum": [
+        "application/json",
+        "application/octet-stream",
+        "application/pdf",
+        "application/toml",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/x-yaml",
+        "application/xml",
+        "audio/mp4",
+        "audio/mpeg",
+        "audio/ogg",
+        "audio/wav",
+        "image/bmp",
+        "image/gif",
+        "image/jpeg",
+        "image/png",
+        "image/svg+xml",
+        "image/webp",
+        "text/html",
+        "text/plain",
+        "text/xml",
+        "video/mp4",
+        "video/quicktime",
+        "video/x-ms-wmv",
+        "video/x-msvideo"
+      ]
+    },
+    "statusCode": {
+      "type": "number",
+      "description": "HTTP status code of the response",
+      "enum": [
+        200, 201, 202, 203, 204, 205, 206, 300, 301, 302, 303, 304, 305, 307,
+        308
+      ]
+    }
+  }
+}

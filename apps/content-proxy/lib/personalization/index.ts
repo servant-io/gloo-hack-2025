@@ -35,6 +35,40 @@ export async function emitViewedContentEvent(
   );
 }
 
+/** @see apps/content-proxy/lib/personalization/metricSchemas/transferredContentBytes.schema.json */
+export type ContentBytesTransferParams = {
+  contentItemId: string;
+  url?: string;
+  contentRange: string | null;
+  duration: number;
+  contentType: string;
+  contentLength: number | null;
+  acceptRanges: string | null;
+  rangeStart: number | null;
+  rangeEnd: number | null;
+  totalSize: number | null;
+  bytesTransferred: number;
+  statusCode: number;
+};
+
+export async function emitContentBytesTransferEvent(
+  profileId: string,
+  params: ContentBytesTransferParams
+) {
+  // Filter out missing values before sending to validation
+  const filteredParams = Object.fromEntries(
+    Object.entries(params).filter(
+      ([, value]) => value !== undefined && value !== ''
+    )
+  );
+
+  return await emitPersonalizationEvent(
+    profileId,
+    'transferred_content_bytes',
+    filteredParams
+  );
+}
+
 type InsertEvent = typeof events.$inferInsert;
 
 async function emitPersonalizationEvent(

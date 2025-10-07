@@ -131,6 +131,21 @@ export async function getContentItem(id: string): Promise<ContentItem | null> {
 }
 
 /**
+ * Get a single content item by content URL
+ */
+export async function getContentItemByUrl(
+  url: string
+): Promise<ContentItem | null> {
+  const items = await db
+    .select()
+    .from(contentItems)
+    .where(eq(contentItems.contentUrl, url))
+    .limit(1);
+
+  return items.length > 0 ? toContentItem(items[0]) : null;
+}
+
+/**
  * Get paginated content items with publisher information using database join
  */
 export async function listContentWithPublishersPaginated(
