@@ -1,13 +1,8 @@
 import { NextRequest } from "next/server";
-
-// Assuming db, apiKeys, and profileApiKeyLkp are correctly imported from your project's setup
 import { db } from '@/db/db';
 import { eq } from 'drizzle-orm';
 import { apiKeys, profileApiKeyLkp } from '@/db/schemas/personalization'; // Added profileApiKeyLkp
 
-/**
- * Defines the structured result for the authorization check.
- */
 interface AuthResult {
   authorized: boolean;
   apiKey?: string;
@@ -21,19 +16,15 @@ interface AuthResult {
  * @returns The profile ID string if found, otherwise undefined.
  */
 async function lookupApiKeyAndProfileId(key: string): Promise<string | undefined> {
-  // Select only the profileId column
   const result = await db
     .select({
       profileId: profileApiKeyLkp.profileId,
     })
     .from(apiKeys)
-    // Join apiKeys with the lookup table on the key's ID
     .innerJoin(profileApiKeyLkp, eq(apiKeys.id, profileApiKeyLkp.apiKeyId))
-    // Filter by the provided API key value
     .where(eq(apiKeys.key, key))
-    .limit(1); // Limit to 1 result since the key is unique
+    .limit(1);
 
-  // If a result is found, return the profileId, otherwise return undefined
   return result[0]?.profileId;
 }
 
