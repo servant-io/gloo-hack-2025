@@ -10,10 +10,7 @@ export class APIError extends Error {
   }
 }
 
-type QueryParams = Record<
-  string,
-  string | number | boolean | null | undefined
->;
+type QueryParams = Record<string, string | number | boolean | null | undefined>;
 
 type RequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -63,13 +60,7 @@ class ApiClient {
   }
 
   async request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-    const {
-      method = 'GET',
-      headers,
-      body,
-      query,
-      signal,
-    } = options;
+    const { method = 'GET', headers, body, query, signal } = options;
 
     const url = buildUrl(this.baseUrl, path, query);
     const requestHeaders = new Headers(headers);
@@ -87,8 +78,7 @@ class ApiClient {
     };
 
     if (body !== undefined && body !== null && method !== 'GET') {
-      requestInit.body =
-        typeof body === 'string' ? body : JSON.stringify(body);
+      requestInit.body = typeof body === 'string' ? body : JSON.stringify(body);
     }
 
     const response = await fetch(url, requestInit);
@@ -127,15 +117,9 @@ export type PublisherOverviewResponse = {
 };
 
 export const analyticsApi = {
-  getOverview: (
-    publisherId: string,
-    options: { signal?: AbortSignal } = {}
-  ) =>
-    apiClient.get<PublisherOverviewResponse>(
-      '/api/analytics/overview',
-      {
-        signal: options.signal,
-        query: { publisherId },
-      }
-    ),
+  getOverview: (publisherId: string, options: { signal?: AbortSignal } = {}) =>
+    apiClient.get<PublisherOverviewResponse>('/api/analytics/overview', {
+      signal: options.signal,
+      query: { publisherId },
+    }),
 };

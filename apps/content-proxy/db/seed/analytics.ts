@@ -103,29 +103,18 @@ export async function seedAnalyticsData() {
   const earliest = new Date(now.getTime() - DEMO_DAYS * dayMs);
   const eventsToInsert: EventInsert[] = [];
 
-  for (
-    let dayOffset = 0;
-    dayOffset < DEMO_DAYS;
-    dayOffset += 1
-  ) {
+  for (let dayOffset = 0; dayOffset < DEMO_DAYS; dayOffset += 1) {
     const day = new Date(earliest.getTime() + dayOffset * dayMs);
 
     allContent.slice(0, 6).forEach((item, index) => {
       const viewCount = Math.max(1, VIEW_EVENTS_PER_DAY - index);
       for (let i = 0; i < viewCount; i += 1) {
         const timestamp = new Date(day.getTime() + (i * dayMs) / 24);
-        eventsToInsert.push(
-          toViewEvent(item, timestamp, viewedSchema.id)
-        );
+        eventsToInsert.push(toViewEvent(item, timestamp, viewedSchema.id));
         const bytesTransferred =
           32_000 + index * 5_000 + Math.floor(Math.random() * 3_000);
         eventsToInsert.push(
-          toTransferEvent(
-            item,
-            timestamp,
-            transferSchema.id,
-            bytesTransferred
-          )
+          toTransferEvent(item, timestamp, transferSchema.id, bytesTransferred)
         );
       }
     });
@@ -136,10 +125,7 @@ export async function seedAnalyticsData() {
     return;
   }
 
-  await db
-    .insert(events)
-    .values(eventsToInsert)
-    .onConflictDoNothing();
+  await db.insert(events).values(eventsToInsert).onConflictDoNothing();
 
   console.log(`Inserted ${eventsToInsert.length} analytics events.`);
 }

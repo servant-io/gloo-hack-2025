@@ -1,7 +1,6 @@
 const DEFAULT_ALLOWED_ORIGINS = ['http://localhost:3000'];
 const DEFAULT_ALLOWED_METHODS = 'GET,POST,PUT,PATCH,DELETE,OPTIONS';
-const DEFAULT_ALLOWED_HEADERS =
-  'Content-Type, Authorization, X-Requested-With';
+const DEFAULT_ALLOWED_HEADERS = 'Content-Type, Authorization, X-Requested-With';
 
 function parseAllowedOrigins(): string[] {
   const raw = process.env.CONTENT_PROXY_ALLOWED_ORIGINS;

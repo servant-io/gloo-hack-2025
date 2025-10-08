@@ -96,7 +96,9 @@ export default function Overview() {
           </div>
           <div className="font-heading text-2xl font-bold text-foreground">
             $
-            {(overviewMetrics?.totalEarnings ?? data.totalEarnings).toLocaleString()}
+            {(
+              overviewMetrics?.totalEarnings ?? data.totalEarnings
+            ).toLocaleString()}
           </div>
           <div className="text-sm text-muted-foreground">Total Earnings</div>
         </Card>
@@ -110,7 +112,9 @@ export default function Overview() {
           </div>
           <div className="font-heading text-2xl font-bold text-foreground">
             $
-            {(overviewMetrics?.monthlyEarnings ?? data.monthlyEarnings).toLocaleString()}
+            {(
+              overviewMetrics?.monthlyEarnings ?? data.monthlyEarnings
+            ).toLocaleString()}
           </div>
           <div className="text-sm text-muted-foreground">Monthly Earnings</div>
         </Card>
@@ -123,7 +127,9 @@ export default function Overview() {
             <span className="text-xs text-muted-foreground">All time</span>
           </div>
           <div className="font-heading text-2xl font-bold text-foreground">
-            {(overviewMetrics?.totalRequests ?? data.totalRequests).toLocaleString()}
+            {(
+              overviewMetrics?.totalRequests ?? data.totalRequests
+            ).toLocaleString()}
           </div>
           <div className="text-sm text-muted-foreground">Total Requests</div>
         </Card>
@@ -136,7 +142,9 @@ export default function Overview() {
             <span className="text-xs text-muted-foreground">Published</span>
           </div>
           <div className="font-heading text-2xl font-bold text-foreground">
-            {(overviewMetrics?.contentCount ?? data.content.length).toLocaleString()}
+            {(
+              overviewMetrics?.contentCount ?? data.content.length
+            ).toLocaleString()}
           </div>
           <div className="text-sm text-muted-foreground">Content Items</div>
         </Card>
