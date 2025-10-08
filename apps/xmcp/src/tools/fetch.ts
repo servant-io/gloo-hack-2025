@@ -19,8 +19,8 @@ export const schema = {
   id: z.string().describe('The unique identifier for the document to fetch'),
 };
 
-// Define tool metadata
-export const metadata: ToolMetadata = {
+// Define tool metadata with widget reference
+export const metadata: ToolMetadata & { _meta?: any } = {
   name: 'fetch',
   description:
     'Retrieve complete document content by ID for detailed analysis and citation.',
@@ -29,6 +29,11 @@ export const metadata: ToolMetadata = {
     readOnlyHint: true,
     destructiveHint: false,
     idempotentHint: true,
+  },
+  _meta: {
+    'openai/outputTemplate': 'widgets://document-content-widget',
+    'openai/toolInvocation/invoking': 'Fetching document content...',
+    'openai/toolInvocation/invoked': 'Document content retrieved!',
   },
 };
 
@@ -85,9 +90,19 @@ export default async function fetch({ id }: InferSchema<typeof schema>) {
       content: [
         {
           type: 'text',
-          text: JSON.stringify(result),
+          text: `Retrieved document: ${result.title}`,
         },
       ],
+      structuredContent: {
+        document: result,
+        metadata: {
+          id: result.id,
+          title: result.title,
+          url: result.url,
+          textLength: result.text.length,
+          source: result.metadata.source,
+        },
+      },
     };
   } catch (error) {
     console.error('Fetch error:', error);
@@ -108,9 +123,17 @@ export default async function fetch({ id }: InferSchema<typeof schema>) {
       content: [
         {
           type: 'text',
-          text: JSON.stringify(errorResult),
+          text: `Error fetching document: ${error instanceof Error ? error.message : 'Unknown error'}`,
         },
       ],
+      structuredContent: {
+        document: errorResult,
+        metadata: {
+          error: true,
+          id: id,
+          title: 'Error',
+        },
+      },
     };
   }
 }
