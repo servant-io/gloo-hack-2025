@@ -28,9 +28,9 @@ function resolveBaseUrl(): string {
     const url = new URL(envValue);
     url.pathname = url.pathname.replace(/\/+$/, '');
     return url.toString().replace(/\/+$/, '');
-  } catch {
+  } catch (exception) {
     console.warn(
-      `Invalid NEXT_PUBLIC_CONTENT_PROXY_URL "${envValue}", falling back to http://localhost:3002`
+      `Invalid NEXT_PUBLIC_CONTENT_PROXY_URL "${envValue}", falling back to http://localhost:3002`, JSON.stringify(exception)
     );
     return 'http://localhost:3002';
   }
