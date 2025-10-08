@@ -1,4 +1,4 @@
-import { authorize } from '@/lib/authentication';
+import { authorizeProfile } from '@/lib/authentication';
 import {
   forwardRequest,
   isValidContentUrl,
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   try {
     const startTime = Date.now();
     // authorize request
-    const authorization = await authorize(request);
+    const authorization = await authorizeProfile(request);
     if (!authorization.authorized || !authorization.profileId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

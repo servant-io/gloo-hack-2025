@@ -1,0 +1,1 @@
+ALTER TABLE "content_proxy"."content_items_sources" ALTER COLUMN "response" SET DATA TYPE text;

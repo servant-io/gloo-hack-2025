@@ -1,6 +1,6 @@
 {
-  "id": "105cb056-8703-4610-86a5-7205d68b4e31",
-  "prevId": "5e4ff7ef-0d9c-4dd7-aaf7-2185fab1fd43",
+  "id": "b6b6ef10-9cab-44d5-8b4e-b5dd11c37213",
+  "prevId": "aa67cd73-54c5-454e-b726-cdf256a9d21b",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -334,6 +334,66 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "content_proxy.publisher_api_key_lkp": {
+      "name": "publisher_api_key_lkp",
+      "schema": "content_proxy",
+      "columns": {
+        "publisher_id": {
+          "name": "publisher_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "api_key_id": {
+          "name": "api_key_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "publisher_api_key_lkp_publisher_id_publishers_id_fk": {
+          "name": "publisher_api_key_lkp_publisher_id_publishers_id_fk",
+          "tableFrom": "publisher_api_key_lkp",
+          "tableTo": "publishers",
+          "schemaTo": "content_proxy",
+          "columnsFrom": ["publisher_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "publisher_api_key_lkp_api_key_id_api_keys_id_fk": {
+          "name": "publisher_api_key_lkp_api_key_id_api_keys_id_fk",
+          "tableFrom": "publisher_api_key_lkp",
+          "tableTo": "api_keys",
+          "schemaTo": "content_proxy",
+          "columnsFrom": ["api_key_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "content_proxy.content_items": {
       "name": "content_items",
       "schema": "content_proxy",
@@ -464,6 +524,18 @@
           "primaryKey": false,
           "notNull": true
         },
+        "status_code": {
+          "name": "status_code",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "response": {
+          "name": "response",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "auto_sync": {
           "name": "auto_sync",
           "type": "boolean",
@@ -471,11 +543,11 @@
           "notNull": true,
           "default": false
         },
-        "data": {
-          "name": "data",
+        "instructions": {
+          "name": "instructions",
           "type": "jsonb",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "last_sync_started_at": {
           "name": "last_sync_started_at",

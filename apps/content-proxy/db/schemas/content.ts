@@ -1,4 +1,11 @@
-import { boolean, jsonb, timestamp, varchar } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  integer,
+  jsonb,
+  text,
+  timestamp,
+  varchar,
+} from 'drizzle-orm/pg-core';
 import { contentProxySchema } from '../schema';
 
 export const publishers = contentProxySchema.table('publishers', {
@@ -67,6 +74,18 @@ export const contentItemsSources = contentProxySchema.table(
     url: varchar('url', { length: 500 }).notNull(),
 
     /**
+     * Latest URL response status code
+     * @example 200
+     */
+    statusCode: integer('status_code'),
+
+    /**
+     * Latest URL response data
+     * @example {}
+     */
+    response: text('response'),
+
+    /**
      * Is content supposed to be auto-synced
      * @example true
      * @example false
@@ -75,18 +94,16 @@ export const contentItemsSources = contentProxySchema.table(
     // TODO: consider using sync_frequency instead, with null value for manual sync only
 
     /**
-     * Type-specific data for the content item source
+     * Type-specific instructions for the content item source
      * @example {}
      */
-    data: jsonb('data').notNull(),
+    instructions: jsonb('instructions'),
 
     /**
      * Sync-related timestamps to determine its current status in the UI and get the idea on how long it takes to sync
      */
-    lastSyncStartedAt: timestamp('last_sync_started_at').defaultNow().notNull(),
-    lastSyncFinishedAt: timestamp('last_sync_finished_at')
-      .defaultNow()
-      .notNull(),
+    lastSyncStartedAt: timestamp('last_sync_started_at'),
+    lastSyncFinishedAt: timestamp('last_sync_finished_at'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   }
@@ -133,13 +150,13 @@ export const contentItems = contentProxySchema.table('content_items', {
    * Short description of the content
    * @example "Explore the grand narrative of Scripture and discover how God's redemptive plan unfolds from Genesis to Revelation."
    */
-  shortDescription: varchar('short_description', { length: 500 }).notNull(),
+  shortDescription: varchar('short_description', { length: 500 }),
 
   /**
    * URL to the thumbnail image
    * @example "https://picsum.photos/300/200?random=11"
    */
-  thumbnailUrl: varchar('thumbnail_url', { length: 500 }).notNull(),
+  thumbnailUrl: varchar('thumbnail_url', { length: 500 }),
 
   /**
    * URL to the actual content
