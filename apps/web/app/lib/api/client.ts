@@ -30,7 +30,8 @@ function resolveBaseUrl(): string {
     return url.toString().replace(/\/+$/, '');
   } catch (exception) {
     console.warn(
-      `Invalid NEXT_PUBLIC_CONTENT_PROXY_URL "${envValue}", falling back to http://localhost:3002`, JSON.stringify(exception)
+      `Invalid NEXT_PUBLIC_CONTENT_PROXY_URL "${envValue}", falling back to http://localhost:3002`,
+      JSON.stringify(exception)
     );
     return 'http://localhost:3002';
   }
