@@ -15,6 +15,8 @@ import {
   Pie,
   Cell,
 } from 'recharts';
+import { usePublisherOverview } from '@/hooks/usePublisherOverview';
+import { resolvePublisherId } from '@/lib/api/publisher-map';
 
 export default function Overview() {
   const { user } = useAuth();
@@ -23,7 +25,31 @@ export default function Overview() {
     ? mockPublisherData[user.id as keyof typeof mockPublisherData]
     : null;
 
-  if (!data) return null;
+  const publisherId = resolvePublisherId(user?.id);
+  const {
+    data: overview,
+    loading: overviewLoading,
+    error: overviewError,
+  } = usePublisherOverview(publisherId);
+
+  if (!data) {
+    return null;
+  }
+
+  const fallbackOverview = publisherId
+    ? {
+        publisherId,
+        totalEarnings: data.totalEarnings,
+        monthlyEarnings: data.monthlyEarnings,
+        totalRequests: data.totalRequests,
+        monthlyRequests: data.monthlyRequests,
+        contentCount: data.content.length,
+        calculationWindowDays: 30,
+      }
+    : null;
+
+  const overviewMetrics = overview ?? fallbackOverview;
+  const usingMockMetrics = !overview && !!fallbackOverview;
 
   const COLORS = [
     'hsl(var(--chart-1))',
@@ -38,6 +64,26 @@ export default function Overview() {
           Overview
         </h1>
         <p className="text-muted-foreground">Welcome back, {user?.name}</p>
+        {overviewLoading && (
+          <p className="text-xs text-muted-foreground mt-2">
+            Fetching live metrics&hellip;
+          </p>
+        )}
+        {overviewError && (
+          <p className="text-xs text-destructive mt-2">
+            Live metrics are unavailable right now. Showing sample numbers.
+          </p>
+        )}
+        {usingMockMetrics && !overviewError && (
+          <p className="text-xs text-muted-foreground mt-2">
+            Showing sample metrics until live data is available.
+          </p>
+        )}
+        {overview && (
+          <p className="text-xs text-muted-foreground mt-2">
+            Live metrics window: last {overview.calculationWindowDays} days.
+          </p>
+        )}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -49,7 +95,10 @@ export default function Overview() {
             <span className="text-xs text-muted-foreground">All time</span>
           </div>
           <div className="font-heading text-2xl font-bold text-foreground">
-            ${data.totalEarnings.toLocaleString()}
+            $
+            {(
+              overviewMetrics?.totalEarnings ?? data.totalEarnings
+            ).toLocaleString()}
           </div>
           <div className="text-sm text-muted-foreground">Total Earnings</div>
         </Card>
@@ -62,7 +111,10 @@ export default function Overview() {
             <span className="text-xs text-muted-foreground">This month</span>
           </div>
           <div className="font-heading text-2xl font-bold text-foreground">
-            ${data.monthlyEarnings.toLocaleString()}
+            $
+            {(
+              overviewMetrics?.monthlyEarnings ?? data.monthlyEarnings
+            ).toLocaleString()}
           </div>
           <div className="text-sm text-muted-foreground">Monthly Earnings</div>
         </Card>
@@ -75,7 +127,9 @@ export default function Overview() {
             <span className="text-xs text-muted-foreground">All time</span>
           </div>
           <div className="font-heading text-2xl font-bold text-foreground">
-            {data.totalRequests.toLocaleString()}
+            {(
+              overviewMetrics?.totalRequests ?? data.totalRequests
+            ).toLocaleString()}
           </div>
           <div className="text-sm text-muted-foreground">Total Requests</div>
         </Card>
@@ -88,7 +142,9 @@ export default function Overview() {
             <span className="text-xs text-muted-foreground">Published</span>
           </div>
           <div className="font-heading text-2xl font-bold text-foreground">
-            {data.content.length}
+            {(
+              overviewMetrics?.contentCount ?? data.content.length
+            ).toLocaleString()}
           </div>
           <div className="text-sm text-muted-foreground">Content Items</div>
         </Card>
