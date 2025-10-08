@@ -40,28 +40,29 @@ export async function isValidContentUrl(url: string): Promise<
       contentItem: undefined,
     };
 
-  // validates ContentItem presence
-  const contentItem = await getContentItemByUrl(url);
-  if (!contentItem)
-    return {
-      valid: false,
-      error: 'Content for provided query parameter "url" does not exist',
-      originalUrl: undefined,
-      contentItem: undefined,
-    };
-
   // validates that the url params is an actual URL
   let originalUrl: string;
   try {
     originalUrl = decodeURIComponent(url);
     new URL(originalUrl);
+
+    // validates ContentItem presence
+    const contentItem = await getContentItemByUrl(originalUrl);
+    if (!contentItem)
+      return {
+        valid: false,
+        error: 'Content for provided query parameter "url" does not exist',
+        originalUrl: undefined,
+        contentItem: undefined,
+      };
+
     return { valid: true, originalUrl, contentItem, error: undefined };
   } catch (error: unknown) {
     return {
       valid: false,
       error: `URL query parameter "url" is invalid: ${JSON.stringify(error)}`,
       originalUrl: undefined,
-      contentItem,
+      contentItem: undefined,
     };
   }
 }
