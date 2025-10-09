@@ -101,10 +101,10 @@ export const events = contentProxySchema.table('events', {
     .notNull()
     .default(sql`gen_random_uuid()`),
   profileId: varchar('profile_id')
-    .references(() => profiles.id)
+    .references(() => profiles.id, { onDelete: 'cascade' })
     .notNull(),
   metricSchemaVersionId: varchar('metric_schema_version_id')
-    .references(() => metricSchemaVersions.id)
+    .references(() => metricSchemaVersions.id, { onDelete: 'cascade' })
     .notNull(),
   data: jsonb('data').notNull(),
   ts: timestamp('ts').defaultNow().notNull(),
@@ -148,10 +148,10 @@ export const profileApiKeyLkp = contentProxySchema.table(
   'profile_api_key_lkp',
   {
     profileId: varchar('profile_id')
-      .references(() => profiles.id)
+      .references(() => profiles.id, { onDelete: 'cascade' })
       .notNull(),
     apiKeyId: varchar('api_key_id')
-      .references(() => apiKeys.id)
+      .references(() => apiKeys.id, { onDelete: 'cascade' })
       .notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -165,10 +165,10 @@ export const publisherApiKeyLkp = contentProxySchema.table(
   'publisher_api_key_lkp',
   {
     publisherId: varchar('publisher_id')
-      .references(() => publishers.id)
+      .references(() => publishers.id, { onDelete: 'cascade' })
       .notNull(),
     apiKeyId: varchar('api_key_id')
-      .references(() => apiKeys.id)
+      .references(() => apiKeys.id, { onDelete: 'cascade' })
       .notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),

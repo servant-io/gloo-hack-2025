@@ -46,7 +46,7 @@ export const contentItemsSources = contentProxySchema.table(
      */
     publisherId: varchar('publisher_id', { length: 12 })
       .notNull()
-      .references(() => publishers.id),
+      .references(() => publishers.id, { onDelete: 'cascade' }),
 
     /**
      * Type of content item source
@@ -122,14 +122,14 @@ export const contentItems = contentProxySchema.table('content_items', {
    */
   publisherId: varchar('publisher_id', { length: 12 })
     .notNull()
-    .references(() => publishers.id),
+    .references(() => publishers.id, { onDelete: 'cascade' }),
 
   /**
    * Optional foreign key reference to the content item source
    */
   contentItemsSourcesId: varchar('content_items_source_id', {
     length: 12,
-  }).references(() => contentItemsSources.id),
+  }).references(() => contentItemsSources.id, { onDelete: 'cascade' }),
 
   /**
    * Type of content

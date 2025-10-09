@@ -53,16 +53,18 @@ export async function POST(request: NextRequest) {
     }
     const publisherId = authorization.publisherId.toString();
 
+    // explicitly define which fields we accept
     const requestBody = await request.json();
     const data = {
+      type: requestBody.type,
       name: requestBody.name,
       url: requestBody.url,
       autoSync: requestBody.autoSync || false,
-      instructions: requestBody.instructions || null,
+      instructions: requestBody.instructions || {},
     };
 
     const validation = await validateContentItemsSourceData(data);
-    if (!validation.valid) {
+    if (!validation.valid || !validation.data) {
       return NextResponse.json(
         { error: 'Invalid data', details: validation.message },
         { status: 422 }

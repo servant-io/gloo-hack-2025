@@ -7,7 +7,7 @@ interface BaseContentItemsSource {
   url: string;
   autoSync: boolean;
   statusCode: number | null | undefined;
-  response: any | null | undefined;
+  response: string | null | undefined;
 }
 
 export interface CsvTypeContentItemsSource extends BaseContentItemsSource {
@@ -26,7 +26,7 @@ export interface CsvTypeContentItemsSource extends BaseContentItemsSource {
 
 export type Rss2ItunesTypeContentItemsSource = BaseContentItemsSource & {
   type: 'rss2-itunes';
-  instructions: undefined;
+  instructions: {};
 };
 
 export type ContentItemsSource =

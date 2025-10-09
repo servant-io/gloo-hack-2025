@@ -3,10 +3,15 @@ import CSV from 'papaparse';
 import { db } from '@/db/db';
 import { contentItemsSources } from '@/db/schemas/content';
 import { eq, count, and } from 'drizzle-orm';
-import type { ContentItemsSource, CsvTypeContentItemsSource } from './types';
+import type {
+  ContentItemsSource,
+  CsvTypeContentItemsSource,
+  Rss2ItunesTypeContentItemsSource,
+} from './types';
 import csvSchema from '@/lib/content-items-sources/schemas/csv.schema.json';
 import rss2ItunesSchema from '@/lib/content-items-sources/schemas/rss2-itunes.schema.json';
 import Ajv from 'ajv';
+import { generatePrimaryKey } from '@/lib/db';
 
 export const SUPPORTED_CONTENT_ITEMS_SOURCES_TYPES = [
   'csv',
@@ -101,26 +106,35 @@ export async function validateContentItemsSourceData(data: {
   name: string;
   url: string;
   autoSync?: boolean;
-  instructions?: CsvTypeContentItemsSource['instructions'] | null | undefined;
+  instructions?:
+    | CsvTypeContentItemsSource['instructions']
+    | Rss2ItunesTypeContentItemsSource['instructions'];
 }): Promise<{
   valid: boolean;
   message?: string;
   data:
     | {
-        type: (typeof SUPPORTED_CONTENT_ITEMS_SOURCES_TYPES)[number];
+        type: 'csv';
         name: string;
         url: string;
         autoSync: boolean;
-        instructions:
-          | CsvTypeContentItemsSource['instructions']
-          | null
-          | undefined;
-        statusCode?: number | null | undefined;
-        response?: string | null | undefined;
+        instructions: CsvTypeContentItemsSource['instructions'];
+        statusCode: number;
+        response: string;
       }
-    | null
-    | undefined;
+    | {
+        type: 'rss2-itunes';
+        name: string;
+        url: string;
+        autoSync: boolean;
+        instructions: Rss2ItunesTypeContentItemsSource['instructions'];
+        statusCode: number;
+        response: string;
+      }
+    | null;
 }> {
+  console.log('POST DATA:', data);
+
   if (typeof data !== 'object' || data === null)
     return { valid: false, message: 'Data must be an object', data: null };
 
@@ -140,6 +154,7 @@ export async function validateContentItemsSourceData(data: {
       instructions: data.instructions,
     };
     const isValidCsvTypeSchema = validate(contentItemsSourceData);
+    console.log('isValidCsvTypeSchema:', isValidCsvTypeSchema);
 
     if (!isValidCsvTypeSchema) {
       return { valid: false, message: 'Invalid CSV data format', data: null };
@@ -170,14 +185,13 @@ export async function validateContentItemsSourceData(data: {
     }
 
     const csvText: string = await response.text();
-    const csvRows = CSV.parse(csvText, { header: true }).data;
-    console.log('csvRows[0]:', csvRows[0]);
-    const contentUrlColumn =
-      data.instructions!.headers.contentUrl || 'contentUrl';
-    if (csvRows[0] && !(contentUrlColumn in csvRows[0])) {
+    const csvHeader: string[] = CSV.parse(csvText, { header: false }).data[0];
+    const contentUrlColumn = data.instructions!.headers.contentUrl;
+
+    if (!csvHeader.includes(contentUrlColumn)) {
       return {
         valid: false,
-        message: `CSV must contain "${contentUrlColumn}" mapped to the "contentUrl" column`,
+        message: `CSV must contain the "${contentUrlColumn}" column in it's header. Found: ${csvHeader.join(', ')}`,
         data: null,
       };
     }
@@ -260,15 +274,39 @@ export async function validateContentItemsSourceData(data: {
       tagNameProcessors: null,
       valueProcessors: null,
     });
-    const xml = await parser.parseStringPromise(rssXmlText);
-    console.log('rssxml:', xml);
+    const rssxml = await parser.parseStringPromise(rssXmlText);
+    // console.log('rssxml:', xml);
     // TODO: check for rss version and itunes namespace
+
+    if (rssxml.$.version !== '2.0') {
+      return { valid: false, message: 'RSS version must be 2.0', data: null };
+    }
+
+    if (
+      rssxml.$['xmlns:itunes'] !== 'http://www.itunes.com/dtds/podcast-1.0.dtd'
+    ) {
+      return {
+        valid: false,
+        message: 'RSS must contain "xmlns:itunes" namespace',
+        data: null,
+      };
+    }
+
+    if (
+      rssxml.$['xmlns:podcast'] !== 'https://podcastindex.org/namespace/1.0'
+    ) {
+      return {
+        valid: false,
+        message: 'RSS must contain "xmlns:podcast" namespace',
+        data: null,
+      };
+    }
 
     const newContentItemsSourceData = {
       type,
       statusCode: response.status,
       response: rssXmlText,
-      instructions: null,
+      instructions: {},
       ...contentItemsSourceData,
     };
 
@@ -293,7 +331,7 @@ export async function createContentItemsSource(
   const [created] = await db
     .insert(contentItemsSources)
     .values({
-      id: crypto.randomUUID(),
+      id: generatePrimaryKey(),
       publisherId,
       type: data.type,
       name: data.name,

@@ -189,6 +189,7 @@ const seededContentItemsSources: ContentItemsSource[] = [
     name: 'RSS feed from libsyn.com of "The Carey Nieuwhof Leadership Podcast"',
     url: 'https://feeds.libsyn.com/41469/rss',
     autoSync: false,
+    instructions: {},
   },
 ];
 
