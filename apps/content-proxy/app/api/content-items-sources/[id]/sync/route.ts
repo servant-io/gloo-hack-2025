@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  createContentItemsSource,
   getContentItemsSourceById,
-  listContentItemsSourcesPaginated,
-  triggerFetchContentItemsForSource,
-  validateContentItemsSourceData,
+  triggerFetchContentItemsForSource
 } from '@/lib/content-items-sources';
 import { authorizePublisher } from '@/lib/authentication';
 
@@ -16,7 +13,7 @@ export async function POST(
     // authorize request
     const authorization = await authorizePublisher(request);
     if (!authorization.authorized || !authorization.publisherId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
     const publisherId = authorization.publisherId.toString();
     const { id } = await params;
@@ -24,7 +21,7 @@ export async function POST(
     const contentItemSource = await getContentItemsSourceById(publisherId, id);
     if (!contentItemSource) {
       return NextResponse.json(
-        { error: 'Content items source not found' },
+        { message: 'Content items source not found' },
         { status: 404 }
       );
     }
@@ -43,8 +40,10 @@ export async function POST(
   } catch (error) {
     console.error('Error syncing content item sources:', error);
     return NextResponse.json(
-      { error: 'Failed to sync content item sources' },
+      { message: 'Failed to sync content item sources' },
       { status: 500 }
     );
   }
 }
+
+// TODO: GET, for the current sync status, and optional duration

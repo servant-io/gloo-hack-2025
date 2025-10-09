@@ -7,14 +7,12 @@ import {
 } from '@/lib/content-items-sources';
 import { authorizePublisher } from '@/lib/authentication';
 
-// TODO: POST, PATCH, DELETE
-
 export async function GET(request: NextRequest) {
   try {
     // authorize request
     const authorization = await authorizePublisher(request);
     if (!authorization.authorized || !authorization.publisherId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
     const publisherId = authorization.publisherId.toString();
 
@@ -22,7 +20,6 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
 
-    // Get paginated content with publisher information
     const result = await listContentItemsSourcesPaginated(
       publisherId,
       page,
@@ -39,7 +36,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching content item sources:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch content item sources' },
+      { message: 'Failed to fetch content item sources' },
       { status: 500 }
     );
   }
@@ -50,7 +47,7 @@ export async function POST(request: NextRequest) {
     // authorize request
     const authorization = await authorizePublisher(request);
     if (!authorization.authorized || !authorization.publisherId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
     const publisherId = authorization.publisherId.toString();
 
@@ -67,7 +64,7 @@ export async function POST(request: NextRequest) {
     const validation = await validateContentItemsSourceData(data);
     if (!validation.valid || !validation.data) {
       return NextResponse.json(
-        { error: 'Invalid data', details: validation.message },
+        { valid: false, message: validation.message },
         { status: 422 }
       );
     }
@@ -84,7 +81,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating content item sources:', error);
     return NextResponse.json(
-      { error: 'Failed to create content item sources' },
+      { message: 'Failed to create content item sources' },
       { status: 500 }
     );
   }

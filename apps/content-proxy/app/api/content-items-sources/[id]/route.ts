@@ -10,7 +10,7 @@ export async function GET(
     // authorize request
     const authorization = await authorizePublisher(request);
     if (!authorization.authorized || !authorization.publisherId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
     const publisherId = authorization.publisherId.toString();
     const { id: contentItemSourceId } = await params;
@@ -39,3 +39,5 @@ export async function GET(
     );
   }
 }
+
+// TODO: PATCH, DELETE

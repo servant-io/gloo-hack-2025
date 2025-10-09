@@ -129,7 +129,7 @@ export const contentItems = contentProxySchema.table('content_items', {
    */
   contentItemsSourceId: varchar('content_items_source_id', {
     length: 12,
-  }).references(() => contentItemsSources.id, { onDelete: 'cascade' }),
+  }).references(() => contentItemsSources.id, { onDelete: 'set null' }),
 
   /**
    * Type of content
