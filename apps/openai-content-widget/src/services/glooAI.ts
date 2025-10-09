@@ -180,6 +180,45 @@ export async function generateVideoContext(video: {
   }
 }
 
+/**
+ * Generate a follow-up response based on user intent (deep dive or apply)
+ */
+export async function generateFollowUpContent(
+  video: {
+    title: string;
+    description: string;
+  },
+  previousOverview: string,
+  intent: 'dive-deeper' | 'apply'
+): Promise<string> {
+  try {
+    const intentPrompts = {
+      'dive-deeper': {
+        system:
+          'You are a biblical scholar helping users understand theological depth and historical context. Provide detailed, insightful analysis.',
+        user: `Video: "${video.title}"\n\nPrevious overview: "${previousOverview}"\n\nThe user wants to dive deeper into this content. Provide a detailed 4-5 sentence exploration covering:\n- Theological significance\n- Historical/cultural context\n- Key scriptural connections\n- Interpretive insights\n\nBe scholarly but accessible.`,
+      },
+      apply: {
+        system:
+          'You are a pastoral guide helping users apply biblical teachings to daily life. Provide practical, encouraging wisdom.',
+        user: `Video: "${video.title}"\n\nPrevious overview: "${previousOverview}"\n\nThe user wants to understand how to apply this to their life. Provide 4-5 sentences covering:\n- Practical applications for daily living\n- Personal reflection questions\n- Ways to live out these teachings\n- Encouragement for implementation\n\nBe warm and actionable.`,
+      },
+    };
+
+    const { system, user } = intentPrompts[intent];
+
+    const messages: Message[] = [
+      { role: 'system', content: system },
+      { role: 'user', content: user },
+    ];
+
+    return await callCompletionsAPI(messages);
+  } catch (error) {
+    console.error('Failed to generate follow-up content:', error);
+    throw error;
+  }
+}
+
 // --- Fallback functions (used when API is unavailable) ---
 
 function generateFallbackRelevanceText(

@@ -1,10 +1,28 @@
-import { X, BookmarkPlus, Lock, Clock, Sparkles, Link2 } from 'lucide-react';
+import {
+  X,
+  BookmarkPlus,
+  Lock,
+  Clock,
+  Sparkles,
+  Link2,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import { VideoContent } from '../hooks/useVideoData';
 import { formatDuration } from '../utils/dataTransform';
 import { PromptSuggestions } from './PromptSuggestions';
-import { generateVideoContext } from '../services/glooAI';
+import {
+  generateVideoContext,
+  generateFollowUpContent,
+} from '../services/glooAI';
 import { useState, useEffect } from 'react';
 import { parseSimpleMarkdown } from '../utils/markdown';
+
+interface AIResponse {
+  type: 'original' | 'dive-deeper' | 'apply';
+  overview: string;
+  relevance: string;
+}
 
 interface ExpandedPreviewCardProps {
   video: VideoContent;
@@ -23,18 +41,20 @@ export function ExpandedPreviewCard({
   onWatchNow: _onWatchNow,
   onToggleBookmark,
 }: ExpandedPreviewCardProps) {
-  const [aiContent, setAiContent] = useState<{
-    overview: string;
-    relevance: string;
-  } | null>(null);
+  const [responseHistory, setResponseHistory] = useState<AIResponse[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoadingAI, setIsLoadingAI] = useState(true);
+  const [isLoadingFollowUp, setIsLoadingFollowUp] = useState(false);
+  const [completedIntents, setCompletedIntents] = useState<
+    Set<'dive-deeper' | 'apply'>
+  >(new Set());
 
+  // Load initial AI content
   useEffect(() => {
     let mounted = true;
     let loading = false;
 
     async function loadAIContent() {
-      // Prevent duplicate calls during StrictMode double-invoke
       if (loading) return;
 
       loading = true;
@@ -46,7 +66,14 @@ export function ExpandedPreviewCard({
           description: video.shortDescription,
         });
         if (mounted) {
-          setAiContent(content);
+          setResponseHistory([
+            {
+              type: 'original',
+              overview: content.overview,
+              relevance: content.relevance,
+            },
+          ]);
+          setCurrentIndex(0);
         }
       } catch (error) {
         console.error('Failed to load AI content:', error);
@@ -65,9 +92,48 @@ export function ExpandedPreviewCard({
     };
   }, [video.name, video.shortDescription]);
 
-  const handlePromptClick = (prompt: string) => {
-    console.log('Prompt clicked:', prompt);
+  const handlePromptClick = async (intent: 'dive-deeper' | 'apply') => {
+    if (
+      completedIntents.has(intent) ||
+      isLoadingFollowUp ||
+      !responseHistory[0]
+    )
+      return;
+
+    setIsLoadingFollowUp(true);
+
+    try {
+      const originalOverview = responseHistory[0].overview;
+      const followUpContent = await generateFollowUpContent(
+        {
+          title: video.name,
+          description: video.shortDescription,
+        },
+        originalOverview,
+        intent
+      );
+
+      // Add new response to history
+      const newResponse: AIResponse = {
+        type: intent,
+        overview: followUpContent,
+        relevance: responseHistory[0].relevance, // Keep original relevance
+      };
+
+      setResponseHistory((prev) => [...prev, newResponse]);
+      setCurrentIndex(responseHistory.length); // Navigate to new response
+      setCompletedIntents((prev) => new Set([...prev, intent]));
+    } catch (error) {
+      console.error('Failed to load follow-up content:', error);
+    } finally {
+      setIsLoadingFollowUp(false);
+    }
   };
+
+  const canNavigateBack = currentIndex > 0;
+  const canNavigateForward = currentIndex < responseHistory.length - 1;
+
+  const currentResponse = responseHistory[currentIndex];
 
   return (
     <div
@@ -164,7 +230,44 @@ export function ExpandedPreviewCard({
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 border-t border-gray-200 pt-6">
               {/* Left Column: AI-Generated Content */}
               <div className="space-y-6">
-                {isLoadingAI ? (
+                {/* Navigation Controls */}
+                {responseHistory.length > 1 && !isLoadingAI && (
+                  <div className="flex items-center justify-between border-b border-gray-200 pb-4">
+                    <button
+                      onClick={() => setCurrentIndex((i) => i - 1)}
+                      disabled={!canNavigateBack}
+                      className={`p-2 rounded-lg transition-colors ${
+                        canNavigateBack
+                          ? 'hover:bg-gray-100 text-gray-700'
+                          : 'text-gray-300 cursor-not-allowed'
+                      }`}
+                      aria-label="Previous response"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+
+                    <div className="text-sm text-gray-600 font-medium">
+                      {currentResponse?.type === 'original' && 'Overview'}
+                      {currentResponse?.type === 'dive-deeper' && 'Deep Dive'}
+                      {currentResponse?.type === 'apply' && 'Apply to Life'}
+                    </div>
+
+                    <button
+                      onClick={() => setCurrentIndex((i) => i + 1)}
+                      disabled={!canNavigateForward}
+                      className={`p-2 rounded-lg transition-colors ${
+                        canNavigateForward
+                          ? 'hover:bg-gray-100 text-gray-700'
+                          : 'text-gray-300 cursor-not-allowed'
+                      }`}
+                      aria-label="Next response"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                )}
+
+                {isLoadingAI || isLoadingFollowUp ? (
                   <div className="space-y-6 animate-pulse">
                     <div>
                       <div className="h-6 w-32 bg-gray-300 rounded mb-3"></div>
@@ -182,32 +285,37 @@ export function ExpandedPreviewCard({
                       </div>
                     </div>
                   </div>
-                ) : aiContent ? (
-                  <>
+                ) : currentResponse ? (
+                  <div key={currentIndex} className="space-y-6 animate-fade-in">
                     <div>
                       <div className="flex items-center gap-2 mb-3">
                         <Sparkles className="w-5 h-5 text-blue-600" />
                         <h3 className="text-xl font-bold text-gray-900">
-                          Overview
+                          {currentResponse.type === 'original' && 'Overview'}
+                          {currentResponse.type === 'dive-deeper' &&
+                            'Deep Dive'}
+                          {currentResponse.type === 'apply' && 'Apply to Life'}
                         </h3>
                       </div>
                       <p className="text-gray-700 leading-relaxed text-[15px]">
-                        {parseSimpleMarkdown(aiContent.overview)}
+                        {parseSimpleMarkdown(currentResponse.overview)}
                       </p>
                     </div>
 
-                    <div>
-                      <div className="flex items-center gap-2 mb-3">
-                        <Link2 className="w-5 h-5 text-blue-600" />
-                        <h3 className="text-xl font-bold text-gray-900">
-                          How This Relates
-                        </h3>
+                    {currentResponse.type === 'original' && (
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <Link2 className="w-5 h-5 text-blue-600" />
+                          <h3 className="text-xl font-bold text-gray-900">
+                            How This Relates
+                          </h3>
+                        </div>
+                        <p className="text-gray-700 leading-relaxed text-[15px]">
+                          {parseSimpleMarkdown(currentResponse.relevance)}
+                        </p>
                       </div>
-                      <p className="text-gray-700 leading-relaxed text-[15px]">
-                        {parseSimpleMarkdown(aiContent.relevance)}
-                      </p>
-                    </div>
-                  </>
+                    )}
+                  </div>
                 ) : (
                   <p className="text-gray-500 text-center py-8">
                     Unable to load AI-generated content
@@ -222,7 +330,8 @@ export function ExpandedPreviewCard({
                 </h3>
                 <PromptSuggestions
                   onPromptClick={handlePromptClick}
-                  disabled={isLoadingAI}
+                  disabled={isLoadingAI || isLoadingFollowUp}
+                  completedIntents={completedIntents}
                 />
               </div>
             </div>
