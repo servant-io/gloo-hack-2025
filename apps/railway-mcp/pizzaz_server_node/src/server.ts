@@ -33,11 +33,9 @@ const SUPABASE_DEFAULT_TABLE = process.env.SUPABASE_TABLE ?? 'content_items';
 // Dynamic asset configuration
 // Point ASSETS_ORIGIN to where your built assets are hosted (e.g. your Railway static service).
 // Set ASSETS_VERSION to the 4-char hash that build-all.mts appends to filenames.
-// Falls back to the OpenAI demo CDN and version for local/testing.
-const ASSETS_ORIGIN =
-  process.env.ASSETS_ORIGIN ??
-  'https://persistent.oaistatic.com/ecosystem-built-assets';
+const ASSETS_ORIGIN = process.env.ASSETS_ORIGIN ?? '';
 let ASSETS_VERSION = process.env.ASSETS_VERSION ?? '';
+
 
 async function detectAssetsVersion() {
   if (ASSETS_VERSION) return ASSETS_VERSION;
@@ -57,19 +55,19 @@ async function detectAssetsVersion() {
         return ASSETS_VERSION;
       }
     }
-  } catch {
-    // ignore and fall through to default
+  } catch (err) {
+    console.warn(
+      `⚠️  Could not fetch manifest.json from ${ASSETS_ORIGIN}. Using plain mode.`
+    );
   }
-  ASSETS_VERSION = '0038'; // fallback to demo version
+  
   return ASSETS_VERSION;
 }
 
 function bundleUrls(name: string) {
+
   const base = `${ASSETS_ORIGIN}/${name}-${ASSETS_VERSION}`;
-  return {
-    css: `${base}.css`,
-    js: `${base}.js`,
-  } as const;
+  return { css: `${base}.css`, js: `${base}.js` } as const;
 }
 
 type PizzazWidget = {
@@ -233,11 +231,13 @@ const videoListInputSchema = {
     },
     table: {
       type: 'string',
-      description: 'Optional table override (default env SUPABASE_TABLE or "videos")',
+      description:
+        'Optional table override (default env SUPABASE_TABLE or "videos")',
     },
     contentType: {
       type: 'string',
-      description: 'Optional content_type filter (e.g., "video" | "message"). Defaults to "video".',
+      description:
+        'Optional content_type filter (e.g., "video" | "message"). Defaults to "video".',
       enum: ['video', 'message'],
     },
   },
@@ -247,18 +247,19 @@ const videoListInputSchema = {
 
 const videoListTool: Tool = {
   name: 'video-list',
-  description: 'Search Supabase public.content_items (or override) and return up to 5 results.',
+  description:
+    'Search Supabase public.content_items (or override) and return up to 5 results.',
   inputSchema: videoListInputSchema,
   title: 'Video List (Supabase Search)',
 };
 
 const tools: Tool[] = [
   ...widgets.map((widget) => ({
-  name: widget.id,
-  description: widget.title,
-  inputSchema: toolInputSchema,
-  title: widget.title,
-  _meta: widgetMeta(widget),
+    name: widget.id,
+    description: widget.title,
+    inputSchema: toolInputSchema,
+    title: widget.title,
+    _meta: widgetMeta(widget),
   })),
   videoListTool,
 ];
@@ -382,7 +383,9 @@ function createPizzazServer(): Server {
             : `Found ${rows.length} video(s) for "${args.query}":\n` +
               rows
                 .map((r: Record<string, unknown>, idx: number) => {
-                  const title = String(r.title ?? r.name ?? r.id ?? `#${idx + 1}`);
+                  const title = String(
+                    r.title ?? r.name ?? r.id ?? `#${idx + 1}`
+                  );
                   return `- ${title}`;
                 })
                 .join('\n');

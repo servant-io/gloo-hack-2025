@@ -25,9 +25,9 @@ Updated 2025-10-09
 - MCP: `ngrok http 8000` → `https://<mcp>.ngrok.app/mcp` and `/mcp/messages?sessionId=...`.
 - Assets: `ngrok http 4444` → set `ASSETS_ORIGIN=https://<assets>.ngrok.app` for the MCP server.
 
-**Push Live — Assets**
+**Push Live — Assets (Plain Mode — recommended)**
 
-Option A (recommended): Railway Static Site
+Option A: Railway Static Site
 - Root Directory: `apps/railway-mcp`
 - Build: `pnpm install && pnpm run build`
 - Output Directory: `assets`
@@ -44,8 +44,9 @@ Option B: Railway Node Service (serving static via `serve`)
   - Root Directory: `apps/railway-mcp/pizzaz_server_node`
   - Install: `pnpm install`
   - Start: `pnpm start`
-  - Env:
+  - Env (plain mode):
     - `ASSETS_ORIGIN=https://<assets>.up.railway.app`
+    - `ASSETS_USE_PLAIN=1`
     - `SUPABASE_URL=...`
     - `SUPABASE_ANON_KEY=...`
     - `SUPABASE_TABLE=content_items` (optional)
@@ -57,10 +58,8 @@ Runtime note on `tsx` (start script)
 **Change Cycle**
 
 - Edit components in `apps/railway-mcp/src/<entry>/` (e.g., `src/video-list`).
-- Bump `version` in `apps/railway-mcp/package.json` to rotate the 4‑char asset hash, then `pnpm run build`.
-- Deploy/restart:
-  - If using Static Site, redeploy “assets”.
-  - Restart the MCP service so it reloads `/assets/manifest.json` and picks the new hash (unless you pin `ASSETS_VERSION`).
+- For plain mode, no hash pinning required. `pnpm run build`, deploy assets, and restart MCP if you want it to reload bundles.
+- For versioned mode (optional): bump `package.json` version to rotate the 4‑char hash, then either rely on `/assets/manifest.json` or set `ASSETS_VERSION`.
 
 **Monorepo Tips**
 

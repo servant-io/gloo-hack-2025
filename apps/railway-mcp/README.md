@@ -70,24 +70,36 @@ pnpm run serve
 
 The assets are exposed at [`http://localhost:4444`](http://localhost:4444) with CORS enabled so that local tooling (including MCP inspectors) can fetch them.
 
-### Hosting assets on Railway
+### Hosting assets on Railway (Plain Mode — recommended)
 
-When deploying to Railway as a separate static service, use the following commands:
+To reduce deployment complexity, the build now emits both hashed and plain filenames. Use plain filenames in production and point the MCP server at them.
 
-1. Build assets in this directory:
+1) Build and serve assets as a Railway Static Site or Node service
 
-   ```bash
-   pnpm install
-   pnpm run build
-   ```
+```bash
+pnpm install
+pnpm run build
+# Static Site: set Output Directory to "assets"
+# or Node service: pnpm run serve:railway (binds $PORT)
+```
 
-2. Start on Railway using the dynamic `$PORT`:
+The build produces both hashed (e.g., `video-list-2d2b.js`) and plain copies (`video-list.js`, `video-list.css`).
 
-   ```bash
-   pnpm run serve:railway
-   ```
+2) Configure the MCP server to use plain filenames
 
-This serves the versioned bundles that `build-all.mts` produces, such as `pizzaz-0038.{html,css,js}` where `0038` is derived from the package version. The build also emits `assets/manifest.json` with `{ hash: "0038", files: { ... } }` for auto-detection.
+Set these env vars on the MCP service (Node):
+
+- `ASSETS_ORIGIN=https://<your-assets-service>.up.railway.app`
+- `ASSETS_USE_PLAIN=1`
+
+With plain mode enabled, the server generates widget markup like:
+
+```html
+<link rel="stylesheet" href="https://<assets>/video-list.css">
+<script type="module" src="https://<assets>/video-list.js"></script>
+```
+
+Advanced: Versioned mode remains available. Leave `ASSETS_USE_PLAIN` unset and either rely on `/assets/manifest.json` auto-detection or pin `ASSETS_VERSION` explicitly.
 
 ## Run the MCP servers
 
@@ -105,12 +117,15 @@ cd pizzaz_server_node
 pnpm start
 ```
 
-The Node MCP server can be pointed at any asset host using environment variables:
+The Node MCP server loads widget bundles from `ASSETS_ORIGIN`. Recommended settings:
 
-- `ASSETS_ORIGIN` – Base URL where versioned bundles are hosted (e.g. your Railway static service). Example: `https://your-assets.up.railway.app`.
-- `ASSETS_VERSION` – Optional. If not set, the server will fetch `manifest.json` from `ASSETS_ORIGIN` and use its `hash`. You can still pin it explicitly (e.g., `0038`).
+- `ASSETS_ORIGIN` – Base URL of your assets service (with `https://`).
+- `ASSETS_USE_PLAIN=1` – Prefer plain filenames for simpler deploys.
 
-If unset, the server falls back to the OpenAI demo CDN and version so you can run locally without deploying assets.
+Optional (advanced):
+- `ASSETS_VERSION` – Pin a versioned hash (e.g., `2d2b`). If omitted and not using plain mode, the server attempts to read `/assets/manifest.json` at `ASSETS_ORIGIN`.
+
+If `ASSETS_ORIGIN` is not set, the server falls back to the demo CDN.
 
 ### Pizzaz Python server
 
