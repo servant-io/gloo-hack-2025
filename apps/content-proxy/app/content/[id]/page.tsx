@@ -238,7 +238,7 @@ export default function ContentDetailPage() {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
             <Image
               src={content.thumbnailUrl}
-              alt={content.name || "Content Thumbnail"}
+              alt={content.name || 'Content Thumbnail'}
               width={300}
               height={200}
               className="w-full h-64 object-cover"
