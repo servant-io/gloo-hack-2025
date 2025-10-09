@@ -100,4 +100,6 @@ jobs:
       - name: Build project
         run: pnpm build
         env:
-          POSTGRES_URL: mock_url
+          POSTGRES_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          GLOO_AI_CLIENT_ID: ${{ secrets.GLOO_AI_CLIENT_ID }}
+          GLOO_AI_CLIENT_SECRET: ${{ secrets.GLOO_AI_CLIENT_SECRET }}

@@ -7,6 +7,12 @@ const envSchema = z.object({
     .string()
     .optional()
     .transform((value) => value ?? undefined),
+  GLOO_AI_CLIENT_ID: z
+    .string()
+    .min(1, 'GLOO_AI_CLIENT_ID must be a non-empty string'),
+  GLOO_AI_CLIENT_SECRET: z
+    .string()
+    .min(1, 'GLOO_AI_CLIENT_SECRET must be a non-empty string'),
 });
 
 export function getEnv() {
