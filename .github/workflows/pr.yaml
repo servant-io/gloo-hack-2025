@@ -101,8 +101,8 @@ jobs:
         run: pnpm build
         env:
           POSTGRES_URL: mock_url
-          GLOO_AI_CLIENT_ID: mock_client_id
-          GLOO_AI_CLIENT_SECRET: mock_client_secret
+          GLOO_AI_CLIENT_ID: ${{ secrets.GLOO_AI_CLIENT_ID }}
+          GLOO_AI_CLIENT_SECRET: ${{ secrets.GLOO_AI_CLIENT_SECRET }}
 
   test:
     runs-on: ubuntu-latest
@@ -129,5 +129,5 @@ jobs:
         run: pnpm test
         env:
           POSTGRES_URL: mock_url
-          GLOO_AI_CLIENT_ID: mock_client_id
-          GLOO_AI_CLIENT_SECRET: mock_client_secret
+          GLOO_AI_CLIENT_ID: ${{ secrets.GLOO_AI_CLIENT_ID }}
+          GLOO_AI_CLIENT_SECRET: ${{ secrets.GLOO_AI_CLIENT_SECRET }}
