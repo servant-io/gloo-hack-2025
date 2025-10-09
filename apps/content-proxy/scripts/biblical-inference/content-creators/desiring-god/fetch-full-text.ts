@@ -17,9 +17,24 @@ export async function getFullText() {
    * so that this script doesn't go overwriting or re-fetching every time it runs
    **/
 
+  // Define the message interface
+  interface Message {
+    id: string;
+    type: string;
+    media: string;
+    title: string;
+    subtitle: string | null;
+    author: string;
+    date_text: string;
+    summary: string;
+    url: string;
+    image_url: string;
+    full_text?: string;
+  }
+
   // Filter messages that need full text
   const messagesToFetch = messages.filter(
-    (message: any) => !message.full_text || message.full_text.trim() === ''
+    (message: Message) => !message.full_text || message.full_text.trim() === ''
   );
 
   console.log(
