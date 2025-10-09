@@ -63,7 +63,7 @@ describe('generateCompletion', () => {
       expect(choice.message.role).toBe('assistant');
     });
 
-    expect(response.model).toBe('us.meta.llama3-3-70b-instruct-v1:0');
+    expect(response.model).toBe('GlooMax-Beacon');
     expect(response.object).toBe('chat.completion');
 
     expect(response.usage).toBeDefined();
@@ -97,7 +97,7 @@ describe('generateCompletion', () => {
         response.choices[0].message.content.toLowerCase();
       expect(assistantMessage).toContain('paris');
     }
-  });
+  }, 30000); // 30 second timeout for complex conversation
 
   it('should respect custom options for temperature and max tokens', async () => {
     const env = getEnv();
@@ -156,7 +156,7 @@ describe('generateCompletion', () => {
         expect(assistantMessage).not.toMatch(/error|failed|unavailable/i);
       }
     }
-  });
+  }, 30000); // 30 second timeout for multiple API calls
 
   it('should return responses within reasonable time', async () => {
     const env = getEnv();
@@ -207,7 +207,7 @@ describe('generateCompletion', () => {
         response.choices[0].message.content.toLowerCase();
       expect(assistantMessage.length).toBeGreaterThan(0);
     }
-  });
+  }, 30000); // 30 second timeout for system message handling
 
   describe('Error Handling', () => {
     it('should handle invalid authentication gracefully', async () => {
@@ -247,7 +247,7 @@ describe('generateCompletion', () => {
           expect(Array.isArray(response.choices)).toBe(true);
         });
       }
-    });
+    }, 30000); // 30 second timeout for concurrent API calls
   });
 });
 

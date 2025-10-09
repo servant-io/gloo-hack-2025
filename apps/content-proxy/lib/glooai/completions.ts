@@ -52,7 +52,7 @@ export async function generateCompletion(
   const accessToken = await fetchAccessToken();
 
   const requestBody: CompletionRequest = {
-    model: options.model ?? 'us.meta.llama3-3-70b-instruct-v1:0',
+    model: options.model ?? 'GlooMax-Beacon',
     messages,
     max_tokens: options.max_tokens ?? 1024,
     stream: options.stream ?? false,
