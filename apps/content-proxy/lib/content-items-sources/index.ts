@@ -105,8 +105,8 @@ export async function validateContentItemsSourceData(data: {
   type: (typeof SUPPORTED_CONTENT_ITEMS_SOURCES_TYPES)[number];
   name: string;
   url: string;
-  autoSync?: boolean;
-  instructions?:
+  autoSync: boolean;
+  instructions:
     | CsvTypeContentItemsSource['instructions']
     | Rss2ItunesTypeContentItemsSource['instructions'];
 }): Promise<{
@@ -133,8 +133,6 @@ export async function validateContentItemsSourceData(data: {
       }
     | null;
 }> {
-  console.log('POST DATA:', data);
-
   if (typeof data !== 'object' || data === null)
     return { valid: false, message: 'Data must be an object', data: null };
 
@@ -147,14 +145,17 @@ export async function validateContentItemsSourceData(data: {
 
   if (type === 'csv') {
     const validate = ajv.compile(csvSchema);
-    const contentItemsSourceData = {
+    const contentItemsSourceData: Pick<
+      CsvTypeContentItemsSource,
+      'name' | 'url' | 'autoSync' | 'instructions'
+    > = {
       name: data.name,
       url: data.url,
       autoSync: data.autoSync || false,
-      instructions: data.instructions,
+      instructions:
+        data.instructions as CsvTypeContentItemsSource['instructions'],
     };
     const isValidCsvTypeSchema = validate(contentItemsSourceData);
-    console.log('isValidCsvTypeSchema:', isValidCsvTypeSchema);
 
     if (!isValidCsvTypeSchema) {
       return { valid: false, message: 'Invalid CSV data format', data: null };
@@ -186,7 +187,8 @@ export async function validateContentItemsSourceData(data: {
 
     const csvText: string = await response.text();
     const csvHeader: string[] = CSV.parse(csvText, { header: false }).data[0];
-    const contentUrlColumn = data.instructions!.headers.contentUrl;
+    const contentUrlColumn =
+      contentItemsSourceData.instructions.headers.contentUrl;
 
     if (!csvHeader.includes(contentUrlColumn)) {
       return {
@@ -208,7 +210,10 @@ export async function validateContentItemsSourceData(data: {
 
   if (type === 'rss2-itunes') {
     const validate = ajv.compile(rss2ItunesSchema);
-    const contentItemsSourceData = {
+    const contentItemsSourceData: Pick<
+      Rss2ItunesTypeContentItemsSource,
+      'name' | 'url' | 'autoSync'
+    > = {
       name: data.name,
       url: data.url,
       autoSync: data.autoSync || false,
@@ -275,8 +280,6 @@ export async function validateContentItemsSourceData(data: {
       valueProcessors: null,
     });
     const rssxml = await parser.parseStringPromise(rssXmlText);
-    // console.log('rssxml:', xml);
-    // TODO: check for rss version and itunes namespace
 
     if (rssxml.$.version !== '2.0') {
       return { valid: false, message: 'RSS version must be 2.0', data: null };
@@ -312,8 +315,6 @@ export async function validateContentItemsSourceData(data: {
 
     return { valid: true, data: newContentItemsSourceData };
   }
-
-  // url validation
 
   return { valid: false, message: 'Unsupported type', data: null };
 }
