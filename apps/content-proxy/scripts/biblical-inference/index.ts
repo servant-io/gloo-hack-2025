@@ -14,6 +14,13 @@ async function main() {
   for (const contentItem of content) {
     try {
       console.log(`Processing content item: ${contentItem.id}`);
+
+      // Skip items without full_text
+      if (!contentItem.full_text) {
+        console.log(`Skipping ${contentItem.id} - no full_text available`);
+        continue;
+      }
+
       const inference = await generateBiblicalInference(contentItem.full_text);
       results.push({
         id: contentItem.id,
