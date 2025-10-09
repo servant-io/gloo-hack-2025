@@ -1,5 +1,3 @@
-import XML from 'xml2js';
-import CSV from 'papaparse';
 import { db } from '@/db/db';
 import { contentItems, contentItemsSources } from '@/db/schemas/content';
 import { eq, count, and, inArray } from 'drizzle-orm';
@@ -22,8 +20,6 @@ import {
   extractContentItemsFromParsedRss2Itunes,
   parseRss2Itunes,
 } from '@/lib/content-items-sources/type-rss2-itunes';
-import { ContentItem } from '@/lib/content/types';
-import { cs } from 'zod/locales';
 
 export const SUPPORTED_CONTENT_ITEMS_SOURCES_TYPES = [
   'csv',
@@ -176,7 +172,7 @@ export async function validateContentItemsSourceData(data: {
     try {
       new URL(contentItemsSourceData.url);
       // TODO: validate that URL is unique
-    } catch (e) {
+    } catch {
       return { valid: false, message: 'Invalid URL format', data: null };
     }
 
@@ -244,7 +240,7 @@ export async function validateContentItemsSourceData(data: {
     try {
       new URL(contentItemsSourceData.url);
       // TODO: validate that URL is unique
-    } catch (e) {
+    } catch {
       return { valid: false, message: 'Invalid URL format', data: null };
     }
 
@@ -657,16 +653,17 @@ export async function triggerFetchContentItemsForSource(
       valid: true,
       message: 'Sync started',
     };
-  } catch (exception: any) {
-    console.error(
-      `Error fetching content items for source: ${exception.name}: ${exception.message}`
-    );
+  } catch (exception) {
+    const message =
+      // @ts-expect-error: get the most of the exception
+      `${exception.name}: ${exception.message}`;
+    console.error(`Error fetching content items for source: ${message}`);
     return {
       id,
       httpCode: 500,
       items: sourcedContentItems.length,
       valid: false,
-      message: `${exception.name}: ${exception.message}`,
+      message,
     };
   }
 }

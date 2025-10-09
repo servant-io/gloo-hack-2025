@@ -26,7 +26,7 @@ export interface CsvTypeContentItemsSource extends BaseContentItemsSource {
 
 export type Rss2ItunesTypeContentItemsSource = BaseContentItemsSource & {
   type: 'rss2-itunes';
-  instructions: {};
+  instructions: object;
 };
 
 export type ContentItemsSource =
