@@ -36,7 +36,6 @@ const SUPABASE_DEFAULT_TABLE = process.env.SUPABASE_TABLE ?? 'content_items';
 const ASSETS_ORIGIN = process.env.ASSETS_ORIGIN ?? '';
 let ASSETS_VERSION = process.env.ASSETS_VERSION ?? '';
 
-
 async function detectAssetsVersion() {
   if (ASSETS_VERSION) return ASSETS_VERSION;
   try {
@@ -60,12 +59,11 @@ async function detectAssetsVersion() {
       `⚠️  Could not fetch manifest.json from ${ASSETS_ORIGIN}. Using plain mode.`
     );
   }
-  
+
   return ASSETS_VERSION;
 }
 
 function bundleUrls(name: string) {
-
   const base = `${ASSETS_ORIGIN}/${name}-${ASSETS_VERSION}`;
   return { css: `${base}.css`, js: `${base}.js` } as const;
 }
@@ -159,22 +157,6 @@ const widgets: PizzazWidget[] = [
     responseText: 'Rendered a pizza list!',
   },
   {
-    id: 'pizza-video',
-    title: 'Show Pizza Video',
-    templateUri: 'ui://widget/pizza-video.html',
-    invoking: 'Hand-tossing a video',
-    invoked: 'Served a fresh video',
-    html: (() => {
-      const { css, js } = bundleUrls('pizzaz-video');
-      return `
-<div id="pizzaz-video-root"></div>
-<link rel="stylesheet" href="${css}">
-<script type="module" src="${js}"></script>
-      `.trim();
-    })(),
-    responseText: 'Rendered a pizza video!',
-  },
-  {
     id: 'video-list-widget',
     title: 'Show Video List',
     templateUri: 'ui://widget/video-list.html',
@@ -222,7 +204,7 @@ const videoWidgetInputSchema = {
   properties: {
     query: {
       type: 'string',
-      description: 'Search query for the widget to fetch and display results.'
+      description: 'Search query for the widget to fetch and display results.',
     },
   },
   required: ['query'],
@@ -242,17 +224,6 @@ const videoListInputSchema = {
       type: 'number',
       description: 'Max results (default 5, max 50)',
     },
-    table: {
-      type: 'string',
-      description:
-        'Optional table override (default env SUPABASE_TABLE or "videos")',
-    },
-    contentType: {
-      type: 'string',
-      description:
-        'Optional content_type filter (e.g., "video" | "message"). Defaults to "video".',
-      enum: ['video', 'message'],
-    },
   },
   required: ['query'],
   additionalProperties: false,
@@ -261,7 +232,7 @@ const videoListInputSchema = {
 const videoListTool: Tool = {
   name: 'video-list',
   description:
-    'Search Supabase public.content_items (or override) and return up to 5 results.',
+    'Search Supabase public.content_items and return up to 5 results.',
   inputSchema: videoListInputSchema,
   title: 'Video List (Supabase Search)',
 };
@@ -271,7 +242,9 @@ const tools: Tool[] = [
     name: widget.id,
     description: widget.title,
     inputSchema:
-      widget.id === 'video-list-widget' ? videoWidgetInputSchema : toolInputSchema,
+      widget.id === 'video-list-widget'
+        ? videoWidgetInputSchema
+        : toolInputSchema,
     title: widget.title,
     _meta: widgetMeta(widget),
   })),
@@ -391,20 +364,16 @@ function createPizzazServer(): Server {
           .object({
             query: z.string().min(1),
             limit: z.number().int().min(1).max(50).optional(),
-            table: z.string().min(1).optional(),
-            contentType: z.enum(['video', 'message']).optional(),
           })
           .parse(request.params.arguments ?? {});
 
         const limit = args.limit ?? 5;
-        const table = args.table ?? SUPABASE_DEFAULT_TABLE;
-        const contentType = args.contentType ?? 'video';
 
         const { rows, errorText } = await searchSupabase(
-          table,
+          SUPABASE_DEFAULT_TABLE,
           args.query,
           limit,
-          contentType
+          'video'
         );
 
         if (errorText) {
@@ -448,8 +417,6 @@ function createPizzazServer(): Server {
             videos: rows,
             query: args.query,
             limit,
-            table,
-            contentType,
           },
           _meta: videoWidget ? widgetMeta(videoWidget) : undefined,
         };
