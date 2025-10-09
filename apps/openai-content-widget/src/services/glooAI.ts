@@ -1,83 +1,213 @@
 import { AIContentSections, ContentMetadata } from '../types/ai-widget';
 
-const MOCK_DELAY_MS = 1200;
+const CONTENT_PROXY_URL =
+  import.meta.env.VITE_CONTENT_PROXY_URL || 'http://localhost:3002';
 
-function generateMockOverview(
-  contentList: ContentMetadata[],
-  _query: string
-): string {
-  const videoCount = contentList.length;
-
-  return `The Gospel of Luke and the Book of Acts form a two-volume work that tells the connected story of Jesus and the early church. These ${videoCount} videos explore the narrative arc from Jesus' birth and ministry through the explosive growth of Christianity across the Roman Empire. Luke emphasizes Jesus as the Savior for all people, while Acts demonstrates how the Holy Spirit empowered the apostles to spread this message from Jerusalem to the ends of the earth.`;
+interface Message {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
 }
 
-function generateMockKeyThemes(contentList: ContentMetadata[]): string {
-  const themes = [
-    '**Universal Salvation**: Luke presents Jesus as the Savior for all humanity, breaking down barriers between Jews and Gentiles, rich and poor, men and women.',
-    "**The Holy Spirit**: From Jesus' conception to the explosive growth in Acts, the Spirit's power and guidance drive the entire narrative.",
-    "**Prayer and Worship**: Both books emphasize prayer as essential to following God's will and experiencing His power.",
-    '**Reversal of Expectations**: The proud are humbled and the humble are exalted throughout both narratives.',
-    "**Journey and Mission**: Physical journeys mirror spiritual journeys as characters respond to God's call.",
-  ];
-
-  return themes.slice(0, Math.min(5, contentList.length + 2)).join('\n\n');
-}
-
-function generateMockRelevance(
-  contentList: ContentMetadata[],
-  _query: string
-): string {
-  return `These videos directly address your question about Luke-Acts by examining the biblical text through careful narrative analysis and theological reflection. The content explores how Luke crafted his two-volume work as a unified story, tracing God's redemptive plan from the birth of Jesus through the establishment of the early church. Videos like "${contentList[0]?.title || "Luke's Introduction"}" provide crucial context for understanding Luke's historical and theological purposes, while the progression through Acts shows how Jesus' mission expanded from a local Jewish context to a global movement. This comprehensive approach helps you grasp not just the individual stories, but how they fit together in God's overarching plan of salvation for all people.`;
-}
-
-export async function generateRelevanceText(
-  contentList: ContentMetadata[],
-  userQuery: string
-): Promise<AIContentSections> {
-  await new Promise((resolve) => setTimeout(resolve, MOCK_DELAY_MS));
-
-  return {
-    overview: generateMockOverview(contentList, userQuery),
-    keyThemes: generateMockKeyThemes(contentList),
-    relevance: generateMockRelevance(contentList, userQuery),
+interface CompletionResponse {
+  completion: {
+    choices: Array<{
+      message: {
+        content: string;
+      };
+    }>;
   };
 }
 
+/**
+ * Call the content-proxy completions API
+ */
+async function callCompletionsAPI(messages: Message[]): Promise<string> {
+  try {
+    const response = await fetch(
+      `${CONTENT_PROXY_URL}/api/glooai/completions`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages,
+          temperature: 0.7,
+          max_tokens: 800,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status}`);
+    }
+
+    const data: CompletionResponse = await response.json();
+    return data.completion.choices[0]?.message?.content || '';
+  } catch (error) {
+    console.error('Error calling completions API:', error);
+    throw error;
+  }
+}
+
+/**
+ * Generate AI content for a collection of videos
+ */
 export async function fetchGlooAIRelevance(
   contentList: ContentMetadata[],
   userQuery: string,
-  apiKey?: string
+  conversationContext?: string
 ): Promise<AIContentSections> {
-  if (!apiKey || apiKey === 'mock') {
-    return generateRelevanceText(contentList, userQuery);
-  }
+  try {
+    const videoTitles = contentList.map((c) => c.title).join(', ');
+    const seriesTitles = [
+      ...new Set(contentList.map((c) => c.seriesTitle).filter(Boolean)),
+    ].join(', ');
 
-  return generateRelevanceText(contentList, userQuery);
+    // Build context string for prompts
+    const contextString = conversationContext
+      ? `\n\nContext: ${conversationContext}`
+      : '';
+
+    // Generate overview
+    const overviewMessages: Message[] = [
+      {
+        role: 'system',
+        content:
+          'You are a biblical content expert helping users explore biblical video content discovered through ChatGPT. Provide clear, engaging overviews that connect to their original question.',
+      },
+      {
+        role: 'user',
+        content: `The user originally asked: "${userQuery}"${contextString}\n\nBased on this, I found ${contentList.length} videos about "${seriesTitles}" covering: ${videoTitles}.\n\nWrite a 2-3 sentence overview explaining how this video collection addresses their question.`,
+      },
+    ];
+
+    // Generate key themes
+    const themesMessages: Message[] = [
+      {
+        role: 'system',
+        content:
+          'You are a theological expert helping users understand biblical themes relevant to their ChatGPT query.',
+      },
+      {
+        role: 'user',
+        content: `The user asked: "${userQuery}"${contextString}\n\nI found videos about "${seriesTitles}": ${videoTitles}.\n\nIdentify 3-5 key biblical themes in this content that relate to their question. Format each as "**Theme Name**: Brief explanation." Separate with double newlines.`,
+      },
+    ];
+
+    // Generate relevance
+    const relevanceMessages: Message[] = [
+      {
+        role: 'system',
+        content:
+          'You are a helpful assistant explaining why discovered biblical content directly answers user questions from ChatGPT.',
+      },
+      {
+        role: 'user',
+        content: `Original ChatGPT question: "${userQuery}"${contextString}\n\nDiscovered content: ${contentList.length} videos about "${seriesTitles}" (${videoTitles}).\n\nExplain in 3-4 sentences how this content directly addresses their question and what specific insights they'll gain. Be enthusiastic about the match between their need and this content.`,
+      },
+    ];
+
+    // Call API in parallel for better performance
+    const [overview, keyThemes, relevance] = await Promise.all([
+      callCompletionsAPI(overviewMessages),
+      callCompletionsAPI(themesMessages),
+      callCompletionsAPI(relevanceMessages),
+    ]);
+
+    return {
+      overview,
+      keyThemes,
+      relevance,
+    };
+  } catch (error) {
+    console.error('Failed to fetch Gloo AI relevance, using fallback:', error);
+    // Return fallback content if API fails
+    return generateFallbackRelevanceText(
+      contentList,
+      userQuery,
+      conversationContext
+    );
+  }
 }
 
-function generateVideoOverview(video: {
+/**
+ * Generate AI context for a single video (overview + relevance)
+ */
+export async function generateVideoContext(video: {
   title: string;
   description: string;
   transcript?: string;
-}): string {
-  return `This video explores ${video.title.toLowerCase()}, providing deep insights into the biblical narrative and its theological significance. The content examines key passages and themes, helping viewers understand how this fits into the broader story of Scripture and God's redemptive plan for humanity.`;
+}): Promise<{ overview: string; relevance: string }> {
+  try {
+    // Generate overview
+    const overviewMessages: Message[] = [
+      {
+        role: 'system',
+        content:
+          'You are a biblical content expert. Provide concise, engaging video overviews.',
+      },
+      {
+        role: 'user',
+        content: `Write a 2-3 sentence overview for a video titled "${video.title}". Description: ${video.description}. Explain what viewers will learn.`,
+      },
+    ];
+
+    // Generate relevance
+    const relevanceMessages: Message[] = [
+      {
+        role: 'system',
+        content:
+          'You are a biblical education expert. Explain why content matters.',
+      },
+      {
+        role: 'user',
+        content: `In 2-3 sentences, explain why understanding "${video.title}" is important for Bible study. Connect to broader biblical themes and practical application.`,
+      },
+    ];
+
+    // Call API in parallel
+    const [overview, relevance] = await Promise.all([
+      callCompletionsAPI(overviewMessages),
+      callCompletionsAPI(relevanceMessages),
+    ]);
+
+    return { overview, relevance };
+  } catch (error) {
+    console.error('Failed to generate video context, using fallback:', error);
+    // Return fallback content if API fails
+    return generateFallbackVideoContext(video);
+  }
 }
 
-function generateVideoRelevance(video: {
-  title: string;
-  description: string;
-}): string {
-  return `Understanding ${video.title} is essential for grasping the full scope of biblical teaching. This video connects historical context with practical application, showing how ancient truths speak powerfully into modern life. Whether you're new to Scripture study or deepening your existing knowledge, this content offers valuable perspectives that can transform how you read and apply God's Word.`;
-}
+// --- Fallback functions (used when API is unavailable) ---
 
-export async function generateVideoContext(
-  video: { title: string; description: string; transcript?: string },
-  _apiKey?: string
-): Promise<{ overview: string; relevance: string }> {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+function generateFallbackRelevanceText(
+  contentList: ContentMetadata[],
+  _userQuery: string,
+  _conversationContext?: string
+): AIContentSections {
+  const videoCount = contentList.length;
+  const seriesTitles = [
+    ...new Set(contentList.map((c) => c.seriesTitle).filter(Boolean)),
+  ].join(' and ');
 
   return {
-    overview: generateVideoOverview(video),
-    relevance: generateVideoRelevance(video),
+    overview: `This collection of ${videoCount} videos explores ${seriesTitles}, providing deep insights into the biblical narrative and its theological significance. The content examines key passages and themes, helping viewers understand how these books fit into the broader story of Scripture and God's redemptive plan for humanity.`,
+
+    keyThemes: `**Universal Salvation**: The content presents Jesus as the Savior for all humanity, breaking down barriers between different groups of people.\n\n**The Holy Spirit**: Explores how the Spirit's power and guidance drive the biblical narrative.\n\n**Prayer and Worship**: Emphasizes prayer as essential to following God's will and experiencing His power.\n\n**Journey and Mission**: Shows how physical journeys mirror spiritual journeys as people respond to God's call.`,
+
+    relevance: `These videos directly address your question about ${seriesTitles} by examining the biblical text through careful narrative analysis and theological reflection. The content explores the unified story of God's redemptive plan. Videos like "${contentList[0]?.title || 'Introduction'}" provide crucial context for understanding the historical and theological purposes, helping you grasp not just individual stories, but how they fit together in God's overarching plan.`,
+  };
+}
+
+function generateFallbackVideoContext(video: {
+  title: string;
+  description: string;
+}): { overview: string; relevance: string } {
+  return {
+    overview: `This video explores ${video.title}, providing deep insights into the biblical narrative and its theological significance. The content examines key passages and themes, helping viewers understand how this fits into the broader story of Scripture and God's redemptive plan for humanity.`,
+
+    relevance: `Understanding ${video.title} is essential for grasping the full scope of biblical teaching. This video connects historical context with practical application, showing how ancient truths speak powerfully into modern life. Whether you're new to Scripture study or deepening your existing knowledge, this content offers valuable perspectives that can transform how you read and apply God's Word.`,
   };
 }

@@ -173,6 +173,23 @@ curl -X POST "http://localhost:3002/api/glooai/completions" \
 }
 ```
 
+## CORS Configuration
+
+This endpoint supports CORS for cross-origin requests. Configure allowed origins in your environment:
+
+```bash
+# .env.local
+CONTENT_PROXY_ALLOWED_ORIGINS=https://*.vercel.app,http://localhost:3000,http://localhost:3003
+```
+
+The endpoint:
+
+- Handles `OPTIONS` preflight requests automatically
+- Supports wildcard patterns (e.g., `https://*.vercel.app`)
+- Returns appropriate CORS headers on all responses
+
+For local development with the `openai-content-widget` app (port 3003), make sure to include `http://localhost:3003` in your allowed origins.
+
 ## Error Codes
 
 - `400`: Bad Request - Invalid request body or missing required fields

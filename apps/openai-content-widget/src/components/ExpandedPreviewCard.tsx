@@ -31,9 +31,15 @@ export function ExpandedPreviewCard({
 
   useEffect(() => {
     let mounted = true;
+    let loading = false;
 
     async function loadAIContent() {
+      // Prevent duplicate calls during StrictMode double-invoke
+      if (loading) return;
+
+      loading = true;
       setIsLoadingAI(true);
+
       try {
         const content = await generateVideoContext({
           title: video.name,
@@ -48,6 +54,7 @@ export function ExpandedPreviewCard({
         if (mounted) {
           setIsLoadingAI(false);
         }
+        loading = false;
       }
     }
 
