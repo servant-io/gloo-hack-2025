@@ -30,3 +30,12 @@ Each tool responds with:
 - `_meta.openai/outputTemplate`: metadata that binds the response to the matching Skybridge widget shell.
 
 Feel free to extend the handlers with real data sources, authentication, and persistence.
+
+## Dynamic assets configuration
+
+The server returns HTML snippets that load widget bundles (CSS/JS). You can point these to your own hosted assets via environment variables:
+
+- `ASSETS_ORIGIN` – Base URL where your versioned bundles are hosted (e.g. your Railway static assets service).
+- `ASSETS_VERSION` – Optional. If omitted, the server fetches `manifest.json` from `ASSETS_ORIGIN` and uses its `hash`. You may set it explicitly to pin a version.
+
+If unset, the server falls back to the demo CDN and a default version so the example runs without deploying assets.

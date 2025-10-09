@@ -70,6 +70,25 @@ pnpm run serve
 
 The assets are exposed at [`http://localhost:4444`](http://localhost:4444) with CORS enabled so that local tooling (including MCP inspectors) can fetch them.
 
+### Hosting assets on Railway
+
+When deploying to Railway as a separate static service, use the following commands:
+
+1. Build assets in this directory:
+
+   ```bash
+   pnpm install
+   pnpm run build
+   ```
+
+2. Start on Railway using the dynamic `$PORT`:
+
+   ```bash
+   pnpm run serve:railway
+   ```
+
+This serves the versioned bundles that `build-all.mts` produces, such as `pizzaz-0038.{html,css,js}` where `0038` is derived from the package version. The build also emits `assets/manifest.json` with `{ hash: "0038", files: { ... } }` for auto-detection.
+
 ## Run the MCP servers
 
 The repository ships several demo MCP servers that highlight different widget bundles:
@@ -85,6 +104,13 @@ Every tool response includes plain text content, structured JSON, and `_meta.ope
 cd pizzaz_server_node
 pnpm start
 ```
+
+The Node MCP server can be pointed at any asset host using environment variables:
+
+- `ASSETS_ORIGIN` – Base URL where versioned bundles are hosted (e.g. your Railway static service). Example: `https://your-assets.up.railway.app`.
+- `ASSETS_VERSION` – Optional. If not set, the server will fetch `manifest.json` from `ASSETS_ORIGIN` and use its `hash`. You can still pin it explicitly (e.g., `0038`).
+
+If unset, the server falls back to the OpenAI demo CDN and version so you can run locally without deploying assets.
 
 ### Pizzaz Python server
 

@@ -20,6 +20,45 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 
+// Dynamic asset configuration
+// Point ASSETS_ORIGIN to where your built assets are hosted (e.g. your Railway static service).
+// Set ASSETS_VERSION to the 4-char hash that build-all.mts appends to filenames.
+// Falls back to the OpenAI demo CDN and version for local/testing.
+const ASSETS_ORIGIN =
+  process.env.ASSETS_ORIGIN ??
+  "https://persistent.oaistatic.com/ecosystem-built-assets";
+let ASSETS_VERSION = process.env.ASSETS_VERSION ?? "";
+
+async function detectAssetsVersion() {
+  if (ASSETS_VERSION) return ASSETS_VERSION;
+  try {
+    const url = `${ASSETS_ORIGIN}/manifest.json`;
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 2500);
+    const res = await fetch(url, { signal: ctrl.signal, headers: { accept: "application/json" } });
+    clearTimeout(t);
+    if (res.ok) {
+      const m = (await res.json()) as { hash?: string };
+      if (m && typeof m.hash === "string" && m.hash.length >= 1) {
+        ASSETS_VERSION = m.hash;
+        return ASSETS_VERSION;
+      }
+    }
+  } catch {
+    // ignore and fall through to default
+  }
+  ASSETS_VERSION = "0038"; // fallback to demo version
+  return ASSETS_VERSION;
+}
+
+function bundleUrls(name: string) {
+  const base = `${ASSETS_ORIGIN}/${name}-${ASSETS_VERSION}`;
+  return {
+    css: `${base}.css`,
+    js: `${base}.js`
+  } as const;
+}
+
 type PizzazWidget = {
   id: string;
   title: string;
@@ -40,6 +79,9 @@ function widgetMeta(widget: PizzazWidget) {
   } as const;
 }
 
+// Ensure version is resolved before composing widget HTML
+await detectAssetsVersion();
+
 const widgets: PizzazWidget[] = [
   {
     id: "pizza-map",
@@ -47,11 +89,14 @@ const widgets: PizzazWidget[] = [
     templateUri: "ui://widget/pizza-map.html",
     invoking: "Hand-tossing a map",
     invoked: "Served a fresh map",
-    html: `
+    html: (() => {
+      const { css, js } = bundleUrls("pizzaz");
+      return `
 <div id="pizzaz-root"></div>
-<link rel="stylesheet" href="https://persistent.oaistatic.com/ecosystem-built-assets/pizzaz-0038.css">
-<script type="module" src="https://persistent.oaistatic.com/ecosystem-built-assets/pizzaz-0038.js"></script>
-    `.trim(),
+<link rel="stylesheet" href="${css}">
+<script type="module" src="${js}"></script>
+      `.trim();
+    })(),
     responseText: "Rendered a pizza map!"
   },
   {
@@ -60,11 +105,14 @@ const widgets: PizzazWidget[] = [
     templateUri: "ui://widget/pizza-carousel.html",
     invoking: "Carousel some spots",
     invoked: "Served a fresh carousel",
-    html: `
+    html: (() => {
+      const { css, js } = bundleUrls("pizzaz-carousel");
+      return `
 <div id="pizzaz-carousel-root"></div>
-<link rel="stylesheet" href="https://persistent.oaistatic.com/ecosystem-built-assets/pizzaz-carousel-0038.css">
-<script type="module" src="https://persistent.oaistatic.com/ecosystem-built-assets/pizzaz-carousel-0038.js"></script>
-    `.trim(),
+<link rel="stylesheet" href="${css}">
+<script type="module" src="${js}"></script>
+      `.trim();
+    })(),
     responseText: "Rendered a pizza carousel!"
   },
   {
@@ -73,11 +121,14 @@ const widgets: PizzazWidget[] = [
     templateUri: "ui://widget/pizza-albums.html",
     invoking: "Hand-tossing an album",
     invoked: "Served a fresh album",
-    html: `
+    html: (() => {
+      const { css, js } = bundleUrls("pizzaz-albums");
+      return `
 <div id="pizzaz-albums-root"></div>
-<link rel="stylesheet" href="https://persistent.oaistatic.com/ecosystem-built-assets/pizzaz-albums-0038.css">
-<script type="module" src="https://persistent.oaistatic.com/ecosystem-built-assets/pizzaz-albums-0038.js"></script>
-    `.trim(),
+<link rel="stylesheet" href="${css}">
+<script type="module" src="${js}"></script>
+      `.trim();
+    })(),
     responseText: "Rendered a pizza album!"
   },
   {
@@ -86,11 +137,14 @@ const widgets: PizzazWidget[] = [
     templateUri: "ui://widget/pizza-list.html",
     invoking: "Hand-tossing a list",
     invoked: "Served a fresh list",
-    html: `
+    html: (() => {
+      const { css, js } = bundleUrls("pizzaz-list");
+      return `
 <div id="pizzaz-list-root"></div>
-<link rel="stylesheet" href="https://persistent.oaistatic.com/ecosystem-built-assets/pizzaz-list-0038.css">
-<script type="module" src="https://persistent.oaistatic.com/ecosystem-built-assets/pizzaz-list-0038.js"></script>
-    `.trim(),
+<link rel="stylesheet" href="${css}">
+<script type="module" src="${js}"></script>
+      `.trim();
+    })(),
     responseText: "Rendered a pizza list!"
   },
   {
@@ -99,11 +153,14 @@ const widgets: PizzazWidget[] = [
     templateUri: "ui://widget/pizza-video.html",
     invoking: "Hand-tossing a video",
     invoked: "Served a fresh video",
-    html: `
+    html: (() => {
+      const { css, js } = bundleUrls("pizzaz-video");
+      return `
 <div id="pizzaz-video-root"></div>
-<link rel="stylesheet" href="https://persistent.oaistatic.com/ecosystem-built-assets/pizzaz-video-0038.css">
-<script type="module" src="https://persistent.oaistatic.com/ecosystem-built-assets/pizzaz-video-0038.js"></script>
-    `.trim(),
+<link rel="stylesheet" href="${css}">
+<script type="module" src="${js}"></script>
+      `.trim();
+    })(),
     responseText: "Rendered a pizza video!"
   }
 ];
