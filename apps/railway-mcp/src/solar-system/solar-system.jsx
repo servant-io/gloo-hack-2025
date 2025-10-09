@@ -1,25 +1,25 @@
-import { createRoot } from "react-dom/client";
-import { useRef, useImperativeHandle, useState, useEffect } from "react";
-import { Canvas, useFrame, useThree, useLoader } from "@react-three/fiber";
-import { Html, OrbitControls } from "@react-three/drei";
-import * as THREE from "three";
-import { useSpring } from "@react-spring/three";
-import { AnimatePresence, motion } from "framer-motion";
+import { createRoot } from 'react-dom/client';
+import { useRef, useImperativeHandle, useState, useEffect } from 'react';
+import { Canvas, useFrame, useThree, useLoader } from '@react-three/fiber';
+import { Html, OrbitControls } from '@react-three/drei';
+import * as THREE from 'three';
+import { useSpring } from '@react-spring/three';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   EffectComposer,
   Bloom,
   DepthOfField,
-} from "@react-three/postprocessing";
-import { useWidgetProps } from "../use-widget-props";
-import { useMaxHeight } from "../use-max-height";
-import { useDisplayMode } from "../use-display-mode";
+} from '@react-three/postprocessing';
+import { useWidgetProps } from '../use-widget-props';
+import { useMaxHeight } from '../use-max-height';
+import { useDisplayMode } from '../use-display-mode';
 import {
   useNavigate,
   useParams,
   Routes,
   Route,
   BrowserRouter,
-} from "react-router-dom";
+} from 'react-router-dom';
 
 const ExpandIcon = () => {
   return (
@@ -43,10 +43,10 @@ function StreamWord({ children, index, delay }) {
   ) : (
     <motion.span
       key={index}
-      initial={{ opacity: 0, color: "rgba(0,168,255,1)" }}
-      animate={{ opacity: 1, color: "rgba(255,255,255,1)" }}
+      initial={{ opacity: 0, color: 'rgba(0,168,255,1)' }}
+      animate={{ opacity: 1, color: 'rgba(255,255,255,1)' }}
       transition={{
-        type: "spring",
+        type: 'spring',
         bounce: 0,
         delay: index * 0.015 + 0.14 + (delay || 0),
         duration: 1,
@@ -59,12 +59,12 @@ function StreamWord({ children, index, delay }) {
 }
 
 function StreamText({ children, delay }) {
-  const words = children.split(" ");
+  const words = children.split(' ');
   return (
     <>
       {words.map((word, index) => (
         <StreamWord index={index} delay={delay} key={index}>
-          {word}{" "}
+          {word}{' '}
         </StreamWord>
       ))}
     </>
@@ -76,7 +76,7 @@ function SceneBackground() {
   const { scene } = useThree();
   const texture = useLoader(
     THREE.TextureLoader,
-    "https://persistent.oaistatic.com/ecosys/stars_8k.webp"
+    'https://persistent.oaistatic.com/ecosys/stars_8k.webp'
   );
   useEffect(() => {
     texture.mapping = THREE.EquirectangularReflectionMapping;
@@ -125,76 +125,76 @@ function Effects({ focusTarget, hasFocus }) {
 
 const planets = [
   {
-    name: "Mercury",
+    name: 'Mercury',
     radius: 2,
     size: 0.2,
     speed: 0.02,
     physicalSize: 4879,
     description:
-      "Mercury is the smallest planet in the Solar System and the closest to the Sun. It has a rocky, cratered surface and extreme temperature swings.",
+      'Mercury is the smallest planet in the Solar System and the closest to the Sun. It has a rocky, cratered surface and extreme temperature swings.',
   },
   {
-    name: "Venus",
+    name: 'Venus',
     radius: 3,
     size: 0.35,
     speed: 0.015,
     physicalSize: 12104,
     description:
-      "Venus, similar in size to Earth, is cloaked in thick clouds of sulfuric acid with surface temperatures hot enough to melt lead.",
+      'Venus, similar in size to Earth, is cloaked in thick clouds of sulfuric acid with surface temperatures hot enough to melt lead.',
   },
   {
-    name: "Earth",
+    name: 'Earth',
     radius: 4,
     size: 0.38,
     speed: 0.012,
     physicalSize: 12742,
     description:
-      "Earth is the only known planet to support life, with liquid water covering 71% of its surface and a protective atmosphere.",
+      'Earth is the only known planet to support life, with liquid water covering 71% of its surface and a protective atmosphere.',
   },
   {
-    name: "Mars",
+    name: 'Mars',
     radius: 5,
     size: 0.25,
     speed: 0.01,
     physicalSize: 6779,
     description:
-      "Mars, the Red Planet, shows evidence of ancient rivers and volcanoes and is a prime target in the search for past life.",
+      'Mars, the Red Planet, shows evidence of ancient rivers and volcanoes and is a prime target in the search for past life.',
   },
   {
-    name: "Jupiter",
+    name: 'Jupiter',
     radius: 7,
     size: 0.85,
     speed: 0.008,
     physicalSize: 139820,
     description:
-      "Jupiter is the largest planet, a gas giant with a Great Red Spot—an enormous storm raging for centuries.",
+      'Jupiter is the largest planet, a gas giant with a Great Red Spot—an enormous storm raging for centuries.',
   },
   {
-    name: "Saturn",
+    name: 'Saturn',
     radius: 9,
     size: 0.75,
     speed: 0.006,
     physicalSize: 116460,
     description:
-      "Saturn is famous for its stunning ring system composed of billions of ice and rock particles orbiting the planet.",
+      'Saturn is famous for its stunning ring system composed of billions of ice and rock particles orbiting the planet.',
   },
   {
-    name: "Uranus",
+    name: 'Uranus',
     radius: 11,
     size: 0.65,
     speed: 0.0045,
     physicalSize: 50724,
     description:
-      "Uranus is an ice giant rotating on its side, giving rise to extreme seasonal variations during its long orbit.",
+      'Uranus is an ice giant rotating on its side, giving rise to extreme seasonal variations during its long orbit.',
   },
   {
-    name: "Neptune",
+    name: 'Neptune',
     radius: 13,
     size: 0.65,
     speed: 0.0035,
     physicalSize: 49244,
     description:
-      "Neptune, the farthest known giant, is a deep‑blue world with supersonic winds and a faint ring system.",
+      'Neptune, the farthest known giant, is a deep‑blue world with supersonic winds and a faint ring system.',
   },
 ];
 
@@ -216,9 +216,9 @@ function SolarSystem() {
 
   useEffect(() => {
     if (
-      typeof window !== "undefined" &&
+      typeof window !== 'undefined' &&
       window.oai &&
-      typeof window.oai.widget.setState === "function"
+      typeof window.oai.widget.setState === 'function'
     ) {
       window.oai.widget.setState({
         isOrbiting,
@@ -237,7 +237,7 @@ function SolarSystem() {
         setFocusTarget(position);
       } else {
         setIsOrbiting(true);
-        setTargetPlanetPosition("initial");
+        setTargetPlanetPosition('initial');
         setFocusTarget(new THREE.Vector3(0, 0, 0));
       }
     });
@@ -258,7 +258,7 @@ function SolarSystem() {
 
   const handlePointerMissed = () => {
     setIsOrbiting(true);
-    setTargetPlanetPosition("initial");
+    setTargetPlanetPosition('initial');
     setFocusTarget(new THREE.Vector3(0, 0, 0));
     updatePlanet(null);
   };
@@ -268,20 +268,20 @@ function SolarSystem() {
   return (
     <div
       className={`antialiased w-full relative bg-black overflow-hidden ${
-        displayMode !== "fullscreen"
-          ? "aspect-[640/480] sm:aspect-[640/400]"
-          : ""
+        displayMode !== 'fullscreen'
+          ? 'aspect-[640/480] sm:aspect-[640/400]'
+          : ''
       }`}
       style={{
         maxHeight,
-        height: displayMode === "fullscreen" ? maxHeight : undefined,
+        height: displayMode === 'fullscreen' ? maxHeight : undefined,
       }}
     >
-      {displayMode !== "fullscreen" && (
+      {displayMode !== 'fullscreen' && (
         <div className="fixed end-3 z-20 top-3 aspect-square rounded-full p-2 bg-white/20 text-white backdrop-blur-lg">
           <button
             onClick={() => {
-              window.webplus.requestDisplayMode({ mode: "fullscreen" });
+              window.webplus.requestDisplayMode({ mode: 'fullscreen' });
             }}
           >
             <ExpandIcon />
@@ -345,7 +345,7 @@ function SolarSystem() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ bounce: 0.2, duration: 0.4, type: "spring" }}
+            transition={{ bounce: 0.2, duration: 0.4, type: 'spring' }}
             className="
     absolute inset-0
     flex flex-col justify-end items-center text-center
@@ -362,10 +362,10 @@ function SolarSystem() {
             </div>
             <div className="text-sm my-2 font-medium">
               <StreamWord delay={0.1}>
-                {Intl.NumberFormat("en-US", {
-                  style: "unit",
-                  unit: "kilometer",
-                  unitDisplay: "narrow",
+                {Intl.NumberFormat('en-US', {
+                  style: 'unit',
+                  unit: 'kilometer',
+                  unitDisplay: 'narrow',
                 }).format(currentPlanet.physicalSize)}
               </StreamWord>
             </div>
@@ -393,7 +393,7 @@ function Sun() {
 function SaturnRing({ planetSize }) {
   const texture = useLoader(
     THREE.TextureLoader,
-    "https://persistent.oaistatic.com/ecosys/saturn_ring.webp"
+    'https://persistent.oaistatic.com/ecosys/saturn_ring.webp'
   );
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]}>
@@ -438,7 +438,7 @@ function Planet({ name, radius, size, speed, isOrbiting, onPlanetClick, ref }) {
     >
       <sphereGeometry args={[size, 32, 32]} />
       <meshStandardMaterial map={texture} />
-      {name === "Saturn" && <SaturnRing planetSize={size} />}
+      {name === 'Saturn' && <SaturnRing planetSize={size} />}
     </mesh>
   );
 }
@@ -465,7 +465,7 @@ function CameraController({
     if (!targetPosition) return;
 
     // “Initial” = zoom‑out reset
-    if (targetPosition === "initial") {
+    if (targetPosition === 'initial') {
       targetCamPos.current = initialCameraPosition.current.clone();
       targetCamFocus.current = initialOrbitTarget.current.clone();
       setIsOrbiting(true);

@@ -1,8 +1,12 @@
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { URL } from "node:url";
+import {
+  createServer,
+  type IncomingMessage,
+  type ServerResponse,
+} from 'node:http';
+import { URL } from 'node:url';
 
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import {
   CallToolRequestSchema,
   ListResourceTemplatesRequestSchema,
@@ -16,9 +20,9 @@ import {
   type ReadResourceRequest,
   type Resource,
   type ResourceTemplate,
-  type Tool
-} from "@modelcontextprotocol/sdk/types.js";
-import { z } from "zod";
+  type Tool,
+} from '@modelcontextprotocol/sdk/types.js';
+import { z } from 'zod';
 
 // Dynamic asset configuration
 // Point ASSETS_ORIGIN to where your built assets are hosted (e.g. your Railway static service).
@@ -26,8 +30,8 @@ import { z } from "zod";
 // Falls back to the OpenAI demo CDN and version for local/testing.
 const ASSETS_ORIGIN =
   process.env.ASSETS_ORIGIN ??
-  "https://persistent.oaistatic.com/ecosystem-built-assets";
-let ASSETS_VERSION = process.env.ASSETS_VERSION ?? "";
+  'https://persistent.oaistatic.com/ecosystem-built-assets';
+let ASSETS_VERSION = process.env.ASSETS_VERSION ?? '';
 
 async function detectAssetsVersion() {
   if (ASSETS_VERSION) return ASSETS_VERSION;
@@ -35,11 +39,14 @@ async function detectAssetsVersion() {
     const url = `${ASSETS_ORIGIN}/manifest.json`;
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 2500);
-    const res = await fetch(url, { signal: ctrl.signal, headers: { accept: "application/json" } });
+    const res = await fetch(url, {
+      signal: ctrl.signal,
+      headers: { accept: 'application/json' },
+    });
     clearTimeout(t);
     if (res.ok) {
       const m = (await res.json()) as { hash?: string };
-      if (m && typeof m.hash === "string" && m.hash.length >= 1) {
+      if (m && typeof m.hash === 'string' && m.hash.length >= 1) {
         ASSETS_VERSION = m.hash;
         return ASSETS_VERSION;
       }
@@ -47,7 +54,7 @@ async function detectAssetsVersion() {
   } catch {
     // ignore and fall through to default
   }
-  ASSETS_VERSION = "0038"; // fallback to demo version
+  ASSETS_VERSION = '0038'; // fallback to demo version
   return ASSETS_VERSION;
 }
 
@@ -55,7 +62,7 @@ function bundleUrls(name: string) {
   const base = `${ASSETS_ORIGIN}/${name}-${ASSETS_VERSION}`;
   return {
     css: `${base}.css`,
-    js: `${base}.js`
+    js: `${base}.js`,
   } as const;
 }
 
@@ -71,11 +78,11 @@ type PizzazWidget = {
 
 function widgetMeta(widget: PizzazWidget) {
   return {
-    "openai/outputTemplate": widget.templateUri,
-    "openai/toolInvocation/invoking": widget.invoking,
-    "openai/toolInvocation/invoked": widget.invoked,
-    "openai/widgetAccessible": true,
-    "openai/resultCanProduceWidget": true
+    'openai/outputTemplate': widget.templateUri,
+    'openai/toolInvocation/invoking': widget.invoking,
+    'openai/toolInvocation/invoked': widget.invoked,
+    'openai/widgetAccessible': true,
+    'openai/resultCanProduceWidget': true,
   } as const;
 }
 
@@ -84,85 +91,85 @@ await detectAssetsVersion();
 
 const widgets: PizzazWidget[] = [
   {
-    id: "pizza-map",
-    title: "Show Pizza Map",
-    templateUri: "ui://widget/pizza-map.html",
-    invoking: "Hand-tossing a map",
-    invoked: "Served a fresh map",
+    id: 'pizza-map',
+    title: 'Show Pizza Map',
+    templateUri: 'ui://widget/pizza-map.html',
+    invoking: 'Hand-tossing a map',
+    invoked: 'Served a fresh map',
     html: (() => {
-      const { css, js } = bundleUrls("pizzaz");
+      const { css, js } = bundleUrls('pizzaz');
       return `
 <div id="pizzaz-root"></div>
 <link rel="stylesheet" href="${css}">
 <script type="module" src="${js}"></script>
       `.trim();
     })(),
-    responseText: "Rendered a pizza map!"
+    responseText: 'Rendered a pizza map!',
   },
   {
-    id: "pizza-carousel",
-    title: "Show Pizza Carousel",
-    templateUri: "ui://widget/pizza-carousel.html",
-    invoking: "Carousel some spots",
-    invoked: "Served a fresh carousel",
+    id: 'pizza-carousel',
+    title: 'Show Pizza Carousel',
+    templateUri: 'ui://widget/pizza-carousel.html',
+    invoking: 'Carousel some spots',
+    invoked: 'Served a fresh carousel',
     html: (() => {
-      const { css, js } = bundleUrls("pizzaz-carousel");
+      const { css, js } = bundleUrls('pizzaz-carousel');
       return `
 <div id="pizzaz-carousel-root"></div>
 <link rel="stylesheet" href="${css}">
 <script type="module" src="${js}"></script>
       `.trim();
     })(),
-    responseText: "Rendered a pizza carousel!"
+    responseText: 'Rendered a pizza carousel!',
   },
   {
-    id: "pizza-albums",
-    title: "Show Pizza Album",
-    templateUri: "ui://widget/pizza-albums.html",
-    invoking: "Hand-tossing an album",
-    invoked: "Served a fresh album",
+    id: 'pizza-albums',
+    title: 'Show Pizza Album',
+    templateUri: 'ui://widget/pizza-albums.html',
+    invoking: 'Hand-tossing an album',
+    invoked: 'Served a fresh album',
     html: (() => {
-      const { css, js } = bundleUrls("pizzaz-albums");
+      const { css, js } = bundleUrls('pizzaz-albums');
       return `
 <div id="pizzaz-albums-root"></div>
 <link rel="stylesheet" href="${css}">
 <script type="module" src="${js}"></script>
       `.trim();
     })(),
-    responseText: "Rendered a pizza album!"
+    responseText: 'Rendered a pizza album!',
   },
   {
-    id: "pizza-list",
-    title: "Show Pizza List",
-    templateUri: "ui://widget/pizza-list.html",
-    invoking: "Hand-tossing a list",
-    invoked: "Served a fresh list",
+    id: 'pizza-list',
+    title: 'Show Pizza List',
+    templateUri: 'ui://widget/pizza-list.html',
+    invoking: 'Hand-tossing a list',
+    invoked: 'Served a fresh list',
     html: (() => {
-      const { css, js } = bundleUrls("pizzaz-list");
+      const { css, js } = bundleUrls('pizzaz-list');
       return `
 <div id="pizzaz-list-root"></div>
 <link rel="stylesheet" href="${css}">
 <script type="module" src="${js}"></script>
       `.trim();
     })(),
-    responseText: "Rendered a pizza list!"
+    responseText: 'Rendered a pizza list!',
   },
   {
-    id: "pizza-video",
-    title: "Show Pizza Video",
-    templateUri: "ui://widget/pizza-video.html",
-    invoking: "Hand-tossing a video",
-    invoked: "Served a fresh video",
+    id: 'pizza-video',
+    title: 'Show Pizza Video',
+    templateUri: 'ui://widget/pizza-video.html',
+    invoking: 'Hand-tossing a video',
+    invoked: 'Served a fresh video',
     html: (() => {
-      const { css, js } = bundleUrls("pizzaz-video");
+      const { css, js } = bundleUrls('pizzaz-video');
       return `
 <div id="pizzaz-video-root"></div>
 <link rel="stylesheet" href="${css}">
 <script type="module" src="${js}"></script>
       `.trim();
     })(),
-    responseText: "Rendered a pizza video!"
-  }
+    responseText: 'Rendered a pizza video!',
+  },
 ];
 
 const widgetsById = new Map<string, PizzazWidget>();
@@ -174,19 +181,19 @@ widgets.forEach((widget) => {
 });
 
 const toolInputSchema = {
-  type: "object",
+  type: 'object',
   properties: {
     pizzaTopping: {
-      type: "string",
-      description: "Topping to mention when rendering the widget."
-    }
+      type: 'string',
+      description: 'Topping to mention when rendering the widget.',
+    },
   },
-  required: ["pizzaTopping"],
-  additionalProperties: false
+  required: ['pizzaTopping'],
+  additionalProperties: false,
 } as const;
 
 const toolInputParser = z.object({
-  pizzaTopping: z.string()
+  pizzaTopping: z.string(),
 });
 
 const tools: Tool[] = widgets.map((widget) => ({
@@ -194,92 +201,107 @@ const tools: Tool[] = widgets.map((widget) => ({
   description: widget.title,
   inputSchema: toolInputSchema,
   title: widget.title,
-  _meta: widgetMeta(widget)
+  _meta: widgetMeta(widget),
 }));
 
 const resources: Resource[] = widgets.map((widget) => ({
   uri: widget.templateUri,
   name: widget.title,
   description: `${widget.title} widget markup`,
-  mimeType: "text/html+skybridge",
-  _meta: widgetMeta(widget)
+  mimeType: 'text/html+skybridge',
+  _meta: widgetMeta(widget),
 }));
 
 const resourceTemplates: ResourceTemplate[] = widgets.map((widget) => ({
   uriTemplate: widget.templateUri,
   name: widget.title,
   description: `${widget.title} widget markup`,
-  mimeType: "text/html+skybridge",
-  _meta: widgetMeta(widget)
+  mimeType: 'text/html+skybridge',
+  _meta: widgetMeta(widget),
 }));
 
 function createPizzazServer(): Server {
   const server = new Server(
     {
-      name: "pizzaz-node",
-      version: "0.1.0"
+      name: 'pizzaz-node',
+      version: '0.1.0',
     },
     {
       capabilities: {
         resources: {},
-        tools: {}
-      }
+        tools: {},
+      },
     }
   );
 
-  server.setRequestHandler(ListResourcesRequestSchema, async (_request: ListResourcesRequest) => ({
-    resources
-  }));
+  server.setRequestHandler(
+    ListResourcesRequestSchema,
+    async (_request: ListResourcesRequest) => ({
+      resources,
+    })
+  );
 
-  server.setRequestHandler(ReadResourceRequestSchema, async (request: ReadResourceRequest) => {
-    const widget = widgetsByUri.get(request.params.uri);
+  server.setRequestHandler(
+    ReadResourceRequestSchema,
+    async (request: ReadResourceRequest) => {
+      const widget = widgetsByUri.get(request.params.uri);
 
-    if (!widget) {
-      throw new Error(`Unknown resource: ${request.params.uri}`);
+      if (!widget) {
+        throw new Error(`Unknown resource: ${request.params.uri}`);
+      }
+
+      return {
+        contents: [
+          {
+            uri: widget.templateUri,
+            mimeType: 'text/html+skybridge',
+            text: widget.html,
+            _meta: widgetMeta(widget),
+          },
+        ],
+      };
     }
+  );
 
-    return {
-      contents: [
-        {
-          uri: widget.templateUri,
-          mimeType: "text/html+skybridge",
-          text: widget.html,
-          _meta: widgetMeta(widget)
-        }
-      ]
-    };
-  });
+  server.setRequestHandler(
+    ListResourceTemplatesRequestSchema,
+    async (_request: ListResourceTemplatesRequest) => ({
+      resourceTemplates,
+    })
+  );
 
-  server.setRequestHandler(ListResourceTemplatesRequestSchema, async (_request: ListResourceTemplatesRequest) => ({
-    resourceTemplates
-  }));
+  server.setRequestHandler(
+    ListToolsRequestSchema,
+    async (_request: ListToolsRequest) => ({
+      tools,
+    })
+  );
 
-  server.setRequestHandler(ListToolsRequestSchema, async (_request: ListToolsRequest) => ({
-    tools
-  }));
+  server.setRequestHandler(
+    CallToolRequestSchema,
+    async (request: CallToolRequest) => {
+      const widget = widgetsById.get(request.params.name);
 
-  server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
-    const widget = widgetsById.get(request.params.name);
+      if (!widget) {
+        throw new Error(`Unknown tool: ${request.params.name}`);
+      }
 
-    if (!widget) {
-      throw new Error(`Unknown tool: ${request.params.name}`);
+      const args = toolInputParser.parse(request.params.arguments ?? {});
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: widget.responseText,
+          },
+        ],
+        structuredContent: {
+          pizzaTopping: args.pizzaTopping,
+        },
+        _meta: widgetMeta(widget),
+      };
     }
-
-    const args = toolInputParser.parse(request.params.arguments ?? {});
-
-    return {
-      content: [
-        {
-          type: "text",
-          text: widget.responseText
-        }
-      ],
-      structuredContent: {
-        pizzaTopping: args.pizzaTopping
-      },
-      _meta: widgetMeta(widget)
-    };
-  });
+  );
 
   return server;
 }
@@ -291,11 +313,11 @@ type SessionRecord = {
 
 const sessions = new Map<string, SessionRecord>();
 
-const ssePath = "/mcp";
-const postPath = "/mcp/messages";
+const ssePath = '/mcp';
+const postPath = '/mcp/messages';
 
 async function handleSseRequest(res: ServerResponse) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader('Access-Control-Allow-Origin', '*');
   const server = createPizzazServer();
   const transport = new SSEServerTransport(postPath, res);
   const sessionId = transport.sessionId;
@@ -308,16 +330,16 @@ async function handleSseRequest(res: ServerResponse) {
   };
 
   transport.onerror = (error) => {
-    console.error("SSE transport error", error);
+    console.error('SSE transport error', error);
   };
 
   try {
     await server.connect(transport);
   } catch (error) {
     sessions.delete(sessionId);
-    console.error("Failed to start SSE session", error);
+    console.error('Failed to start SSE session', error);
     if (!res.headersSent) {
-      res.writeHead(500).end("Failed to establish SSE connection");
+      res.writeHead(500).end('Failed to establish SSE connection');
     }
   }
 }
@@ -327,28 +349,28 @@ async function handlePostMessage(
   res: ServerResponse,
   url: URL
 ) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Headers", "content-type");
-  const sessionId = url.searchParams.get("sessionId");
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'content-type');
+  const sessionId = url.searchParams.get('sessionId');
 
   if (!sessionId) {
-    res.writeHead(400).end("Missing sessionId query parameter");
+    res.writeHead(400).end('Missing sessionId query parameter');
     return;
   }
 
   const session = sessions.get(sessionId);
 
   if (!session) {
-    res.writeHead(404).end("Unknown session");
+    res.writeHead(404).end('Unknown session');
     return;
   }
 
   try {
     await session.transport.handlePostMessage(req, res);
   } catch (error) {
-    console.error("Failed to process message", error);
+    console.error('Failed to process message', error);
     if (!res.headersSent) {
-      res.writeHead(500).end("Failed to process message");
+      res.writeHead(500).end('Failed to process message');
     }
   }
 }
@@ -356,44 +378,51 @@ async function handlePostMessage(
 const portEnv = Number(process.env.PORT ?? 8000);
 const port = Number.isFinite(portEnv) ? portEnv : 8000;
 
-const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse) => {
-  if (!req.url) {
-    res.writeHead(400).end("Missing URL");
-    return;
+const httpServer = createServer(
+  async (req: IncomingMessage, res: ServerResponse) => {
+    if (!req.url) {
+      res.writeHead(400).end('Missing URL');
+      return;
+    }
+
+    const url = new URL(req.url, `http://${req.headers.host ?? 'localhost'}`);
+
+    if (
+      req.method === 'OPTIONS' &&
+      (url.pathname === ssePath || url.pathname === postPath)
+    ) {
+      res.writeHead(204, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'content-type',
+      });
+      res.end();
+      return;
+    }
+
+    if (req.method === 'GET' && url.pathname === ssePath) {
+      await handleSseRequest(res);
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === postPath) {
+      await handlePostMessage(req, res, url);
+      return;
+    }
+
+    res.writeHead(404).end('Not Found');
   }
+);
 
-  const url = new URL(req.url, `http://${req.headers.host ?? "localhost"}`);
-
-  if (req.method === "OPTIONS" && (url.pathname === ssePath || url.pathname === postPath)) {
-    res.writeHead(204, {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "content-type"
-    });
-    res.end();
-    return;
-  }
-
-  if (req.method === "GET" && url.pathname === ssePath) {
-    await handleSseRequest(res);
-    return;
-  }
-
-  if (req.method === "POST" && url.pathname === postPath) {
-    await handlePostMessage(req, res, url);
-    return;
-  }
-
-  res.writeHead(404).end("Not Found");
-});
-
-httpServer.on("clientError", (err: Error, socket) => {
-  console.error("HTTP client error", err);
-  socket.end("HTTP/1.1 400 Bad Request\r\n\r\n");
+httpServer.on('clientError', (err: Error, socket) => {
+  console.error('HTTP client error', err);
+  socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
 });
 
 httpServer.listen(port, () => {
   console.log(`Pizzaz MCP server listening on http://localhost:${port}`);
   console.log(`  SSE stream: GET http://localhost:${port}${ssePath}`);
-  console.log(`  Message post endpoint: POST http://localhost:${port}${postPath}?sessionId=...`);
+  console.log(
+    `  Message post endpoint: POST http://localhost:${port}${postPath}?sessionId=...`
+  );
 });

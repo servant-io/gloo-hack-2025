@@ -5,7 +5,6 @@
 - Started: <YYYY-MM-DD>
 - Completed: <YYYY-MM-DD or ->
 
-
 ## Objective
 
 What we’re trying to achieve and why.

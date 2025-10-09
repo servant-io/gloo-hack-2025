@@ -1,14 +1,21 @@
-import React, { useRef, useState, useEffect, useMemo, forwardRef } from "react";
+import React, { useRef, useState, useEffect, useMemo, forwardRef } from 'react';
 import {
   AnimatePresence,
   motion,
   Reorder,
   useDragControls,
-} from "framer-motion";
-import { List, GripVertical, Plus, Calendar, EllipsisVertical, Trash2 } from "lucide-react";
+} from 'framer-motion';
+import {
+  List,
+  GripVertical,
+  Plus,
+  Calendar,
+  EllipsisVertical,
+  Trash2,
+} from 'lucide-react';
 
 // NEW: react-datepicker import (drop-in replacement for native date picker)
-import DatePicker from "react-datepicker";
+import DatePicker from 'react-datepicker';
 
 const todoData = window.todoData || [];
 
@@ -86,8 +93,8 @@ function injectDatepickerStylesOnce() {
     z-index: 70;
   }
   `;
-  const style = document.createElement("style");
-  style.setAttribute("data-injected", "react-datepicker-minimal");
+  const style = document.createElement('style');
+  style.setAttribute('data-injected', 'react-datepicker-minimal');
   style.textContent = css;
   document.head.appendChild(style);
 }
@@ -100,25 +107,25 @@ const MotionList = motion.create(List);
 
 const MAX_CARD_WIDTH_REM = 28;
 const MAX_CARD_HEIGHT_REM = 31;
-const DEFAULT_LIST_TITLE = "Untitled List";
+const DEFAULT_LIST_TITLE = 'Untitled List';
 
 /* --------------------------------- Utils -------------------------------- */
 
 /** Small, fast, stable id generator (no external deps). */
 function uid() {
-  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID();
   }
   return (
-    (Date.now().toString(36) + Math.random().toString(36).slice(2, 10)).toUpperCase()
-  );
+    Date.now().toString(36) + Math.random().toString(36).slice(2, 10)
+  ).toUpperCase();
 }
 
 /** Format YYYY-MM-DD for compact display (e.g., "Aug 12" or "Aug 12, 2026"). */
 function formatDueDate(d) {
-  if (!d) return "";
-  const parts = d.split("-");
-  if (parts.length !== 3) return "";
+  if (!d) return '';
+  const parts = d.split('-');
+  if (parts.length !== 3) return '';
   const y = parseInt(parts[0], 10);
   const m = parseInt(parts[1], 10);
   const day = parseInt(parts[2], 10);
@@ -126,15 +133,15 @@ function formatDueDate(d) {
   const now = new Date();
   const sameYear = dt.getFullYear() === now.getFullYear();
   const opts = sameYear
-    ? { month: "short", day: "numeric" }
-    : { month: "short", day: "numeric", year: "numeric" };
+    ? { month: 'short', day: 'numeric' }
+    : { month: 'short', day: 'numeric', year: 'numeric' };
   return dt.toLocaleDateString(undefined, opts);
 }
 
 /** Parse YYYY-MM-DD -> Date (local) */
 function parseYMD(s) {
-  if (!s || typeof s !== "string") return null;
-  const [y, m, d] = s.split("-").map((v) => parseInt(v, 10));
+  if (!s || typeof s !== 'string') return null;
+  const [y, m, d] = s.split('-').map((v) => parseInt(v, 10));
   if (!y || !m || !d) return null;
   return new Date(y, m - 1, d);
 }
@@ -143,8 +150,8 @@ function parseYMD(s) {
 function toYMD(date) {
   if (!(date instanceof Date) || isNaN(date)) return null;
   const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
 }
 
@@ -153,15 +160,15 @@ function buildInitialData() {
   const addTodoDefaults = (t) => ({
     id: t.id ?? uid(),
     isComplete: !!t.isComplete,
-    note: t.note ?? "",
-    title: t.title ?? "",
+    note: t.note ?? '',
+    title: t.title ?? '',
     // Store as YYYY-MM-DD string (or null)
-    dueDate: typeof t.dueDate === "string" ? t.dueDate : null,
+    dueDate: typeof t.dueDate === 'string' ? t.dueDate : null,
   });
 
   const lists = (todoData || []).map((l) => ({
     id: l.id ?? uid(),
-    title: l.title ?? "",
+    title: l.title ?? '',
     isCurrentlyOpen: !!l.isCurrentlyOpen,
     todos: (l.todos ?? []).map(addTodoDefaults),
   }));
@@ -175,14 +182,15 @@ function useClickOutside(ref, handler) {
     function handleClickOutside(event) {
       if (ref.current && !ref.current.contains(event.target)) handler();
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [ref, handler]);
 }
 
 /** Position of a child rect relative to a container rect */
 function getRelativePosition(element, target) {
-  if (!element || !target) throw new Error("Both element and target must be provided");
+  if (!element || !target)
+    throw new Error('Both element and target must be provided');
   const left = element.left - target.left;
   const top = element.top - target.top;
   const width = element.width;
@@ -198,7 +206,7 @@ function CircleCheckbox({ checked, onToggle, label }) {
       aria-checked={checked}
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === " " || e.key === "Enter") {
+        if (e.key === ' ' || e.key === 'Enter') {
           e.preventDefault();
           onToggle();
         }
@@ -217,7 +225,7 @@ function CircleCheckbox({ checked, onToggle, label }) {
             initial={{ scale: 0.6, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.6, opacity: 0 }}
-            transition={{ type: "spring", bounce: 0.3, duration: 0.28 }}
+            transition={{ type: 'spring', bounce: 0.3, duration: 0.28 }}
             className="rounded-full bg-black w-[11.5px] h-[11.5px]"
           />
         )}
@@ -250,9 +258,9 @@ function DetailsSection({
         <motion.div
           key="details"
           initial={{ height: 0 }}
-          animate={{ height: "auto" }}
+          animate={{ height: 'auto' }}
           exit={{ height: 0 }}
-          transition={{ type: "spring", bounce: 0.24, duration: 0.35 }}
+          transition={{ type: 'spring', bounce: 0.24, duration: 0.35 }}
           className="overflow-hidden"
           layout
         >
@@ -266,8 +274,10 @@ function DetailsSection({
             <input
               ref={noteRef}
               autoFocus={autoFocusNote}
-              value={item.note ?? ""}
-              onChange={(e) => updateItemById(item.id, { note: e.target.value })}
+              value={item.note ?? ''}
+              onChange={(e) =>
+                updateItemById(item.id, { note: e.target.value })
+              }
               placeholder="Add Note"
               className="-ml-1 w-full bg-transparent outline-none border-0 focus:ring-0 focus-visible:ring-0 text-sm text-black/55 placeholder-black/30"
             />
@@ -279,17 +289,11 @@ function DetailsSection({
 }
 
 /* ============================= Item row ============================= */
-function TodoListItem({
-  item,
-  index,
-  isNew,
-  updateItemById,
-  deleteTodoById,
-}) {
+function TodoListItem({ item, index, isNew, updateItemById, deleteTodoById }) {
   const controls = useDragControls();
   const [isFocused, setIsFocused] = useState(isNew ?? false);
   const [isHovered, setIsHovered] = useState(false);
-  const [focusTarget, setFocusTarget] = useState(isNew ? "title" : null);
+  const [focusTarget, setFocusTarget] = useState(isNew ? 'title' : null);
 
   // Menu state
   const [menuOpen, setMenuOpen] = useState(false);
@@ -314,11 +318,11 @@ function TodoListItem({
   /* Programmatic focusing */
   useEffect(() => {
     if (!isFocused) return;
-    if (focusTarget === "title" && titleRef.current) titleRef.current.focus();
-    if (focusTarget === "note" && noteRef.current) noteRef.current.focus();
+    if (focusTarget === 'title' && titleRef.current) titleRef.current.focus();
+    if (focusTarget === 'note' && noteRef.current) noteRef.current.focus();
   }, [isFocused, focusTarget]);
 
-  const hasNote = (item.note ?? "").length > 0;
+  const hasNote = (item.note ?? '').length > 0;
   const detailsOpen = isFocused || hasNote;
 
   /* --------- Date picker (react-datepicker) ---------- */
@@ -388,9 +392,14 @@ function TodoListItem({
   /* --------- Custom header for react-datepicker (Prev | Month YYYY | Next) --------- */
   function monthYearLabel(date) {
     try {
-      return date?.toLocaleDateString(undefined, { month: "long", year: "numeric" }) || "";
+      return (
+        date?.toLocaleDateString(undefined, {
+          month: 'long',
+          year: 'numeric',
+        }) || ''
+      );
     } catch {
-      return "";
+      return '';
     }
   }
 
@@ -445,8 +454,8 @@ function TodoListItem({
         layout
         initial={isNew ? { opacity: 0, y: 18, scale: 0.98 } : false}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, filter: "blur(4px)", scale: 0.98 }}
-        transition={{ type: "spring", bounce: 0.18, duration: 0.42 }}
+        exit={{ opacity: 0, filter: 'blur(4px)', scale: 0.98 }}
+        transition={{ type: 'spring', bounce: 0.18, duration: 0.42 }}
         className="border-b border-black/5 bg-white"
       >
         {/* Top row */}
@@ -456,14 +465,16 @@ function TodoListItem({
           className="flex gap-3 py-3 items-center"
           onClick={() => {
             setIsFocused(true);
-            setFocusTarget("title");
+            setFocusTarget('title');
           }}
         >
           {/* Circle checkbox */}
           <CircleCheckbox
             checked={!!item.isComplete}
-            onToggle={() => updateItemById(item.id, { isComplete: !item.isComplete })}
-            label={item.title || "Todo"}
+            onToggle={() =>
+              updateItemById(item.id, { isComplete: !item.isComplete })
+            }
+            label={item.title || 'Todo'}
           />
 
           {/* Title input */}
@@ -472,7 +483,7 @@ function TodoListItem({
             onClick={(e) => {
               e.stopPropagation();
               setIsFocused(true);
-              setFocusTarget("title");
+              setFocusTarget('title');
             }}
             onChange={(e) => updateItemById(item.id, { title: e.target.value })}
             placeholder="Add a to-do"
@@ -509,7 +520,10 @@ function TodoListItem({
             )}
 
             {/* Absolutely positioned portal directly beneath the controls */}
-            <div id={portalId} className="absolute left-0 top-full mt-1 z-[70]" />
+            <div
+              id={portalId}
+              className="absolute left-0 top-full mt-1 z-[70]"
+            />
 
             {/* Hidden input anchors Popper; calendar content portals into the div above */}
             <DatePicker
@@ -526,8 +540,11 @@ function TodoListItem({
               popperPlacement="bottom-start"
               popperStrategy="absolute"
               popperModifiers={[
-                { name: "offset", options: { offset: [0, 6] } },
-                { name: "preventOverflow", options: { padding: 8, boundary: "clippingParents" } },
+                { name: 'offset', options: { offset: [0, 6] } },
+                {
+                  name: 'preventOverflow',
+                  options: { padding: 8, boundary: 'clippingParents' },
+                },
               ]}
               /* Use our custom header so we can show "Prev" and "Next" at the extremes */
               renderCustomHeader={renderHeader}
@@ -548,7 +565,7 @@ function TodoListItem({
               aria-haspopup="menu"
               aria-expanded={menuOpen}
               className="p-1 rounded-md select-none text-black/30 hover:text-black cursor-pointer"
-              style={{ touchAction: "none" }}
+              style={{ touchAction: 'none' }}
               animate={{ opacity: isHovered ? 1 : 0 }}
               onPointerDown={onEllipsisPointerDown}
               onPointerMove={onEllipsisPointerMove}
@@ -565,7 +582,7 @@ function TodoListItem({
                   initial={{ opacity: 0, scale: 0.98, y: -2 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.98, y: -2 }}
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.18 }}
+                  transition={{ type: 'spring', bounce: 0.2, duration: 0.18 }}
                   className="absolute right-0 top-full mt-1 min-w-[120px] rounded-md border border-black/10 bg-white shadow-md z-20"
                   role="menu"
                   onClick={(e) => e.stopPropagation()}
@@ -592,10 +609,10 @@ function TodoListItem({
           item={item}
           updateItemById={updateItemById}
           noteRef={noteRef}
-          autoFocusNote={isFocused && focusTarget === "note"}
+          autoFocusNote={isFocused && focusTarget === 'note'}
           onClickInside={() => {
             setIsFocused(true);
-            setFocusTarget("note");
+            setFocusTarget('note');
           }}
         />
       </motion.div>
@@ -614,10 +631,10 @@ function TodoList({
   recentlyAddedId,
 }) {
   const titleInputRef = useRef(null);
-  const [titleDraft, setTitleDraft] = useState(list.title ?? "");
+  const [titleDraft, setTitleDraft] = useState(list.title ?? '');
 
   useEffect(() => {
-    setTitleDraft(list.title ?? "");
+    setTitleDraft(list.title ?? '');
   }, [list.id, list.title]);
 
   const commitTitle = () => {
@@ -626,21 +643,21 @@ function TodoList({
     if (nextTitle !== titleDraft) {
       setTitleDraft(nextTitle);
     }
-    if ((list.title ?? "") !== nextTitle) {
+    if ((list.title ?? '') !== nextTitle) {
       updateListById(list.id, { title: nextTitle });
     }
   };
 
   const handleTitleKeyDown = (e) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       e.preventDefault();
       commitTitle();
       // Blur after commit so focus ring disappears once saved
       titleInputRef.current?.blur();
-    } else if (e.key === "Escape") {
+    } else if (e.key === 'Escape') {
       e.preventDefault();
-      setTitleDraft(list.title ?? "");
-      if (typeof requestAnimationFrame === "function") {
+      setTitleDraft(list.title ?? '');
+      if (typeof requestAnimationFrame === 'function') {
         requestAnimationFrame(() => {
           titleInputRef.current?.blur();
         });
@@ -657,7 +674,7 @@ function TodoList({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { duration: 0 } }}
       exit={{ opacity: 0, transition: { delay: 0.24, duration: 0.24 } }}
-      transition={{ type: "spring", bounce: 0.16, duration: 0.56 }}
+      transition={{ type: 'spring', bounce: 0.16, duration: 0.56 }}
       className="bg-white w-full h-full overflow-auto"
       layout
     >
@@ -665,14 +682,14 @@ function TodoList({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ type: "spring", bounce: 0.16, duration: 0.56 }}
+        transition={{ type: 'spring', bounce: 0.16, duration: 0.56 }}
         className="w-full flex top-0 left-0 absolute h-14 bg-white z-10"
       />
       <motion.div
         initial={{ scale: 1, y: 0, fontWeight: 500 }}
         animate={{ scale: 1.5, y: 40, fontWeight: 500 }}
         exit={{ scale: 1, y: 0, fontWeight: 500 }}
-        transition={{ type: "spring", bounce: 0.16, duration: 0.56 }}
+        transition={{ type: 'spring', bounce: 0.16, duration: 0.56 }}
         className="text-md tracking-tight m-5 origin-top-left"
       >
         <input
@@ -691,7 +708,7 @@ function TodoList({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1, transition: { duration: 0 } }}
         exit={{ opacity: 0 }}
-        transition={{ type: "spring", bounce: 0.16, duration: 0.56 }}
+        transition={{ type: 'spring', bounce: 0.16, duration: 0.56 }}
         className="p-5 mt-10 flex flex-col"
         layout
       >
@@ -732,13 +749,13 @@ function ZoomViewer({ origin, containerRef, children }) {
     width: originRect.width,
     height: originRect.height,
   };
-  const animate = { left: 0, top: 0, width: "100%", height: "100%" };
+  const animate = { left: 0, top: 0, width: '100%', height: '100%' };
   return (
     <motion.div
       initial={initial}
       animate={animate}
       exit={initial}
-      transition={{ type: "spring", bounce: 0.16, duration: 0.56 }}
+      transition={{ type: 'spring', bounce: 0.16, duration: 0.56 }}
       className="absolute overflow-hidden w-full h-full"
     >
       {children}
@@ -757,7 +774,7 @@ function TodoListGroup({
   registerRowRef,
 }) {
   const ref = useRef(null);
-  const [height, setHeight] = useState("auto");
+  const [height, setHeight] = useState('auto');
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
@@ -766,7 +783,7 @@ function TodoListGroup({
   }, [index, registerRowRef]);
 
   return (
-    <motion.div animate={{ height: isExpanded ? "100%" : height }}>
+    <motion.div animate={{ height: isExpanded ? '100%' : height }}>
       <div
         ref={ref}
         onMouseEnter={() => setIsHovered(true)}
@@ -825,13 +842,17 @@ export function App() {
   }, [currentTodoList, currentTodoListRef, rowRefs]);
 
   const todoLists = data.lists;
-  const currentList = currentTodoList != null ? todoLists[currentTodoList] : null;
+  const currentList =
+    currentTodoList != null ? todoLists[currentTodoList] : null;
   const currentItems = currentList ? currentList.todos : [];
 
   /* List-level ops */
   const addList = () => {
     setData((prev) => ({
-      lists: [{ id: uid(), title: "New List", isCurrentlyOpen: false, todos: [] }, ...prev.lists],
+      lists: [
+        { id: uid(), title: 'New List', isCurrentlyOpen: false, todos: [] },
+        ...prev.lists,
+      ],
     }));
     setCurrentTodoList((idx) => (idx == null ? idx : idx + 1));
   };
@@ -858,7 +879,10 @@ export function App() {
     setCurrentTodoList(index);
     // Optionally reflect open state back into data
     setData((prev) => {
-      const lists = prev.lists.map((l, i) => ({ ...l, isCurrentlyOpen: i === index }));
+      const lists = prev.lists.map((l, i) => ({
+        ...l,
+        isCurrentlyOpen: i === index,
+      }));
       return { lists };
     });
   };
@@ -881,7 +905,7 @@ export function App() {
       const listIdx = currentTodoList;
       const list = { ...lists[listIdx] };
       list.todos = [
-        { id: newId, title: "", isComplete: false, note: "", dueDate: null },
+        { id: newId, title: '', isComplete: false, note: '', dueDate: null },
         ...list.todos,
       ];
       lists[listIdx] = list;
@@ -931,7 +955,10 @@ export function App() {
     <div className="my-5 antialiased">
       <div
         className="relative max-w/full max-h/full"
-        style={{ width: `${MAX_CARD_WIDTH_REM}rem`, height: `${MAX_CARD_HEIGHT_REM}rem` }}
+        style={{
+          width: `${MAX_CARD_WIDTH_REM}rem`,
+          height: `${MAX_CARD_HEIGHT_REM}rem`,
+        }}
       >
         <BaseCard>
           <div ref={ref} className="w-full h-full pt-9">
@@ -939,31 +966,42 @@ export function App() {
               <MotionList
                 initial={{ opacity: 0 }}
                 animate={{ opacity: currentList ? 1 : 0 }}
-                transition={{ type: "spring", bounce: 0.16, duration: 0.56 }}
+                transition={{ type: 'spring', bounce: 0.16, duration: 0.56 }}
                 size={20}
                 onClick={() => {
                   setCurrentTodoList(null);
                   setCurrentTodoListRef(null);
                   // Clear open state on lists
-                  setData((prev) => ({ lists: prev.lists.map((l) => ({ ...l, isCurrentlyOpen: false })) }));
+                  setData((prev) => ({
+                    lists: prev.lists.map((l) => ({
+                      ...l,
+                      isCurrentlyOpen: false,
+                    })),
+                  }));
                 }}
                 className="cursor-pointer"
               />
               <div className="flex-auto" />
-              <Plus size={20} onClick={currentList ? addTodo : addList} className="cursor-pointer" />
+              <Plus
+                size={20}
+                onClick={currentList ? addTodo : addList}
+                className="cursor-pointer"
+              />
             </div>
 
             {/* Lists overview */}
             <motion.div
               animate={{
                 opacity: currentList ? 0 : 1,
-                filter: currentList ? "blur(8px)" : "blur(0px)",
+                filter: currentList ? 'blur(8px)' : 'blur(0px)',
               }}
-              transition={{ type: "spring", bounce: 0.16, duration: 0.56 }}
+              transition={{ type: 'spring', bounce: 0.16, duration: 0.56 }}
               className="w-full h-full"
             >
               <div className="p-5">
-                <h1 className="font-medium text-2xl tracking-tight">My Lists</h1>
+                <h1 className="font-medium text-2xl tracking-tight">
+                  My Lists
+                </h1>
               </div>
               {todoLists.map((list, idx) => (
                 <TodoListGroup
@@ -981,8 +1019,8 @@ export function App() {
 
             {/* Detail view; if we have an origin ref, use fancy ZoomViewer, else render directly */}
             <AnimatePresence mode="popLayout">
-              {currentList != null && (
-                currentTodoListRef ? (
+              {currentList != null &&
+                (currentTodoListRef ? (
                   <ZoomViewer origin={currentTodoListRef} containerRef={ref}>
                     <TodoList
                       list={currentList}
@@ -1012,8 +1050,7 @@ export function App() {
                       recentlyAddedId={recentlyAddedId}
                     />
                   </motion.div>
-                )
-              )}
+                ))}
             </AnimatePresence>
           </div>
         </BaseCard>
