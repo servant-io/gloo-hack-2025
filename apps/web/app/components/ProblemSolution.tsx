@@ -23,7 +23,7 @@ export default function ProblemSolution() {
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
             AI assistants are now where people seek truth, wisdom, and learning.
-            But there's a problem.
+            But there&rsquo;s a problem.
           </p>
         </div>
 
@@ -44,7 +44,7 @@ export default function ProblemSolution() {
               <li className="flex items-start gap-2">
                 <span className="text-destructive">•</span>
                 <span>
-                  Publishers' valuable content sits trapped in private
+                  Publishers&rsquo; valuable content sits trapped in private
                   systems—LMS platforms, walled APIs, and inaccessible databases
                 </span>
               </li>
@@ -77,8 +77,8 @@ export default function ProblemSolution() {
               <li className="flex items-start gap-2">
                 <span className="text-destructive">•</span>
                 <span>
-                  Publishers can't track how, when, or where their content is
-                  being used by AI systems
+                  Publishers can&rsquo;t track how, when, or where their content
+                  is being used by AI systems
                 </span>
               </li>
               <li className="flex items-start gap-2">
