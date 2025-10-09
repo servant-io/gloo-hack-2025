@@ -12,18 +12,20 @@ import { Loader2 } from 'lucide-react';
 interface AIEnhancedWidgetProps {
   theme?: string;
   userQuery?: string;
+  conversationContext?: string;
 }
 
 export function AIEnhancedWidget({
   theme = 'Luke-Acts',
   userQuery = 'Tell me about Luke-Acts',
+  conversationContext,
 }: AIEnhancedWidgetProps) {
   const {
     videos,
     aiContent,
     loading: widgetLoading,
     error,
-  } = useAIWidget(theme, userQuery);
+  } = useAIWidget(theme, userQuery, conversationContext);
   const {
     creditsRemaining,
     loading: creditsLoading,

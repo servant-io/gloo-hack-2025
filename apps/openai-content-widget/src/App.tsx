@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AIEnhancedWidget } from './components/AIEnhancedWidget';
 import { seedDatabase } from './utils/seedDatabase';
+import { DEFAULT_MOCK_QUERY } from './config/mockUserQuery';
 import { Loader2 } from 'lucide-react';
 
 function App() {
@@ -81,7 +82,11 @@ function App() {
   }
 
   return (
-    <AIEnhancedWidget theme="Luke-Acts" userQuery="Tell me about Luke-Acts" />
+    <AIEnhancedWidget
+      theme={DEFAULT_MOCK_QUERY.contentTheme || 'Luke-Acts'}
+      userQuery={DEFAULT_MOCK_QUERY.originalPrompt}
+      conversationContext={DEFAULT_MOCK_QUERY.conversationContext}
+    />
   );
 }
 

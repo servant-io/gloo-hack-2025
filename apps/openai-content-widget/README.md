@@ -72,6 +72,7 @@ This app will be deployed as a standalone app to Vercel. The build configuration
 
 - `VITE_SUPABASE_URL` - Your Supabase project URL
 - `VITE_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+- `VITE_CONTENT_PROXY_URL` - Your deployed content-proxy URL (e.g., `https://your-content-proxy.vercel.app`)
 
 ## Features
 
@@ -106,8 +107,34 @@ This app will be deployed as a standalone app to Vercel. The build configuration
 - **Frontend**: React 18 + TypeScript + Vite
 - **Styling**: Tailwind CSS
 - **Database**: Supabase (PostgreSQL)
+- **AI Integration**: Gloo AI via content-proxy API
 - **Icons**: Lucide React
 - **Animations**: CSS transitions + custom keyframes
+
+### AI-Enhanced Content
+
+The widget uses Gloo AI to generate contextual insights for videos:
+
+- **Video Overviews**: AI-generated summaries explaining what viewers will learn
+- **Key Themes**: Identified biblical themes across video collections
+- **Relevance Explanations**: How content relates to user queries
+
+All AI calls are routed through the `content-proxy` app's `/api/glooai/completions` endpoint, which handles authentication with the Gloo AI platform. This keeps API credentials centralized and secure.
+
+#### Mock User Query Configuration
+
+The POC simulates the ChatGPT discovery flow. The original user prompt is configured in `src/config/mockUserQuery.ts`:
+
+```typescript
+// Default: Bible study leader preparing to teach
+export const DEFAULT_MOCK_QUERY: MockUserQuery = {
+  originalPrompt: "I'm studying the Gospel of Luke and Acts...",
+  contentTheme: 'Luke-Acts',
+  conversationContext: 'User is preparing to lead a Bible study group...',
+};
+```
+
+**To test different scenarios**, change which query is exported. This original prompt is passed to all Gloo AI calls, ensuring AI responses are tailored to the user's actual need from ChatGPT.
 
 ## Project Structure
 
@@ -180,11 +207,20 @@ pnpm --filter openai-content-widget build
 Create a `.env.local` file in the `apps/openai-content-widget` directory:
 
 ```env
+# Supabase configuration
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Content Proxy API (for Gloo AI completions)
+VITE_CONTENT_PROXY_URL=http://localhost:3002
 ```
 
 **Note:** These values need to be added manually. Do not commit the `.env.local` file.
+
+**For production/Vercel:**
+
+- Set `VITE_CONTENT_PROXY_URL` to your deployed content-proxy URL
+- The widget calls the content-proxy's `/api/glooai/completions` endpoint for AI-generated content
 
 ### First Run
 

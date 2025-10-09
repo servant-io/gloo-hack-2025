@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../utils/supabase';
 import { VideoContent } from './useVideoData';
 import { AIContentSections, ContentMetadata } from '../types/ai-widget';
@@ -13,14 +13,28 @@ interface UseAIWidgetReturn {
 
 export function useAIWidget(
   themeFilter: string = 'Luke-Acts',
-  userQuery: string = 'Tell me about Luke-Acts'
+  userQuery: string = 'Tell me about Luke-Acts',
+  conversationContext?: string
 ): UseAIWidgetReturn {
   const [videos, setVideos] = useState<VideoContent[]>([]);
   const [aiContent, setAiContent] = useState<AIContentSections | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Prevent duplicate calls during React StrictMode double-invoke
+  const loadingRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   useEffect(() => {
+    // If already loading, skip this call (handles StrictMode double-invoke)
+    if (loadingRef.current) {
+      return;
+    }
+
+    loadingRef.current = true;
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+
     async function loadWidgetData() {
       try {
         setLoading(true);
@@ -32,6 +46,7 @@ export function useAIWidget(
           .ilike('series_title', `%${themeFilter}%`)
           .order('upload_date', { ascending: true });
 
+        if (signal.aborted) return;
         if (fetchError) throw fetchError;
 
         const videoContent: VideoContent[] = (data || []).map((item) => ({
@@ -46,6 +61,7 @@ export function useAIWidget(
           uploadDate: item.upload_date,
         }));
 
+        if (signal.aborted) return;
         setVideos(videoContent);
 
         const contentMetadata: ContentMetadata[] = videoContent.map((v) => ({
@@ -57,20 +73,31 @@ export function useAIWidget(
 
         const aiSections = await fetchGlooAIRelevance(
           contentMetadata,
-          userQuery
+          userQuery,
+          conversationContext
         );
-        setAiContent(aiSections);
 
+        if (signal.aborted) return;
+        setAiContent(aiSections);
         setLoading(false);
       } catch (err) {
+        if (signal.aborted) return;
         console.error('Error loading widget data:', err);
         setError('Failed to load content');
         setLoading(false);
+      } finally {
+        loadingRef.current = false;
       }
     }
 
     loadWidgetData();
-  }, [themeFilter, userQuery]);
+
+    // Cleanup: abort any in-flight requests if component unmounts or deps change
+    return () => {
+      abortControllerRef.current?.abort();
+      loadingRef.current = false;
+    };
+  }, [themeFilter, userQuery, conversationContext]);
 
   return {
     videos,
