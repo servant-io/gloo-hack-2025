@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsx ./build-all.mts",
     "serve": "serve -s ./assets -p 4444 --cors",
+    "serve:railway": "serve -s ./assets -l $PORT --cors",
     "dev": "vite --config vite.config.mts",
     "tsc": "tsc -b",
     "tsc:app": "tsc -p tsconfig.app.json",

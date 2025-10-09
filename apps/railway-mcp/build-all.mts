@@ -194,3 +194,25 @@ for (const name of builtNames) {
   fs.writeFileSync(htmlPath, html, { encoding: "utf8" });
   console.log(`${htmlPath} (generated)`);
 }
+
+// Write a simple manifest describing the current version/hash and bundle filenames
+const manifestPath = path.join(outDir, "manifest.json");
+const files = Object.fromEntries(
+  builtNames.map((name) => [
+    name,
+    {
+      js: `${name}-${h}.js`,
+      css: `${name}-${h}.css`,
+      html: `${name}-${h}.html`,
+    },
+  ])
+);
+const manifest = {
+  version: pkg.version,
+  hash: h,
+  entries: builtNames,
+  files,
+  generatedAt: new Date().toISOString(),
+};
+fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), "utf8");
+console.log(`${manifestPath} (generated)`);
