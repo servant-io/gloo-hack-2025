@@ -84,8 +84,8 @@ async function seedContentItemsSources() {
         currentContentItemsSource.name !== contentItemsSource.name ||
         currentContentItemsSource.url !== contentItemsSource.url ||
         currentContentItemsSource.autoSync !== contentItemsSource.autoSync ||
-        JSON.stringify(currentContentItemsSource.data) !==
-          JSON.stringify(contentItemsSource.data);
+        JSON.stringify(currentContentItemsSource.instructions) !==
+          JSON.stringify(contentItemsSource.instructions);
 
       if (needsUpdate) {
         // Update the content items source if any field changed
