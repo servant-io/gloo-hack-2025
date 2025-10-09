@@ -55,9 +55,7 @@
         "api_keys_key_unique": {
           "name": "api_keys_key_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "key"
-          ]
+          "columns": ["key"]
         }
       },
       "policies": {},
@@ -108,12 +106,8 @@
           "tableFrom": "events",
           "tableTo": "profiles",
           "schemaTo": "content_proxy",
-          "columnsFrom": [
-            "profile_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["profile_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -122,12 +116,8 @@
           "tableFrom": "events",
           "tableTo": "metric_schema_versions",
           "schemaTo": "content_proxy",
-          "columnsFrom": [
-            "metric_schema_version_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["metric_schema_version_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -189,12 +179,8 @@
           "tableFrom": "metric_schema_versions",
           "tableTo": "metrics",
           "schemaTo": "content_proxy",
-          "columnsFrom": [
-            "metric_name"
-          ],
-          "columnsTo": [
-            "name"
-          ],
+          "columnsFrom": ["metric_name"],
+          "columnsTo": ["name"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -262,12 +248,8 @@
           "tableFrom": "profile_api_key_lkp",
           "tableTo": "profiles",
           "schemaTo": "content_proxy",
-          "columnsFrom": [
-            "profile_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["profile_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -276,12 +258,8 @@
           "tableFrom": "profile_api_key_lkp",
           "tableTo": "api_keys",
           "schemaTo": "content_proxy",
-          "columnsFrom": [
-            "api_key_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["api_key_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -394,12 +372,8 @@
           "tableFrom": "publisher_api_key_lkp",
           "tableTo": "publishers",
           "schemaTo": "content_proxy",
-          "columnsFrom": [
-            "publisher_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["publisher_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -408,12 +382,8 @@
           "tableFrom": "publisher_api_key_lkp",
           "tableTo": "api_keys",
           "schemaTo": "content_proxy",
-          "columnsFrom": [
-            "api_key_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["api_key_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -498,12 +468,8 @@
           "tableFrom": "content_items",
           "tableTo": "publishers",
           "schemaTo": "content_proxy",
-          "columnsFrom": [
-            "publisher_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["publisher_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -512,12 +478,8 @@
           "tableFrom": "content_items",
           "tableTo": "content_items_sources",
           "schemaTo": "content_proxy",
-          "columnsFrom": [
-            "content_items_source_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["content_items_source_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -621,12 +583,8 @@
           "tableFrom": "content_items_sources",
           "tableTo": "publishers",
           "schemaTo": "content_proxy",
-          "columnsFrom": [
-            "publisher_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["publisher_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }

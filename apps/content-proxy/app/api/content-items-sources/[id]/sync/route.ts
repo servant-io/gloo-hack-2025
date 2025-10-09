@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
   getContentItemsSourceById,
-  triggerFetchContentItemsForSource
+  triggerFetchContentItemsForSource,
 } from '@/lib/content-items-sources';
 import { authorizePublisher } from '@/lib/authentication';
 
