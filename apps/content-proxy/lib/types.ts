@@ -23,7 +23,7 @@ export type ContentItem = {
   /**
    * @description transcript of the video
    **/
-  transcriptUrl: string;
+  transcript: string;
   /**
    * long-form content about the video (e.g., DesiringGod article accompaniment to a "message")
    * @see https://www.desiringgod.org/messages/creation-sings-through-human-lips
