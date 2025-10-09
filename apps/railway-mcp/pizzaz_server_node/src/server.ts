@@ -216,6 +216,19 @@ const toolInputParser = z.object({
   pizzaTopping: z.string(),
 });
 
+// Minimal schema for the video-list widget: query in, results out
+const videoWidgetInputSchema = {
+  type: 'object',
+  properties: {
+    query: {
+      type: 'string',
+      description: 'Search query for the widget to fetch and display results.'
+    },
+  },
+  required: ['query'],
+  additionalProperties: false,
+} as const;
+
 // Define a dedicated tool for video search via Supabase REST.
 // Separate from widget tools to avoid changing existing pizza flows.
 const videoListInputSchema = {
@@ -257,7 +270,8 @@ const tools: Tool[] = [
   ...widgets.map((widget) => ({
     name: widget.id,
     description: widget.title,
-    inputSchema: toolInputSchema,
+    inputSchema:
+      widget.id === 'video-list-widget' ? videoWidgetInputSchema : toolInputSchema,
     title: widget.title,
     _meta: widgetMeta(widget),
   })),
@@ -340,6 +354,37 @@ function createPizzazServer(): Server {
   server.setRequestHandler(
     CallToolRequestSchema,
     async (request: CallToolRequest) => {
+      // Handle the video-list widget directly: query in, results out
+      if (request.params.name === 'video-list-widget') {
+        const widget = widgetsById.get('video-list-widget')!;
+        const args = z
+          .object({ query: z.string().min(1) })
+          .parse(request.params.arguments ?? {});
+
+        const { rows, errorText } = await searchSupabase(
+          SUPABASE_DEFAULT_TABLE,
+          args.query,
+          5,
+          'video'
+        );
+
+        if (errorText) {
+          return {
+            content: [
+              { type: 'text', text: `video-list-widget error: ${errorText}` },
+            ],
+            structuredContent: { videos: [] },
+            _meta: widgetMeta(widget),
+          };
+        }
+
+        return {
+          content: [{ type: 'text', text: 'Video results ready.' }],
+          structuredContent: { videos: rows },
+          _meta: widgetMeta(widget),
+        };
+      }
+
       // Handle the custom video-list tool separately (not a widget-backed tool)
       if (request.params.name === 'video-list') {
         const args = z
