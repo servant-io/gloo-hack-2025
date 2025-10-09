@@ -40,7 +40,7 @@ describe('fetchAccessToken', () => {
     expect(tokenParts).toHaveLength(3);
 
     // Verify each part is non-empty
-    tokenParts.forEach((part, index) => {
+    tokenParts.forEach((part) => {
       expect(part.length).toBeGreaterThan(0);
     });
   });

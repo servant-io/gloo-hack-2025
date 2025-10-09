@@ -6,7 +6,10 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { fetchAffiliateRecommendations } from './affiliateRecommendations';
+import {
+  fetchAffiliateRecommendations,
+  AffiliateRecommendationsResponseItem,
+} from './affiliateRecommendations';
 import { getEnv } from '../env';
 
 describe('fetchAffiliateRecommendations', () => {
@@ -38,7 +41,7 @@ describe('fetchAffiliateRecommendations', () => {
     expect(response.length).toBeGreaterThan(0);
 
     // Verify each item has the expected structure based on the actual API response
-    response.forEach((item: any, index: number) => {
+    response.forEach((item: AffiliateRecommendationsResponseItem) => {
       expect(item).toHaveProperty('item_id');
       expect(typeof item.item_id).toBe('string');
       expect(item.item_id.length).toBeGreaterThan(0);
@@ -106,14 +109,16 @@ describe('fetchAffiliateRecommendations', () => {
         // Verify that items have reasonable certainty scores
         const averageCertainty =
           response.reduce(
-            (sum: number, item: any) => sum + item.cumulative_certainty,
+            (sum: number, item: AffiliateRecommendationsResponseItem) =>
+              sum + item.cumulative_certainty,
             0
           ) / response.length;
         expect(averageCertainty).toBeGreaterThan(0.3); // Should have reasonable confidence
 
         // Verify that items have reasonable snippet counts
         const itemsWithSnippets = response.filter(
-          (item: any) => item.snippet_count && item.snippet_count > 0
+          (item: AffiliateRecommendationsResponseItem) =>
+            item.snippet_count && item.snippet_count > 0
         );
         expect(itemsWithSnippets.length).toBeGreaterThan(0);
       }
@@ -140,29 +145,38 @@ describe('fetchAffiliateRecommendations', () => {
       expect(response.length).toBeGreaterThan(0);
 
       // Verify that items meet the certainty threshold
-      response.forEach((item: any) => {
+      response.forEach((item: AffiliateRecommendationsResponseItem) => {
         expect(item.cumulative_certainty).toBeGreaterThanOrEqual(0.5);
       });
 
       // Log the actual types we're getting for debugging
-      const actualTypes = [...new Set(response.map((item: any) => item.type))];
+      const actualTypes = [
+        ...new Set(
+          response.map(
+            (item: AffiliateRecommendationsResponseItem) => item.type
+          )
+        ),
+      ];
       console.log('Actual item types returned:', actualTypes);
 
       // Verify that items have reasonable types (the API might not strictly filter by media_types)
       const allowedMediaTypes = new Set(options.media_types);
-      const itemsWithExpectedTypes = response.filter((item: any) =>
-        allowedMediaTypes.has(item.type)
+      const itemsWithExpectedTypes = response.filter(
+        (item: AffiliateRecommendationsResponseItem) =>
+          allowedMediaTypes.has(item.type)
       );
 
       // At least some items should match the requested types, but we can't guarantee all
       if (itemsWithExpectedTypes.length > 0) {
-        itemsWithExpectedTypes.forEach((item: any) => {
-          expect(allowedMediaTypes.has(item.type)).toBe(true);
-        });
+        itemsWithExpectedTypes.forEach(
+          (item: AffiliateRecommendationsResponseItem) => {
+            expect(allowedMediaTypes.has(item.type)).toBe(true);
+          }
+        );
       }
 
       // Verify snippet counts are reasonable
-      response.forEach((item: any) => {
+      response.forEach((item: AffiliateRecommendationsResponseItem) => {
         if (item.snippet_count) {
           expect(item.snippet_count).toBeGreaterThanOrEqual(
             options.min_snippet_count_per_item!
@@ -201,7 +215,7 @@ describe('fetchAffiliateRecommendations', () => {
       expect(response.length).toBeGreaterThan(0);
 
       // Verify URLs are valid
-      response.forEach((item: any) => {
+      response.forEach((item: AffiliateRecommendationsResponseItem) => {
         expect(item.item_url).toMatch(/^https?:\/\/.+/);
         expect(item.publisher.length).toBeGreaterThan(0);
       });
@@ -234,12 +248,14 @@ describe('fetchAffiliateRecommendations', () => {
         // Verify that high threshold items have higher average certainty
         const highThresholdAvg =
           highThresholdResponse.reduce(
-            (sum: number, item: any) => sum + item.cumulative_certainty,
+            (sum: number, item: AffiliateRecommendationsResponseItem) =>
+              sum + item.cumulative_certainty,
             0
           ) / highThresholdResponse.length;
         const lowThresholdAvg =
           lowThresholdResponse.reduce(
-            (sum: number, item: any) => sum + item.cumulative_certainty,
+            (sum: number, item: AffiliateRecommendationsResponseItem) =>
+              sum + item.cumulative_certainty,
             0
           ) / lowThresholdResponse.length;
 
@@ -263,7 +279,7 @@ describe('fetchAffiliateRecommendations', () => {
 
       // Check that items have meaningful metadata
       const itemsWithMetadata = response.filter(
-        (item: any) =>
+        (item: AffiliateRecommendationsResponseItem) =>
           item.item_title &&
           item.item_title.length > 10 &&
           item.publisher &&
@@ -273,9 +289,11 @@ describe('fetchAffiliateRecommendations', () => {
       expect(itemsWithMetadata.length).toBeGreaterThan(0);
 
       // Verify certainty scores are within valid range
-      itemsWithMetadata.forEach((item: any) => {
-        expect(item.cumulative_certainty).toBeGreaterThanOrEqual(0);
-      });
+      itemsWithMetadata.forEach(
+        (item: AffiliateRecommendationsResponseItem) => {
+          expect(item.cumulative_certainty).toBeGreaterThanOrEqual(0);
+        }
+      );
     }
   });
 
