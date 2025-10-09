@@ -27,13 +27,13 @@ GET /api/glooai/affiliate-recommendations
 ### Basic Request
 
 ```bash
-curl -X GET "http://localhost:3000/api/glooai/affiliate-recommendations?q=understanding+the+gospel"
+curl -X GET "http://localhost:3002/api/glooai/affiliate-recommendations?q=understanding+the+gospel"
 ```
 
 ### Request with Optional Parameters
 
 ```bash
-curl -X GET "http://localhost:3000/api/glooai/affiliate-recommendations?q=understanding+the+gospel&max_snippet_count_overall=10&media_types=article,video&publishers=The+Bible+Project,Desiring+God&certainty_threshold=0.8"
+curl -X GET "http://localhost:3002/api/glooai/affiliate-recommendations?q=understanding+the+gospel&max_snippet_count_overall=10&media_types=article,video&publishers=The+Bible+Project,Desiring+God&certainty_threshold=0.8"
 ```
 
 ## Response Format
