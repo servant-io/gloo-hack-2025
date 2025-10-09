@@ -1,17 +1,29 @@
 import XML from 'xml2js';
 import CSV from 'papaparse';
 import { db } from '@/db/db';
-import { contentItemsSources } from '@/db/schemas/content';
-import { eq, count, and } from 'drizzle-orm';
+import { contentItems, contentItemsSources } from '@/db/schemas/content';
+import { eq, count, and, inArray } from 'drizzle-orm';
 import type {
   ContentItemsSource,
   CsvTypeContentItemsSource,
   Rss2ItunesTypeContentItemsSource,
+  SourcedContentItem,
 } from './types';
 import csvSchema from '@/lib/content-items-sources/schemas/csv.schema.json';
 import rss2ItunesSchema from '@/lib/content-items-sources/schemas/rss2-itunes.schema.json';
 import Ajv from 'ajv';
 import { generatePrimaryKey } from '@/lib/db';
+import {
+  extractContentItemsFromParsedCsv,
+  getCsvHeaderColumns,
+  getCsvRows,
+} from '@/lib/content-items-sources/type-csv';
+import {
+  extractContentItemsFromParsedRss2Itunes,
+  parseRss2Itunes,
+} from '@/lib/content-items-sources/type-rss2-itunes';
+import { ContentItem } from '@/lib/content/types';
+import { cs } from 'zod/locales';
 
 export const SUPPORTED_CONTENT_ITEMS_SOURCES_TYPES = [
   'csv',
@@ -50,7 +62,7 @@ export async function listContentItemsSourcesPaginated(
       url: contentItemsSources.url,
       instructions: contentItemsSources.instructions,
       statusCode: contentItemsSources.statusCode,
-      response: contentItemsSources.response,
+      // response: contentItemsSources.response,
     })
     .from(contentItemsSources)
     .where(eq(contentItemsSources.publisherId, publisherId))
@@ -84,7 +96,7 @@ export async function getContentItemsSourceById(
       url: contentItemsSources.url,
       instructions: contentItemsSources.instructions,
       statusCode: contentItemsSources.statusCode,
-      response: contentItemsSources.response,
+      // response: contentItemsSources.response,
     })
     .from(contentItemsSources)
     .where(
@@ -163,6 +175,7 @@ export async function validateContentItemsSourceData(data: {
 
     try {
       new URL(contentItemsSourceData.url);
+      // TODO: validate that URL is unique
     } catch (e) {
       return { valid: false, message: 'Invalid URL format', data: null };
     }
@@ -186,7 +199,7 @@ export async function validateContentItemsSourceData(data: {
     }
 
     const csvText: string = await response.text();
-    const csvHeader: string[] = CSV.parse(csvText, { header: false }).data[0];
+    const csvHeader: string[] = getCsvHeaderColumns(csvText);
     const contentUrlColumn =
       contentItemsSourceData.instructions.headers.contentUrl;
 
@@ -230,6 +243,7 @@ export async function validateContentItemsSourceData(data: {
 
     try {
       new URL(contentItemsSourceData.url);
+      // TODO: validate that URL is unique
     } catch (e) {
       return { valid: false, message: 'Invalid URL format', data: null };
     }
@@ -253,33 +267,7 @@ export async function validateContentItemsSourceData(data: {
     }
 
     const rssXmlText: string = await response.text();
-    const parser = new XML.Parser({
-      attrkey: '$',
-      charkey: '_',
-      explicitCharkey: false,
-      trim: false,
-      normalizeTags: false,
-      normalize: false,
-      explicitRoot: false, // default: true
-      emptyTag: '',
-      explicitArray: false, // default: true
-      ignoreAttrs: false,
-      mergeAttrs: false,
-      validator: null,
-      xmlns: false,
-      explicitChildren: false,
-      childkey: '$$',
-      preserveChildrenOrder: false,
-      charsAsChildren: false,
-      includeWhiteChars: false,
-      async: false,
-      strict: true,
-      attrNameProcessors: null,
-      attrValueProcessors: null,
-      tagNameProcessors: null,
-      valueProcessors: null,
-    });
-    const rssxml = await parser.parseStringPromise(rssXmlText);
+    const rssxml = await parseRss2Itunes(rssXmlText);
 
     if (rssxml.$.version !== '2.0') {
       return { valid: false, message: 'RSS version must be 2.0', data: null };
@@ -354,70 +342,331 @@ export async function createContentItemsSource(
 }
 
 /**
+ * Indicate the sync finished
+ */
+async function markContentItemsSourceAsSynced({
+  id,
+  statusCode,
+  responseText,
+}: {
+  id: string;
+  statusCode: number;
+  responseText: string;
+}) {
+  await db
+    .update(contentItemsSources)
+    .set({
+      statusCode,
+      response: responseText,
+      lastSyncFinishedAt: new Date(),
+    })
+    .where(eq(contentItemsSources.id, id));
+}
+
+type FetchContentItemsForSourceResult = {
+  id: string;
+  httpCode: number;
+  items: number;
+  valid: boolean;
+  message?: string;
+};
+
+/**
+ * Handle error during fetch content items for source
+ * @param statusCode - HTTP status code
+ * @param responseText - Response text
+ * @param data - return data
+ * @returns return data
+ */
+async function fetchContentItemsForSourceError({
+  statusCode,
+  responseText,
+  ...data
+}: FetchContentItemsForSourceResult & {
+  statusCode: number;
+  responseText: string;
+}) {
+  await markContentItemsSourceAsSynced({
+    id: data.id,
+    statusCode,
+    responseText,
+  });
+  return data;
+}
+
+/**
+ * Performs the actual sync. Database transaction:
+ * 1. Update all the existing content items that changed
+ * 2. Insert all the new content items (filtering by URL)
+ * 3. TODO?: Delete all items that no longer exist at the source,
+ *    with content_items.content_items_source_id = contentItemsSourceId
+ */
+async function syncContentItemsFromSource({
+  statusCode,
+  responseText,
+  sourcedContentItems,
+  publisherId,
+  contentItemsSourceId,
+}: {
+  statusCode: number;
+  responseText: string;
+  sourcedContentItems: SourcedContentItem[];
+  publisherId: string;
+  contentItemsSourceId: string;
+}) {
+  try {
+    await db.transaction(async (tx) => {
+      const urls = sourcedContentItems.map(({ contentUrl }) => contentUrl);
+      const existingContentItems = await tx
+        .select()
+        .from(contentItems)
+        .where(
+          and(
+            eq(contentItems.publisherId, publisherId),
+            inArray(contentItems.contentUrl, urls)
+          )
+        );
+
+      const existingUrls = existingContentItems.map(
+        ({ contentUrl }) => contentUrl
+      );
+      const newContentItems = sourcedContentItems.filter(
+        ({ contentUrl }) => !existingUrls.includes(contentUrl)
+      );
+
+      const now = new Date();
+      await Promise.all([
+        // update existing items one by one
+        ...existingContentItems.map((item) => {
+          const newData = sourcedContentItems.find(
+            ({ contentUrl }) => contentUrl === item.contentUrl
+          )!;
+          const needsUpdate =
+            item.name !== newData.name ||
+            item.shortDescription !== newData.shortDescription ||
+            item.thumbnailUrl !== newData.thumbnailUrl;
+
+          if (!needsUpdate) return new Promise(() => {});
+
+          return tx
+            .update(contentItems)
+            .set({
+              ...(item.name !== newData.name && {
+                name: newData.name?.slice(0, 200),
+              }),
+              ...(item.shortDescription !== newData.shortDescription && {
+                shortDescription: newData.shortDescription,
+              }),
+              ...(item.thumbnailUrl !== newData.thumbnailUrl && {
+                thumbnailUrl: newData.thumbnailUrl,
+              }),
+              contentItemsSourceId,
+              updatedAt: now,
+            })
+            .where(eq(contentItems.id, item.id));
+        }),
+        // insert all new items at once
+        newContentItems.length
+          ? tx.insert(contentItems).values(
+              newContentItems.map((item) => ({
+                id: generatePrimaryKey(),
+                publisherId,
+                contentItemsSourceId,
+                name: (item.name || '').slice(0, 200),
+                type: item.type,
+                contentUrl: item.contentUrl,
+                shortDescription: item.shortDescription,
+                thumbnailUrl: item.thumbnailUrl,
+                createdAt: now,
+                updatedAt: now,
+              }))
+            )
+          : new Promise(() => {}),
+      ]);
+    });
+    await markContentItemsSourceAsSynced({
+      id: contentItemsSourceId,
+      statusCode,
+      responseText,
+    });
+  } catch (exception) {
+    console.error(
+      'Exception syncContentItemsFromSource:',
+      JSON.stringify(exception)
+    );
+    await markContentItemsSourceAsSynced({
+      id: contentItemsSourceId,
+      statusCode,
+      responseText,
+    });
+  }
+}
+
+/**
  * Trigger fetch of content items for a given source
+ * @param publisherId - ID of the publisher
  * @param id - ID of the content items source
  * @returns void
  */
 export async function triggerFetchContentItemsForSource(
+  publisherId: string,
   id: string
-): Promise<void> {
+): Promise<FetchContentItemsForSourceResult> {
+  let sourcedContentItems: SourcedContentItem[] = [];
+  let statusCode: number | undefined = undefined;
+  let responseText: string | undefined = undefined;
+
   const [contentItemsSource] = await db
     .select()
     .from(contentItemsSources)
-    .where(eq(contentItemsSources.id, id))
+    .where(
+      and(
+        eq(contentItemsSources.publisherId, publisherId),
+        eq(contentItemsSources.id, id)
+      )
+    )
     .limit(1);
 
   if (!contentItemsSource) {
-    // throw new Error('Content items source not found');
-    console.warn('Content items source not found', id);
-    return;
+    return {
+      id,
+      httpCode: 404,
+      items: 0,
+      valid: false,
+      message: 'Content items source not found',
+    };
   }
 
   if (
     contentItemsSource.lastSyncStartedAt &&
     !contentItemsSource.lastSyncFinishedAt
   ) {
-    // throw new Error('Content items source is already syncing');
-    console.info('Content items source is already syncing', id);
-    return;
+    return {
+      id,
+      httpCode: 202,
+      items: 0,
+      valid: true,
+      message: 'Content items source is already syncing',
+    };
   }
 
-  // Update lastSyncStartedAt
-  await db
-    .update(contentItemsSources)
-    .set({
-      lastSyncStartedAt: new Date(),
-      lastSyncFinishedAt: null,
-    })
-    .where(eq(contentItemsSources.id, id));
-
-  // Fetch content items based on type
-  const response = await fetch(contentItemsSource.url);
-  if (!response.ok) {
-    console.error('Failed to fetch content items source data', id);
-    // Update lastSyncFinishedAt with failure
+  try {
     await db
       .update(contentItemsSources)
       .set({
-        lastSyncFinishedAt: new Date(),
-        statusCode: response.status,
-        response: await response.text(),
+        lastSyncStartedAt: new Date(),
+        lastSyncFinishedAt: null,
       })
       .where(eq(contentItemsSources.id, id));
-    return;
+
+    const response = await fetch(contentItemsSource.url);
+    statusCode = response.status;
+    responseText = await response.text();
+    if (!response.ok) {
+      return await fetchContentItemsForSourceError({
+        statusCode,
+        responseText,
+        id,
+        httpCode: 422,
+        items: 0,
+        valid: false,
+        message: "Content items source URL isn't reachable",
+      });
+    }
+
+    if (contentItemsSource.type === 'csv') {
+      const source = contentItemsSource as CsvTypeContentItemsSource;
+      const csvRows: string[][] = getCsvRows(responseText);
+      const csvHeader: string[] = csvRows[0];
+      const contentUrlColumn = source.instructions.headers.contentUrl;
+
+      if (!csvHeader.includes(contentUrlColumn)) {
+        return await fetchContentItemsForSourceError({
+          statusCode,
+          responseText,
+          id,
+          httpCode: 422,
+          items: 0,
+          valid: false,
+          message: `CSV must contain the "${contentUrlColumn}" column in it's header. Found: ${csvHeader.join(', ')}`,
+        });
+      }
+      sourcedContentItems = extractContentItemsFromParsedCsv(
+        csvRows,
+        source.instructions
+      );
+    } else if (contentItemsSource.type === 'rss2-itunes') {
+      const rssxml = await parseRss2Itunes(responseText);
+
+      if (rssxml.$.version !== '2.0') {
+        return await fetchContentItemsForSourceError({
+          statusCode,
+          responseText,
+          id,
+          httpCode: 422,
+          items: 0,
+          valid: false,
+          message: 'RSS version must be 2.0',
+        });
+      }
+
+      if (
+        rssxml.$['xmlns:itunes'] !==
+        'http://www.itunes.com/dtds/podcast-1.0.dtd'
+      ) {
+        return await fetchContentItemsForSourceError({
+          statusCode,
+          responseText,
+          id,
+          httpCode: 422,
+          items: 0,
+          valid: false,
+          message: 'RSS must contain "xmlns:itunes" namespace',
+        });
+      }
+
+      if (
+        rssxml.$['xmlns:podcast'] !== 'https://podcastindex.org/namespace/1.0'
+      ) {
+        return await fetchContentItemsForSourceError({
+          statusCode,
+          responseText,
+          id,
+          httpCode: 422,
+          items: 0,
+          valid: false,
+          message: 'RSS must contain "xmlns:podcast" namespace',
+        });
+      }
+      sourcedContentItems = extractContentItemsFromParsedRss2Itunes(rssxml);
+    }
+
+    if (sourcedContentItems.length)
+      syncContentItemsFromSource({
+        statusCode,
+        responseText,
+        sourcedContentItems,
+        publisherId,
+        contentItemsSourceId: id,
+      });
+
+    return {
+      id,
+      httpCode: 202,
+      items: sourcedContentItems.length,
+      valid: true,
+      message: 'Sync started',
+    };
+  } catch (exception: any) {
+    console.error(
+      `Error fetching content items for source: ${exception.name}: ${exception.message}`
+    );
+    return {
+      id,
+      httpCode: 500,
+      items: sourcedContentItems.length,
+      valid: false,
+      message: `${exception.name}: ${exception.message}`,
+    };
   }
-
-  const responseText = await response.text();
-  console.error('Successfully fetched content items source data', id);
-  // Update lastSyncFinishedAt with failure
-  await db
-    .update(contentItemsSources)
-    .set({
-      lastSyncFinishedAt: new Date(),
-      statusCode: response.status,
-      response: responseText,
-    })
-    .where(eq(contentItemsSources.id, id));
-
-  // TODO: based on type, parse and upsert content items
 }

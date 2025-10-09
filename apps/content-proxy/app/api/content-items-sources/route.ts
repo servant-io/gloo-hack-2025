@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   createContentItemsSource,
   listContentItemsSourcesPaginated,
+  triggerFetchContentItemsForSource,
   validateContentItemsSourceData,
 } from '@/lib/content-items-sources';
 import { authorizePublisher } from '@/lib/authentication';
@@ -74,7 +75,10 @@ export async function POST(request: NextRequest) {
       publisherId,
       validation.data
     );
-    // TODO: trigger fetch of content items for this source
+    await triggerFetchContentItemsForSource(
+      publisherId,
+      newContentItemsSource.id
+    );
 
     return NextResponse.json(newContentItemsSource);
   } catch (error) {

@@ -32,3 +32,11 @@ export type Rss2ItunesTypeContentItemsSource = BaseContentItemsSource & {
 export type ContentItemsSource =
   | CsvTypeContentItemsSource
   | Rss2ItunesTypeContentItemsSource;
+
+export interface SourcedContentItem {
+  contentUrl: string;
+  type: ContentItem['type'];
+  name?: string;
+  shortDescription?: string;
+  thumbnailUrl?: string;
+}

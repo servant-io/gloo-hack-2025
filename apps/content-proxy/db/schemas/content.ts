@@ -127,7 +127,7 @@ export const contentItems = contentProxySchema.table('content_items', {
   /**
    * Optional foreign key reference to the content item source
    */
-  contentItemsSourcesId: varchar('content_items_source_id', {
+  contentItemsSourceId: varchar('content_items_source_id', {
     length: 12,
   }).references(() => contentItemsSources.id, { onDelete: 'cascade' }),
 
