@@ -16,7 +16,9 @@ const envSchema = z.object({
 });
 
 export function getEnv() {
-  config({ path: '.env.local' });
+  if (process.env.NODE_ENV === 'development') {
+    config({ path: '.env.local' });
+  }
 
   return envSchema.parse(process.env);
 }
