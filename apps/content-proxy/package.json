@@ -22,6 +22,7 @@
   "dependencies": {
     "@phosphor-icons/react": "catalog:",
     "ajv": "catalog:",
+    "cheerio": "catalog:",
     "dotenv": "catalog:",
     "drizzle-kit": "catalog:",
     "drizzle-orm": "catalog:",
