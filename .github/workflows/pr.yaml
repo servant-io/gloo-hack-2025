@@ -101,3 +101,33 @@ jobs:
         run: pnpm build
         env:
           POSTGRES_URL: mock_url
+          GLOO_AI_CLIENT_ID: mock_client_id
+          GLOO_AI_CLIENT_SECRET: mock_client_secret
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ^22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run tests
+        run: pnpm test
+        env:
+          POSTGRES_URL: mock_url
+          GLOO_AI_CLIENT_ID: mock_client_id
+          GLOO_AI_CLIENT_SECRET: mock_client_secret

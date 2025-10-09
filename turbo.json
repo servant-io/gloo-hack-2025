@@ -23,6 +23,10 @@
     "check-types": {
       "dependsOn": ["^check-types"]
     },
+    "test": {
+      "dependsOn": ["^test"],
+      "env": ["GLOO_AI_CLIENT_ID", "GLOO_AI_CLIENT_SECRET"]
+    },
     "dev": {
       "cache": false,
       "persistent": true
