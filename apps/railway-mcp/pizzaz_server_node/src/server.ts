@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import {
   createServer,
   type IncomingMessage,
@@ -23,6 +24,11 @@ import {
   type Tool,
 } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
+
+// --- Supabase config (env-driven) ---
+const SUPABASE_URL = process.env.SUPABASE_URL ?? '';
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY ?? '';
+const SUPABASE_DEFAULT_TABLE = process.env.SUPABASE_TABLE ?? 'content_items';
 
 // Dynamic asset configuration
 // Point ASSETS_ORIGIN to where your built assets are hosted (e.g. your Railway static service).
@@ -170,6 +176,22 @@ const widgets: PizzazWidget[] = [
     })(),
     responseText: 'Rendered a pizza video!',
   },
+  {
+    id: 'video-list-widget',
+    title: 'Show Video List',
+    templateUri: 'ui://widget/video-list.html',
+    invoking: 'Assembling video list',
+    invoked: 'Served a fresh video list',
+    html: (() => {
+      const { css, js } = bundleUrls('video-list');
+      return `
+<div id="video-list-root"></div>
+<link rel="stylesheet" href="${css}">
+<script type="module" src="${js}"></script>
+      `.trim();
+    })(),
+    responseText: 'Rendered a video list!',
+  },
 ];
 
 const widgetsById = new Map<string, PizzazWidget>();
@@ -196,13 +218,50 @@ const toolInputParser = z.object({
   pizzaTopping: z.string(),
 });
 
-const tools: Tool[] = widgets.map((widget) => ({
+// Define a dedicated tool for video search via Supabase REST.
+// Separate from widget tools to avoid changing existing pizza flows.
+const videoListInputSchema = {
+  type: 'object',
+  properties: {
+    query: {
+      type: 'string',
+      description: 'Fuzzy search query for videos',
+    },
+    limit: {
+      type: 'number',
+      description: 'Max results (default 5, max 50)',
+    },
+    table: {
+      type: 'string',
+      description: 'Optional table override (default env SUPABASE_TABLE or "videos")',
+    },
+    contentType: {
+      type: 'string',
+      description: 'Optional content_type filter (e.g., "video" | "message"). Defaults to "video".',
+      enum: ['video', 'message'],
+    },
+  },
+  required: ['query'],
+  additionalProperties: false,
+} as const;
+
+const videoListTool: Tool = {
+  name: 'video-list',
+  description: 'Search Supabase public.content_items (or override) and return up to 5 results.',
+  inputSchema: videoListInputSchema,
+  title: 'Video List (Supabase Search)',
+};
+
+const tools: Tool[] = [
+  ...widgets.map((widget) => ({
   name: widget.id,
   description: widget.title,
   inputSchema: toolInputSchema,
   title: widget.title,
   _meta: widgetMeta(widget),
-}));
+  })),
+  videoListTool,
+];
 
 const resources: Resource[] = widgets.map((widget) => ({
   uri: widget.templateUri,
@@ -280,14 +339,81 @@ function createPizzazServer(): Server {
   server.setRequestHandler(
     CallToolRequestSchema,
     async (request: CallToolRequest) => {
-      const widget = widgetsById.get(request.params.name);
+      // Handle the custom video-list tool separately (not a widget-backed tool)
+      if (request.params.name === 'video-list') {
+        const args = z
+          .object({
+            query: z.string().min(1),
+            limit: z.number().int().min(1).max(50).optional(),
+            table: z.string().min(1).optional(),
+            contentType: z.enum(['video', 'message']).optional(),
+          })
+          .parse(request.params.arguments ?? {});
 
+        const limit = args.limit ?? 5;
+        const table = args.table ?? SUPABASE_DEFAULT_TABLE;
+        const contentType = args.contentType ?? 'video';
+
+        const { rows, errorText } = await searchSupabase(
+          table,
+          args.query,
+          limit,
+          contentType
+        );
+
+        if (errorText) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: `video-list error: ${errorText}`,
+              },
+            ],
+            structuredContent: {
+              videos: [],
+              error: errorText,
+            },
+          };
+        }
+
+        const summary =
+          rows.length === 0
+            ? `No videos found for query: "${args.query}".`
+            : `Found ${rows.length} video(s) for "${args.query}":\n` +
+              rows
+                .map((r: Record<string, unknown>, idx: number) => {
+                  const title = String(r.title ?? r.name ?? r.id ?? `#${idx + 1}`);
+                  return `- ${title}`;
+                })
+                .join('\n');
+
+        // Attach widget metadata so the host renders our video list widget
+        const videoWidget = widgetsById.get('video-list-widget');
+        return {
+          content: [
+            {
+              type: 'text',
+              text: summary,
+            },
+          ],
+          structuredContent: {
+            videos: rows,
+            query: args.query,
+            limit,
+            table,
+            contentType,
+          },
+          _meta: videoWidget ? widgetMeta(videoWidget) : undefined,
+        };
+      }
+
+      // Default: treat as a widget-backed pizza tool
+      const widget = widgetsById.get(request.params.name);
       if (!widget) {
         throw new Error(`Unknown tool: ${request.params.name}`);
       }
 
       const args = toolInputParser.parse(request.params.arguments ?? {});
-
       return {
         content: [
           {
@@ -425,4 +551,70 @@ httpServer.listen(port, () => {
   console.log(
     `  Message post endpoint: POST http://localhost:${port}${postPath}?sessionId=...`
   );
+  console.log('  Tool available: video-list (Supabase search)');
 });
+
+// --- helpers ---
+async function searchSupabase(
+  table: string,
+  query: string,
+  limit: number,
+  contentType?: 'video' | 'message'
+): Promise<{ rows: any[]; errorText?: string }> {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    return {
+      rows: [],
+      errorText:
+        'Missing SUPABASE_URL or SUPABASE_ANON_KEY environment variables.',
+    };
+  }
+
+  // Fuzzy via ilike across relevant columns from content_items schema
+  // title, description, og_title, og_description, series_title, full_text, url
+  const pattern = `*${encodeURIComponent(query)}*`;
+  const or =
+    `or=(title.ilike.${pattern},` +
+    `description.ilike.${pattern},` +
+    `og_title.ilike.${pattern},` +
+    `og_description.ilike.${pattern},` +
+    `series_title.ilike.${pattern},` +
+    `full_text.ilike.${pattern},` +
+    `url.ilike.${pattern})`;
+  const params = new URLSearchParams({
+    select: '*',
+    limit: String(limit),
+  });
+
+  if (contentType) {
+    // PostgREST style equality filter
+    params.append('content_type', `eq.${contentType}`);
+  }
+
+  // Append the OR filter (not via URLSearchParams to keep PostgREST syntax intact)
+  const url = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/${encodeURIComponent(
+    table
+  )}?${params.toString()}&${or}`;
+
+  try {
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Prefer: 'count=exact',
+      },
+    });
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      return { rows: [], errorText: `Supabase error ${res.status}: ${text}` };
+    }
+
+    const data = (await res.json()) as any[];
+    return { rows: Array.isArray(data) ? data : [] };
+  } catch (err: any) {
+    return { rows: [], errorText: String(err?.message ?? err) };
+  }
+}
