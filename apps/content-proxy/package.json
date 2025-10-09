@@ -29,9 +29,11 @@
     "drizzle-orm": "catalog:",
     "lodash": "catalog:",
     "next": "catalog:",
+    "papaparse": "^5.5.3",
     "pg": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "xml2js": "^0.6.2",
     "zod": "catalog:"
   },
   "devDependencies": {

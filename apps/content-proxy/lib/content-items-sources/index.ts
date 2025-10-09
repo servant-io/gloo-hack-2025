@@ -1,7 +1,9 @@
+import XML from 'xml2js';
+import CSV from 'papaparse';
 import { db } from '@/db/db';
 import { contentItemsSources } from '@/db/schemas/content';
 import { eq, count, and } from 'drizzle-orm';
-import type { ContentItemsSource } from './types';
+import type { ContentItemsSource, CsvTypeContentItemsSource } from './types';
 import csvSchema from '@/lib/content-items-sources/schemas/csv.schema.json';
 import rss2ItunesSchema from '@/lib/content-items-sources/schemas/rss2-itunes.schema.json';
 import Ajv from 'ajv';
@@ -94,11 +96,31 @@ export async function getContentItemsSourceById(
 /**
  * Validate content items source data
  */
-export function validateContentItemsSourceData(data: any): {
+export async function validateContentItemsSourceData(data: {
+  type: (typeof SUPPORTED_CONTENT_ITEMS_SOURCES_TYPES)[number];
+  name: string;
+  url: string;
+  autoSync?: boolean;
+  instructions?: CsvTypeContentItemsSource['instructions'] | null | undefined;
+}): Promise<{
   valid: boolean;
   message?: string;
-  data: any;
-} {
+  data:
+    | {
+        type: (typeof SUPPORTED_CONTENT_ITEMS_SOURCES_TYPES)[number];
+        name: string;
+        url: string;
+        autoSync: boolean;
+        instructions:
+          | CsvTypeContentItemsSource['instructions']
+          | null
+          | undefined;
+        statusCode?: number | null | undefined;
+        response?: string | null | undefined;
+      }
+    | null
+    | undefined;
+}> {
   if (typeof data !== 'object' || data === null)
     return { valid: false, message: 'Data must be an object', data: null };
 
@@ -115,15 +137,59 @@ export function validateContentItemsSourceData(data: any): {
       name: data.name,
       url: data.url,
       autoSync: data.autoSync || false,
-      data: data.data,
+      instructions: data.instructions,
     };
-    const isValidCsv = validate(contentItemsSourceData);
+    const isValidCsvTypeSchema = validate(contentItemsSourceData);
 
-    if (!isValidCsv) {
+    if (!isValidCsvTypeSchema) {
       return { valid: false, message: 'Invalid CSV data format', data: null };
     }
 
-    return { valid: true, data: { ...contentItemsSourceData, type } };
+    try {
+      new URL(contentItemsSourceData.url);
+    } catch (e) {
+      return { valid: false, message: 'Invalid URL format', data: null };
+    }
+
+    const response = await fetch(contentItemsSourceData.url);
+    if (!response.ok) {
+      return {
+        valid: false,
+        message: `URL is not reachable, status: ${response.status}`,
+        data: null,
+      };
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('text/csv')) {
+      return {
+        valid: false,
+        message: `URL does not point to a CSV file, content-type: ${contentType}`,
+        data: null,
+      };
+    }
+
+    const csvText: string = await response.text();
+    const csvRows = CSV.parse(csvText, { header: true }).data;
+    console.log('csvRows[0]:', csvRows[0]);
+    const contentUrlColumn =
+      data.instructions!.headers.contentUrl || 'contentUrl';
+    if (csvRows[0] && !(contentUrlColumn in csvRows[0])) {
+      return {
+        valid: false,
+        message: `CSV must contain "${contentUrlColumn}" mapped to the "contentUrl" column`,
+        data: null,
+      };
+    }
+
+    const newContentItemsSourceData = {
+      type,
+      statusCode: response.status,
+      response: csvText,
+      ...contentItemsSourceData,
+    };
+
+    return { valid: true, data: newContentItemsSourceData };
   }
 
   if (type === 'rss2-itunes') {
@@ -133,17 +199,83 @@ export function validateContentItemsSourceData(data: any): {
       url: data.url,
       autoSync: data.autoSync || false,
     };
-    const isValidRss2Itunes = validate(contentItemsSourceData);
+    const isValidRss2ItunesType = validate(contentItemsSourceData);
 
-    if (!isValidRss2Itunes) {
+    if (!isValidRss2ItunesType) {
       return {
         valid: false,
         message: 'Invalid RSS 2.0  data format',
         data: null,
       };
     }
-    return { valid: true, data: { ...contentItemsSourceData, type } };
+
+    try {
+      new URL(contentItemsSourceData.url);
+    } catch (e) {
+      return { valid: false, message: 'Invalid URL format', data: null };
+    }
+
+    const response = await fetch(contentItemsSourceData.url);
+    if (!response.ok) {
+      return {
+        valid: false,
+        message: `URL is not reachable, status: ${response.status}`,
+        data: null,
+      };
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/rss+xml')) {
+      return {
+        valid: false,
+        message: `URL does not point to a RSS 2.0 XML file, content-type: ${contentType}`,
+        data: null,
+      };
+    }
+
+    const rssXmlText: string = await response.text();
+    const parser = new XML.Parser({
+      attrkey: '$',
+      charkey: '_',
+      explicitCharkey: false,
+      trim: false,
+      normalizeTags: false,
+      normalize: false,
+      explicitRoot: false, // default: true
+      emptyTag: '',
+      explicitArray: false, // default: true
+      ignoreAttrs: false,
+      mergeAttrs: false,
+      validator: null,
+      xmlns: false,
+      explicitChildren: false,
+      childkey: '$$',
+      preserveChildrenOrder: false,
+      charsAsChildren: false,
+      includeWhiteChars: false,
+      async: false,
+      strict: true,
+      attrNameProcessors: null,
+      attrValueProcessors: null,
+      tagNameProcessors: null,
+      valueProcessors: null,
+    });
+    const xml = await parser.parseStringPromise(rssXmlText);
+    console.log('rssxml:', xml);
+    // TODO: check for rss version and itunes namespace
+
+    const newContentItemsSourceData = {
+      type,
+      statusCode: response.status,
+      response: rssXmlText,
+      instructions: null,
+      ...contentItemsSourceData,
+    };
+
+    return { valid: true, data: newContentItemsSourceData };
   }
+
+  // url validation
 
   return { valid: false, message: 'Unsupported type', data: null };
 }
