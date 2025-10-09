@@ -1,5 +1,6 @@
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
+import ProblemSolution from '@/components/ProblemSolution';
 import ProofPoints from '@/components/ProofPoints';
 import InteractiveDemo from '@/components/InteractiveDemo';
 import ScrollAnimation from '@/components/ScrollAnimation';
@@ -14,6 +15,7 @@ export default function Home() {
     <div className="min-h-screen">
       <Header />
       <Hero />
+      <ProblemSolution />
       <ProofPoints />
       <div id="demo-section">
         <InteractiveDemo />

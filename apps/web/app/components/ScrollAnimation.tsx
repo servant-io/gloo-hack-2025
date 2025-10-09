@@ -10,7 +10,7 @@ export default function ScrollAnimation() {
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ['start center', 'end center'],
+    offset: ['start 44%', 'center 33%'],
   });
 
   useEffect(() => {
@@ -32,7 +32,7 @@ export default function ScrollAnimation() {
   const steps = [
     {
       number: 1,
-      title: 'AI queries content through your app',
+      title: 'AI queries content through a Kingdom Connect-enabled app',
       opacity: step1Opacity,
       icon: (
         <svg
@@ -52,7 +52,7 @@ export default function ScrollAnimation() {
     },
     {
       number: 2,
-      title: 'ContentMeter tracks usage in real-time',
+      title: 'Kingdom Connect tracks usage in real-time',
       opacity: step2Opacity,
       icon: (
         <svg
@@ -138,7 +138,7 @@ export default function ScrollAnimation() {
           </div>
 
           {/* Right Column: Circuit Animation */}
-          <div className="relative flex items-center justify-center">
+          <div className="relative hidden md:flex items-center justify-center">
             <svg
               className="w-full h-full max-w-md"
               viewBox="0 0 400 600"

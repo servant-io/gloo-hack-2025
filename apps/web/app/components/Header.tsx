@@ -21,7 +21,7 @@ export default function Header() {
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded bg-gradient-to-br from-primary to-chart-2" />
             <span className="font-heading text-xl font-bold text-foreground">
-              ContentMeter
+              Kingdom Connect
             </span>
           </div>
 

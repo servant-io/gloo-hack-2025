@@ -25,8 +25,8 @@ export default function SocialProof() {
               Early Access Partners
             </h2>
             <p className="text-muted-foreground mb-8">
-              Leading seminaries and publishers are already earning with
-              ContentMeter
+              Leading seminaries and publishers are already earning with Kingdom
+              Connect
             </p>
 
             <div className="grid grid-cols-2 gap-4 mb-8">

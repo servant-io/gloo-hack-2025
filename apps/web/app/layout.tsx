@@ -14,7 +14,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: 'ContentMeter - Monetize Your Content with AI',
+  title: 'Kingdom Connect - Monetize Your Content with AI',
   description:
     'Unlock new revenue streams by enabling AI systems to access your content through micropayments.',
 };

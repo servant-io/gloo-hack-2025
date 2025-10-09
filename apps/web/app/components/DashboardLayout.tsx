@@ -70,7 +70,7 @@ export default function DashboardLayout({
               <div className="h-8 w-8 rounded bg-gradient-to-br from-primary to-chart-2" />
               <div className="flex flex-col">
                 <span className="font-heading text-sm font-bold text-foreground">
-                  ContentMeter
+                  Kingdom Connect
                 </span>
                 <span className="text-xs text-muted-foreground">
                   Publisher Portal
