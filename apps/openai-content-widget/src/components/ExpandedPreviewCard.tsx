@@ -20,10 +20,9 @@ export function ExpandedPreviewCard({
   isBookmarked,
   hasCredits,
   onClose,
-  onWatchNow,
+  onWatchNow: _onWatchNow,
   onToggleBookmark,
 }: ExpandedPreviewCardProps) {
-  const canWatch = !video.isPremium || hasCredits;
   const [aiContent, setAiContent] = useState<{
     overview: string;
     relevance: string;
