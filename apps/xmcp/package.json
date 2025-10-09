@@ -8,6 +8,7 @@
   "scripts": {
     "build": "xmcp build",
     "dev": "xmcp dev",
+    "dev-custom": "tsx src/custom-server.ts",
     "start": "node dist/http.js"
   },
   "dependencies": {
@@ -16,6 +17,7 @@
     "zod": "3.24.4"
   },
   "devDependencies": {
-    "swc-loader": "^0.2.6"
+    "swc-loader": "^0.2.6",
+    "tsx": "^4.7.0"
   }
 }

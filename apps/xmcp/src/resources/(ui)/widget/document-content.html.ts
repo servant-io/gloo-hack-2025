@@ -1,10 +1,14 @@
 import { type ResourceMetadata } from 'xmcp';
 
-export const metadata: ResourceMetadata = {
-  name: 'document-content-widget',
+export const metadata: ResourceMetadata & { _meta?: any } = {
+  name: 'document-content-ui-widget',
   mimeType: 'text/html+skybridge',
   description:
-    'Displays detailed document content with transcript and metadata',
+    'UI template for document-content widget (ui://widget/document-content.html)',
+  _meta: {
+    'openai/widgetAccessible': true,
+    'openai/resultCanProduceWidget': true,
+  },
 };
 
 export default function handler() {
@@ -162,13 +166,13 @@ export default function handler() {
   </div>
   
   <script>
-    // Get data from ChatGPT
-    const data = window.openai?.toolOutput || { structuredContent: { document: null } };
-    
+    // Get structuredContent injected by ChatGPT as toolOutput
+    const toolOutput = window.openai?.toolOutput ?? null;
+
     // Render content
-    const contentDiv = document.getElementById('content');
-    
-    if (!data.structuredContent || !data.structuredContent.document) {
+    const contentDiv = window.document.getElementById('content');
+
+    if (!toolOutput || !toolOutput.document) {
       contentDiv.innerHTML = \`
         <div class="loading-state">
           <div>Loading document content...</div>
@@ -176,15 +180,16 @@ export default function handler() {
       \`;
       return;
     }
+
+    // Avoid shadowing the DOM's global \`document\`
+    const doc = toolOutput.document;
+    const meta = toolOutput.metadata;
     
-    const document = data.structuredContent.document;
-    const metadata = data.structuredContent.metadata;
-    
-    if (metadata.error) {
+    if (meta.error) {
       contentDiv.innerHTML = \`
         <div class="error-state">
           <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">⚠️ Error</div>
-          <div>\${document.text}</div>
+          <div>\${doc.text}</div>
         </div>
       \`;
       return;
@@ -208,36 +213,36 @@ export default function handler() {
     
     contentDiv.innerHTML = \`
       <div class="document-header">
-        <div class="document-title">\${document.title}</div>
+        <div class="document-title">\${doc.title}</div>
         <div class="document-meta">
           <div class="meta-item">
-            <span class="meta-label">ID:</span> \${document.id}
+            <span class="meta-label">ID:</span> \${doc.id}
           </div>
           <div class="meta-item">
-            <span class="meta-label">Length:</span> \${formatTextLength(document.text.length)}
+            <span class="meta-label">Length:</span> \${formatTextLength(doc.text.length)}
           </div>
           <div class="meta-item">
-            <span class="meta-label">Source:</span> \${document.metadata.source}
+            <span class="meta-label">Source:</span> \${doc.metadata.source}
           </div>
           <div class="meta-item">
-            <span class="meta-label">Created:</span> \${formatDate(document.metadata.created_at)}
+            <span class="meta-label">Created:</span> \${formatDate(doc.metadata.created_at)}
           </div>
         </div>
-        \${document.url ? \`<a href="\${document.url}" target="_blank" class="document-url">🔗 View Original</a>\` : ''}
+        \${doc.url ? \`<a href="\${doc.url}" target="_blank" class="document-url">🔗 View Original</a>\` : ''}
       </div>
       
       <div class="content-section">
         <div class="content-title">📝 Transcript Content</div>
-        <div class="transcript-content" id="transcript-text">\${document.text}</div>
+        <div class="transcript-content" id="transcript-text">\${doc.text}</div>
         <button class="copy-button" onclick="copyTranscript()">📋 Copy Transcript</button>
       </div>
     \`;
     
     // Copy to clipboard function
     window.copyTranscript = function() {
-      const transcriptText = document.getElementById('transcript-text').textContent;
+      const transcriptText = window.document.getElementById('transcript-text').textContent;
       navigator.clipboard.writeText(transcriptText).then(() => {
-        const button = document.querySelector('.copy-button');
+        const button = window.document.querySelector('.copy-button');
         const originalText = button.textContent;
         button.textContent = '✅ Copied!';
         button.style.background = '#28a745';

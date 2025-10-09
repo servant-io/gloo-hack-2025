@@ -31,9 +31,11 @@ export const metadata: ToolMetadata & { _meta?: any } = {
     idempotentHint: true,
   },
   _meta: {
-    'openai/outputTemplate': 'widgets://document-content-widget',
+    'openai/outputTemplate': 'ui://widget/document-content.html',
     'openai/toolInvocation/invoking': 'Fetching document content...',
     'openai/toolInvocation/invoked': 'Document content retrieved!',
+    "openai/widgetAccessible": true,
+    "openai/resultCanProduceWidget": true
   },
 };
 
@@ -103,6 +105,13 @@ export default async function fetch({ id }: InferSchema<typeof schema>) {
           source: result.metadata.source,
         },
       },
+      _meta: {
+        'openai/outputTemplate': 'ui://widget/document-content.html',
+        'openai/toolInvocation/invoking': 'Fetching document content...',
+        'openai/toolInvocation/invoked': 'Document content retrieved!',
+        'openai/widgetAccessible': true,
+        'openai/resultCanProduceWidget': true,
+      },
     };
   } catch (error) {
     console.error('Fetch error:', error);
@@ -133,6 +142,13 @@ export default async function fetch({ id }: InferSchema<typeof schema>) {
           id: id,
           title: 'Error',
         },
+      },
+      _meta: {
+        'openai/outputTemplate': 'ui://widget/document-content.html',
+        'openai/toolInvocation/invoking': 'Fetching document content...',
+        'openai/toolInvocation/invoked': 'Document content retrieved!',
+        'openai/widgetAccessible': true,
+        'openai/resultCanProduceWidget': true,
       },
     };
   }
