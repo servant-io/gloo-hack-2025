@@ -115,6 +115,47 @@ export type PublisherOverviewResponse = {
   monthlyRequests: number;
   contentCount: number;
   calculationWindowDays: number;
+  pendingPayout: number;
+  organization: string;
+};
+
+export type EarningsHistory = {
+  date: string;
+  earnings: number;
+  requests: number;
+};
+
+export type UsageByApp = {
+  app: string;
+  requests: number;
+  earnings: number;
+};
+
+export type RecentTransaction = {
+  id: string;
+  timestamp: string;
+  app: string;
+  content: string;
+  amount: number;
+  status: string;
+};
+
+export type ContentItemStats = {
+  id: string;
+  title: string;
+  type: string;
+  uploadedAt: string;
+  requests: number;
+  earnings: number;
+  avgCost: number;
+  coverImage?: string;
+  description: string;
+  author: string;
+  publishedDate: string;
+  pages: number;
+  accessLevel: string;
+  aiAccessEnabled: boolean;
+  pricing: number;
 };
 
 export const analyticsApi = {
@@ -122,5 +163,43 @@ export const analyticsApi = {
     apiClient.get<PublisherOverviewResponse>('/api/analytics/overview', {
       signal: options.signal,
       query: { publisherId },
+    }),
+
+  getEarningsHistory: (
+    publisherId: string,
+    days: number = 30,
+    options: { signal?: AbortSignal } = {}
+  ) =>
+    apiClient.get<EarningsHistory[]>('/api/analytics/detailed', {
+      signal: options.signal,
+      query: { publisherId, type: 'earningsHistory', days },
+    }),
+
+  getUsageByApp: (
+    publisherId: string,
+    options: { signal?: AbortSignal } = {}
+  ) =>
+    apiClient.get<UsageByApp[]>('/api/analytics/detailed', {
+      signal: options.signal,
+      query: { publisherId, type: 'usageByApp' },
+    }),
+
+  getRecentTransactions: (
+    publisherId: string,
+    limit: number = 10,
+    options: { signal?: AbortSignal } = {}
+  ) =>
+    apiClient.get<RecentTransaction[]>('/api/analytics/detailed', {
+      signal: options.signal,
+      query: { publisherId, type: 'recentTransactions', limit },
+    }),
+
+  getContentStats: (
+    publisherId: string,
+    options: { signal?: AbortSignal } = {}
+  ) =>
+    apiClient.get<ContentItemStats[]>('/api/analytics/detailed', {
+      signal: options.signal,
+      query: { publisherId, type: 'contentStats' },
     }),
 };

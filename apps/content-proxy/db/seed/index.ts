@@ -1,11 +1,13 @@
 import { seedContentSchemas } from './content';
 import { seedPersonalizationSchemas } from './personalization';
 import { seedAnalyticsData } from './analytics';
+import { seedLicensingData } from './licensing';
 
 export async function seed() {
   await seedContentSchemas();
   await seedPersonalizationSchemas();
   await seedAnalyticsData();
+  await seedLicensingData();
 }
 
 /**

@@ -8,6 +8,7 @@ export default defineConfig({
     './db/schema.ts',
     './db/schemas/personalization.ts',
     './db/schemas/content.ts',
+    './db/schemas/licensing.ts',
   ],
   out: './db/migrations',
   dialect: 'postgresql',
