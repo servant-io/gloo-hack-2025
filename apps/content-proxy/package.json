@@ -7,6 +7,8 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "db:local:up": "docker-compose up -d",
     "db:local:down": "docker-compose down",
     "db:generate:migration": "drizzle-kit generate --config drizzle.config.ts",
@@ -44,6 +46,7 @@
     "eslint-config-next": "catalog:",
     "tailwindcss": "catalog:",
     "tsx": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

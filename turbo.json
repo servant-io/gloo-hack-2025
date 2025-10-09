@@ -7,7 +7,14 @@
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**"],
-      "env": ["POSTGRES_URL", "NODE_ENV"]
+      "env": [
+        "POSTGRES_URL",
+        "NODE_ENV",
+        "GLOO_AI_CLIENT_ID",
+        "GLOO_AI_CLIENT_SECRET",
+        "CONTENT_PROXY_ALLOWED_ORIGINS",
+        "CONTENT_PROXY_RATE_PER_BYTE"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"],
@@ -15,6 +22,10 @@
     },
     "check-types": {
       "dependsOn": ["^check-types"]
+    },
+    "test": {
+      "dependsOn": ["^test"],
+      "env": ["GLOO_AI_CLIENT_ID", "GLOO_AI_CLIENT_SECRET"]
     },
     "dev": {
       "cache": false,
