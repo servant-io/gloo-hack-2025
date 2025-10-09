@@ -5,13 +5,26 @@ export interface Message {
   content: string;
 }
 
+export interface Tool {
+  type: 'function';
+  function: {
+    name: string;
+    description: string;
+    parameters: {
+      type: 'object';
+      properties: Record<string, unknown>;
+      required?: string[];
+    };
+  };
+}
+
 export interface CompletionRequest {
   model: string;
   messages: Message[];
   max_tokens?: number;
   stream?: boolean;
   temperature?: number;
-  tools?: any[];
+  tools?: Tool[];
   tool_choice?: 'none' | 'auto' | string;
 }
 
