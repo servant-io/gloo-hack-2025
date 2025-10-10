@@ -46,7 +46,7 @@ export async function extractYouTubeChannelVideos(
       await getYouTubeChannelUploadsPlaylistId(channelUrl);
     if (!uploadsPlaylistId) return [];
 
-    let sourcedContentItems: SourcedContentItem[] = [];
+    const sourcedContentItems: SourcedContentItem[] = [];
     let nextPageToken: string | null | undefined = undefined;
 
     do {
