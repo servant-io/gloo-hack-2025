@@ -14,7 +14,7 @@ export const parseRss2Itunes = async (rawRssXmlText: string) => {
     explicitArray: false, // default: true
     ignoreAttrs: false,
     mergeAttrs: false,
-    validator: null,
+    // validator: null,
     xmlns: false,
     explicitChildren: false,
     childkey: '$$',
@@ -23,10 +23,10 @@ export const parseRss2Itunes = async (rawRssXmlText: string) => {
     includeWhiteChars: false,
     async: false,
     strict: true,
-    attrNameProcessors: null,
-    attrValueProcessors: null,
-    tagNameProcessors: null,
-    valueProcessors: null,
+    // attrNameProcessors: null,
+    // attrValueProcessors: null,
+    // tagNameProcessors: null,
+    // valueProcessors: null,
   });
   const rssxml = await parser.parseStringPromise(rawRssXmlText);
 

@@ -3,7 +3,11 @@ import { ContentItem } from '@/lib/content/types';
 import CSV from 'papaparse';
 
 export const getCsvRows = (csvContent: string): string[][] => {
-  return CSV.parse(csvContent, { header: false }).data;
+  const rows = CSV.parse(csvContent, { header: false }).data;
+  if (typeof rows === 'object' && typeof rows[0] === 'string')
+    return rows as string[][];
+
+  return [];
 };
 
 export const getCsvHeaderColumns = (csvContent: string): string[] => {
