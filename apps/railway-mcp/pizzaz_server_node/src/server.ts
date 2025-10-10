@@ -337,8 +337,7 @@ function createPizzazServer(): Server {
         const { rows, errorText } = await searchSupabase(
           SUPABASE_DEFAULT_TABLE,
           args.query,
-          5,
-          'video'
+          5
         );
 
         if (errorText) {
@@ -372,8 +371,7 @@ function createPizzazServer(): Server {
         const { rows, errorText } = await searchSupabase(
           SUPABASE_DEFAULT_TABLE,
           args.query,
-          limit,
-          'video'
+          limit
         );
 
         if (errorText) {
