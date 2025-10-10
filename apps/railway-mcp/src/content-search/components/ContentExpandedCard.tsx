@@ -1,4 +1,5 @@
-import type { ContentItem } from "../types";
+import { Clock, ExternalLink, Lock, X } from 'lucide-react';
+import type { ContentItem } from '../types';
 
 type ContentExpandedCardProps = {
   item: ContentItem;
@@ -15,117 +16,151 @@ export function ContentExpandedCard({
   const isVideoPlayable = Boolean(videoSrc);
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/50 px-4 py-6">
-      <div className="relative w-full max-w-4xl overflow-hidden rounded-3xl bg-white shadow-2xl">
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-600 shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-          aria-label="Close preview"
+    <div
+      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm overflow-y-auto"
+      onClick={onClose}
+    >
+      <div className="min-h-full flex items-center justify-center px-4 py-8 sm:px-6">
+        <article
+          className="relative w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl"
+          onClick={(event) => event.stopPropagation()}
         >
-          ×
-        </button>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close preview"
+            className="absolute right-4 top-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-600 shadow-lg transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+          >
+            <X className="h-5 w-5" />
+          </button>
 
-        <div className="grid gap-6 bg-slate-900/95 p-6 text-slate-100 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] md:p-8">
-          <div className="flex flex-col gap-4">
-            <div className="overflow-hidden rounded-2xl bg-black/60">
-              {isVideoPlayable ? (
-                <video
-                  key={videoSrc ?? undefined}
-                  controls
-                  preload="metadata"
-                  poster={item.thumbnail ?? undefined}
-                  className="aspect-video w-full bg-black"
-                >
-                  <source src={videoSrc ?? undefined} />
-                  Your browser does not support embedded video playback.
-                </video>
-              ) : item.thumbnail ? (
-                <img
-                  src={item.thumbnail}
-                  alt={item.title}
-                  className="aspect-video w-full object-cover"
-                  loading="lazy"
-                />
-              ) : (
-                <div className="aspect-video flex w-full items-center justify-center text-sm text-slate-400">
-                  Preview unavailable
-                </div>
-              )}
-            </div>
-
-          <div className="flex flex-wrap gap-2 text-xs uppercase tracking-wide text-slate-300">
-              {item.contentType ? (
-                <span className="rounded-full bg-white/10 px-3 py-1">
-                  {item.contentType}
-                </span>
-              ) : null}
-              {item.isPremium ? (
-                <span className="rounded-full bg-amber-400/20 px-3 py-1 text-amber-200">
-                  Premium access
-                </span>
-              ) : null}
-              {item.durationSeconds ? (
-                <span className="rounded-full bg-white/10 px-3 py-1">
-                  {formatDuration(item.durationSeconds)}
-                </span>
-              ) : null}
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-4 text-slate-800">
-            <div>
-              <p className="text-xs uppercase tracking-wide text-slate-400">
-                Previewing
-              </p>
-              <h2 className="mt-1 text-2xl font-semibold text-white">
-                {item.title}
-              </h2>
-              {item.seriesTitle ? (
-                <p className="text-sm text-slate-300">{item.seriesTitle}</p>
-              ) : null}
-            </div>
-
-            {item.description ? (
-              <p className="text-sm leading-relaxed text-slate-200 whitespace-pre-line">
-                {item.description}
-              </p>
+          <div className="relative aspect-video w-full overflow-hidden bg-slate-950">
+            {isVideoPlayable ? (
+              <video
+                key={videoSrc ?? undefined}
+                controls
+                preload="metadata"
+                poster={item.thumbnail ?? undefined}
+                className="h-full w-full object-cover"
+              >
+                <source src={videoSrc ?? undefined} />
+                Your browser does not support embedded video playback.
+              </video>
+            ) : item.thumbnail ? (
+              <img
+                src={item.thumbnail}
+                alt={item.title}
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
             ) : (
-              <p className="text-sm text-slate-400">No description provided.</p>
+              <div className="flex h-full items-center justify-center text-sm text-slate-200">
+                Preview unavailable
+              </div>
             )}
 
-            <dl className="grid grid-cols-2 gap-4 text-xs text-slate-200">
-              {item.source ? (
-                <div>
-                  <dt className="text-slate-400">Source</dt>
-                  <dd className="text-white">{item.source}</dd>
-                </div>
-              ) : null}
-              {item.uploadDate ? (
-                <div>
-                  <dt className="text-slate-400">Published</dt>
-                  <dd className="text-white">{formatDate(item.uploadDate)}</dd>
-                </div>
-              ) : null}
-            </dl>
+            {item.isPremium ? (
+              <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-amber-500 px-4 py-1.5 text-sm font-semibold text-white shadow">
+                <Lock className="h-4 w-4" /> Premium
+              </div>
+            ) : null}
+          </div>
 
-            <div className="mt-auto flex flex-col gap-3">
-              <button
-                type="button"
-                className="inline-flex items-center justify-center rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow hover:bg-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                onClick={() => onOpenExternal(item)}
-              >
-                Open in new tab
-              </button>
-              {item.isPremium ? (
-                <p className="text-xs text-amber-200 bg-amber-500/20 rounded-xl px-3 py-2">
-                  Premium content may require credits before playback in the
-                  primary app.
-                </p>
+          <div className="px-6 py-8 sm:px-10 sm:py-10">
+            <header className="mb-8 space-y-3">
+              {item.seriesTitle ? (
+                <div className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600">
+                  {item.seriesTitle}
+                </div>
               ) : null}
+              <h2 className="text-3xl font-bold text-slate-950 sm:text-4xl">
+                {item.title}
+              </h2>
+              {item.description ? (
+                <p className="text-sm leading-relaxed text-slate-600 sm:text-base">
+                  {item.description}
+                </p>
+              ) : (
+                <p className="text-sm text-slate-500">
+                  No description provided.
+                </p>
+              )}
+
+              <div className="flex flex-wrap items-center gap-3">
+                {item.durationSeconds ? (
+                  <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                    <Clock className="h-3.5 w-3.5" />
+                    {formatDuration(item.durationSeconds)}
+                  </span>
+                ) : null}
+                {item.contentType ? (
+                  <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                    {item.contentType}
+                  </span>
+                ) : null}
+              </div>
+            </header>
+
+            <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_260px]">
+              <section className="space-y-6">
+                <article className="rounded-2xl border border-slate-200 bg-slate-50/60 p-5">
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                    Overview
+                  </h3>
+                  {item.description ? (
+                    <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                      {item.description}
+                    </p>
+                  ) : (
+                    <p className="mt-3 text-sm text-slate-400">
+                      No overview available.
+                    </p>
+                  )}
+                </article>
+              </section>
+
+              <aside className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white/80 p-5">
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                  Details
+                </h3>
+                <dl className="space-y-3 text-sm text-slate-600">
+                  {item.source ? (
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-slate-500">Source</dt>
+                      <dd className="text-right font-medium text-slate-700">
+                        {item.source}
+                      </dd>
+                    </div>
+                  ) : null}
+                  {item.uploadDate ? (
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-slate-500">Published</dt>
+                      <dd className="text-right font-medium text-slate-700">
+                        {formatDate(item.uploadDate)}
+                      </dd>
+                    </div>
+                  ) : null}
+                </dl>
+
+                <button
+                  type="button"
+                  onClick={() => onOpenExternal(item)}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow transition hover:bg-indigo-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Open Content
+                </button>
+
+                {item.isPremium ? (
+                  <p className="rounded-xl bg-amber-50 px-4 py-3 text-xs text-amber-700">
+                    Premium access required. Ensure credits are available before
+                    launching.
+                  </p>
+                ) : null}
+              </aside>
             </div>
           </div>
-        </div>
+        </article>
       </div>
     </div>
   );
@@ -134,12 +169,16 @@ export function ContentExpandedCard({
 function pickVideoSource(item: ContentItem): string | null {
   if (item.mediaUrl) return item.mediaUrl;
   if (!item.url) return null;
-  if (item.contentType && item.contentType.toLowerCase().includes("video")) {
+  if (item.contentType && item.contentType.toLowerCase().includes('video')) {
     return item.url;
   }
 
   const lower = item.url.toLowerCase();
-  if (lower.endsWith(".mp4") || lower.endsWith(".m4v") || lower.endsWith(".webm")) {
+  if (
+    lower.endsWith('.mp4') ||
+    lower.endsWith('.m4v') ||
+    lower.endsWith('.webm')
+  ) {
     return item.url;
   }
 
@@ -147,18 +186,18 @@ function pickVideoSource(item: ContentItem): string | null {
 }
 
 function formatDuration(totalSeconds: number | null): string {
-  if (!totalSeconds) return "";
+  if (!totalSeconds) return '';
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = Math.max(0, totalSeconds % 60);
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
 function formatDate(input: string): string {
   const date = new Date(input);
   if (Number.isNaN(date.getTime())) return input;
   return date.toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   });
 }
