@@ -234,15 +234,17 @@ export default function ContentDetailPage() {
         </div>
 
         {/* Content Preview */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
-          <Image
-            src={content.thumbnailUrl}
-            alt={content.name}
-            width={300}
-            height={200}
-            className="w-full h-64 object-cover"
-          />
-        </div>
+        {content.thumbnailUrl ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
+            <Image
+              src={content.thumbnailUrl}
+              alt={content.name || 'Content Thumbnail'}
+              width={300}
+              height={200}
+              className="w-full h-64 object-cover"
+            />
+          </div>
+        ) : null}
 
         {/* Action Buttons */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">

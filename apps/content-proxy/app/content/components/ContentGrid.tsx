@@ -60,13 +60,15 @@ export function ContentGrid({ content }: ContentGridProps) {
               </span>
             </div>
 
-            <Image
-              src={item.thumbnailUrl}
-              alt={item.name}
-              width={300}
-              height={200}
-              className="w-full h-40 object-cover rounded mb-4"
-            />
+            {item.thumbnailUrl ? (
+              <Image
+                src={item.thumbnailUrl}
+                alt={item.name || 'Item thumbnail'}
+                width={300}
+                height={200}
+                className="w-full h-40 object-cover rounded mb-4"
+              />
+            ) : null}
 
             <h3 className="font-semibold text-lg text-gray-900 mb-2 line-clamp-2">
               {item.name}

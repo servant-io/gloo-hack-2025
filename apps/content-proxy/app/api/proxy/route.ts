@@ -1,4 +1,4 @@
-import { authorize } from '@/lib/authentication';
+import { authorizeProfile } from '@/lib/authentication';
 import {
   forwardRequest,
   isValidContentUrl,
@@ -10,9 +10,9 @@ export async function GET(request: NextRequest) {
   try {
     const startTime = Date.now();
     // authorize request
-    const authorization = await authorize(request);
+    const authorization = await authorizeProfile(request);
     if (!authorization.authorized || !authorization.profileId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
     const profileId = authorization.profileId.toString();
     // validate URL parameter
@@ -20,14 +20,14 @@ export async function GET(request: NextRequest) {
     const incomingUrl = (searchParams.get('url') || '').trim();
     const url = await isValidContentUrl(incomingUrl);
     if (!url.valid) {
-      return NextResponse.json({ error: url.error }, { status: 400 });
+      return NextResponse.json({ message: url.error }, { status: 422 });
     }
     const contentItemId = url.contentItem.id;
     const originalUrl = url.originalUrl.toString();
     const response = await forwardRequest(request.headers, originalUrl);
     if (response.status >= 400) {
       return NextResponse.json(
-        { error: 'Invalid URL provided', body: await response.text() },
+        { message: 'Invalid URL provided', body: await response.text() },
         { status: response.status, statusText: response.statusText }
       );
     }
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching content by ID:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch content' },
+      { message: 'Failed to fetch content' },
       { status: 500 }
     );
   }

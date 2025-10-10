@@ -1,10 +1,15 @@
 import { PublisherIds } from '../../lib/content/types';
 import { db } from '../db';
-import { publishers, contentItems } from '../schemas/content';
+import {
+  publishers,
+  contentItems,
+  contentItemsSources,
+} from '../schemas/content';
 import { eq } from 'drizzle-orm';
 
 export async function seedContentSchemas() {
   await seedPublishers();
+  await seedContentItemsSources();
   await seedContentItems();
 }
 
@@ -45,6 +50,63 @@ async function seedPublishers() {
   }
   console.log(
     `Upserted publishers: ${insertedCount} inserted, ${updatedCount} updated, ${seededPublishers.length - insertedCount - updatedCount} unchanged`
+  );
+}
+
+type ContentItemsSource = typeof contentItemsSources.$inferInsert;
+
+async function seedContentItemsSources() {
+  console.log('Seeding content item sources...');
+  let insertedCount = 0;
+  let updatedCount = 0;
+
+  for (const contentItemsSource of seededContentItemsSources) {
+    // Check if content items source already exists
+    const existingContentItemsSource = await db
+      .select()
+      .from(contentItemsSources)
+      .where(eq(contentItemsSources.id, contentItemsSource.id))
+      .limit(1);
+
+    if (existingContentItemsSource.length === 0) {
+      // Content items source doesn't exist, insert it
+      await db
+        .insert(contentItemsSources)
+        .values(contentItemsSource as ContentItemsSource);
+      insertedCount++;
+    } else {
+      // Content item exists, check if we need to update
+      const currentContentItemsSource = existingContentItemsSource[0];
+      const needsUpdate =
+        currentContentItemsSource.publisherId !==
+          contentItemsSource.publisherId ||
+        currentContentItemsSource.type !== contentItemsSource.type ||
+        currentContentItemsSource.name !== contentItemsSource.name ||
+        currentContentItemsSource.url !== contentItemsSource.url ||
+        currentContentItemsSource.autoSync !== contentItemsSource.autoSync ||
+        JSON.stringify(currentContentItemsSource.instructions) !==
+          JSON.stringify(contentItemsSource.instructions);
+
+      if (needsUpdate) {
+        // Update the content items source if any field changed
+        await db
+          .update(contentItemsSources)
+          .set({
+            publisherId: contentItemsSource.publisherId,
+            type: contentItemsSource.type,
+            name: contentItemsSource.name,
+            url: contentItemsSource.url,
+            autoSync: contentItemsSource.autoSync,
+            instructions: contentItemsSource.instructions,
+            updatedAt: new Date(),
+          })
+          .where(eq(contentItemsSources.id, contentItemsSource.id));
+        updatedCount++;
+      }
+    }
+  }
+  console.log(
+    `Upserted content items sources: ${insertedCount} inserted, ${updatedCount} updated, ${seededContentItemsSources.length - insertedCount - updatedCount} unchanged`
   );
 }
 
@@ -100,6 +162,45 @@ async function seedContentItems() {
     `Upserted content items: ${insertedCount} inserted, ${updatedCount} updated, ${seededContentItems.length - insertedCount - updatedCount} unchanged`
   );
 }
+
+const seededContentItemsSources: ContentItemsSource[] = [
+  {
+    id: 'eb5f44e9946e',
+    publisherId: PublisherIds.CAREY_NIEUWHOF,
+    type: 'csv',
+    name: 'Google Sheet CSV Export of "The Carey Nieuwhof Leadership Podcast"',
+    // browser url: https://docs.google.com/spreadsheets/d/1IvkuEbxWkdWHOsQkj6WyjjD5LJ_TqxvJA61MfqrAQLg/edit?usp=sharing
+    url: 'https://docs.google.com/spreadsheets/d/1IvkuEbxWkdWHOsQkj6WyjjD5LJ_TqxvJA61MfqrAQLg/export?format=csv&gid=0',
+    autoSync: false,
+    instructions: {
+      defaultContentItemType: 'audio',
+      headers: {
+        name: 'title',
+        shortDescription: null,
+        thumbnailUrl: 'image',
+        contentUrl: 'audio_url',
+      },
+    },
+  },
+  {
+    id: '54d67f958769',
+    publisherId: PublisherIds.CAREY_NIEUWHOF,
+    type: 'rss2-itunes',
+    name: 'RSS feed from libsyn.com of "The Carey Nieuwhof Leadership Podcast"',
+    url: 'https://feeds.libsyn.com/41469/rss',
+    autoSync: false,
+    instructions: {},
+  },
+  {
+    id: '96a9c7860e8b',
+    publisherId: PublisherIds.ACU,
+    type: 'youtube-channel',
+    name: 'YouTube channel @AustinChristianUniversity',
+    url: 'https://www.youtube.com/@AustinChristianUniversity',
+    autoSync: false,
+    instructions: {},
+  },
+];
 
 const seededContentItems: ContentItem[] = [
   {
@@ -629,6 +730,10 @@ const seededPublishers: Publisher[] = [
   {
     id: PublisherIds.IWU,
     name: 'Indiana Wesleyan University (IWU)',
+  },
+  {
+    id: PublisherIds.CAREY_NIEUWHOF,
+    name: 'Carey Nieuwhof',
   },
   {
     id: PublisherIds.APPLE,

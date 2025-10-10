@@ -38,16 +38,16 @@ export function fuzzySearch(
  * Higher score for more word matches
  */
 export function scoreItem(item: ContentItem, searchWords: string[]): number {
-  const name = item.name.toLowerCase();
-  const description = item.shortDescription.toLowerCase();
+  const name = item?.name?.toLowerCase();
+  const description = item?.shortDescription?.toLowerCase();
 
   let score = 0;
 
   searchWords.forEach((word) => {
-    if (name.includes(word)) {
+    if (name?.includes(word)) {
       score += 3; // Higher weight for name matches
     }
-    if (description.includes(word)) {
+    if (description?.includes(word)) {
       score += 1; // Lower weight for description matches
     }
   });

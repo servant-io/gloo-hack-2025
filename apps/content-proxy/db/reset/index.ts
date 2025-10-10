@@ -1,9 +1,31 @@
-import { resetContentSchemas } from './content';
-import { resetPersonalizationSchemas } from './personalization';
+import { db } from '../db';
+
+import {
+  contentItems,
+  contentItemsSources,
+  publishers,
+} from '../schemas/content';
+import {
+  apiKeys,
+  events,
+  metricSchemaVersions,
+  metrics,
+  profileApiKeyLkp,
+  profiles,
+  publisherApiKeyLkp,
+} from '../schemas/personalization';
 
 export async function reset() {
-  await resetContentSchemas();
-  await resetPersonalizationSchemas;
+  await db.delete(profileApiKeyLkp);
+  await db.delete(publisherApiKeyLkp);
+  await db.delete(contentItems);
+  await db.delete(contentItemsSources);
+  await db.delete(apiKeys);
+  await db.delete(events);
+  await db.delete(metricSchemaVersions);
+  await db.delete(metrics);
+  await db.delete(publishers);
+  await db.delete(profiles);
 }
 
 /**

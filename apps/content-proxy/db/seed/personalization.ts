@@ -1,8 +1,10 @@
+import { PublisherIds } from '@/lib/content/types';
 import { db } from '../db';
 import {
   profiles,
   apiKeys,
   profileApiKeyLkp,
+  publisherApiKeyLkp,
 } from '../schemas/personalization';
 import { eq, and } from 'drizzle-orm';
 
@@ -10,6 +12,7 @@ export async function seedPersonalizationSchemas() {
   await seedProfiles();
   await seedApiKeys();
   await seedProfileApiKeyMappings();
+  await seedPublisherApiKeyMappings();
 }
 
 type Profile = typeof profiles.$inferInsert;
@@ -138,6 +141,36 @@ async function seedProfileApiKeyMappings() {
   );
 }
 
+type PublisherApiKeyLkp = typeof publisherApiKeyLkp.$inferInsert;
+
+async function seedPublisherApiKeyMappings() {
+  console.log('Seeding publisher-API key mappings...');
+  let insertedCount = 0;
+
+  for (const mapping of seededPublisherApiKeyMappings) {
+    // Check if mapping already exists
+    const existingMapping = await db
+      .select()
+      .from(publisherApiKeyLkp)
+      .where(
+        and(
+          eq(publisherApiKeyLkp.publisherId, mapping.publisherId!),
+          eq(publisherApiKeyLkp.apiKeyId, mapping.apiKeyId!)
+        )
+      )
+      .limit(1);
+
+    if (existingMapping.length === 0) {
+      // Mapping doesn't exist, insert it
+      await db.insert(publisherApiKeyLkp).values(mapping as PublisherApiKeyLkp);
+      insertedCount++;
+    }
+  }
+  console.log(
+    `Upserted publisher-API key mappings: ${insertedCount} inserted, ${seededPublisherApiKeyMappings.length - insertedCount} unchanged`
+  );
+}
+
 // Generate API keys with proper properties
 function generateApiKey(): string {
   // Generate a 64-character hex string (equivalent to openssl rand -hex 32)
@@ -195,6 +228,18 @@ const seededApiKeys: ApiKey[] = [
     name: 'Testing API Key',
     description: 'Used for automated testing and CI/CD pipelines',
   },
+  {
+    id: '44d641bb-4612-4e55-9670-5e31e6cb97e4',
+    key: generateApiKey(),
+    name: 'Development "Carey Nieuwhof"',
+    description: 'Local development as publisher "Carey Nieuwhof"',
+  },
+  {
+    id: 'fcad602f-c4c2-4c93-96d4-2d917887d66b',
+    key: generateApiKey(),
+    name: 'Development "ACU"',
+    description: 'Local development as publisher "ACU"',
+  },
 ];
 
 // Profile-API key mappings - dynamically reference the seeded profiles
@@ -210,6 +255,18 @@ const seededProfileApiKeyMappings: ProfileApiKeyLkp[] = [
   {
     profileId: '789e0123-e45b-67d8-a901-526614174111', // Testing Service
     apiKeyId: 'c3d4e5f6-a7b8-9012-3456-789012345678', // Testing API Key
+  },
+];
+
+// Publisher-API key mappings - dynamically reference the seeded publishers
+const seededPublisherApiKeyMappings: PublisherApiKeyLkp[] = [
+  {
+    publisherId: PublisherIds.CAREY_NIEUWHOF,
+    apiKeyId: '44d641bb-4612-4e55-9670-5e31e6cb97e4',
+  },
+  {
+    publisherId: PublisherIds.ACU,
+    apiKeyId: 'fcad602f-c4c2-4c93-96d4-2d917887d66b',
   },
 ];
 
