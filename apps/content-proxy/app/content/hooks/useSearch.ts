@@ -43,7 +43,7 @@ export function useSearch({ debounceDelay = 300 }: UseSearchProps = {}) {
       }));
 
       const response = await fetch(
-        `/api/content/search?q=${encodeURIComponent(term)}`
+        `/api/content/search/v1?q=${encodeURIComponent(term)}`
       );
       if (!response.ok) {
         throw new Error('Search failed');
