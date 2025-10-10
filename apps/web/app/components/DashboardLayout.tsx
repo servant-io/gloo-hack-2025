@@ -3,6 +3,7 @@
 import { Home, FileText, Activity, DollarSign, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
+import Image from 'next/image';
 import {
   Sidebar,
   SidebarContent,
@@ -67,9 +68,11 @@ export default function DashboardLayout({
         <Sidebar>
           <SidebarHeader className="border-b p-4">
             <div className="flex items-center gap-2">
-              <img
+              <Image
                 src="/assets/images/faith-connect-icon.png"
                 alt="Faith Connection"
+                width={32}
+                height={32}
                 className="h-8 w-8"
               />
               <div className="flex flex-col">
