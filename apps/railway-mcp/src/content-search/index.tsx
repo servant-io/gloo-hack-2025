@@ -9,34 +9,36 @@ import { rowsToContentItems } from './transform';
 import type { ContentItem } from './types';
 
 type ContentSearchProps = {
-  videos?: unknown[];
+  videos?: unknown[] | null;
   query?: string;
   limit?: number;
 };
 
 function App() {
   const props = useWidgetProps<ContentSearchProps>(() => ({
-    videos: [],
+    videos: undefined,
     query: '',
     limit: 0,
   }));
 
-  const items = useMemo(
-    () => rowsToContentItems(props?.videos as any[]),
-    [props?.videos]
-  );
+  const rawVideos = props?.videos;
+  const isLoading = rawVideos === undefined || rawVideos === null;
 
-  // Determine if we're loading based on whether videos prop is still undefined/null
-  const isLoading = props?.videos === undefined || props?.videos === null;
+  const items = useMemo(
+    () => rowsToContentItems(Array.isArray(rawVideos) ? rawVideos : []),
+    [rawVideos]
+  );
   const [selectedId, setSelectedId] = useState<string | null>(
     items[0]?.id ?? null
   );
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
-    setSelectedId(items[0]?.id ?? null);
-    setExpandedId(null);
-  }, [items]);
+    if (!isLoading) {
+      setSelectedId(items[0]?.id ?? null);
+      setExpandedId(null);
+    }
+  }, [isLoading, items]);
 
   const query = typeof props?.query === 'string' ? props.query : '';
   const limit = typeof props?.limit === 'number' ? props.limit : null;
@@ -56,8 +58,14 @@ function App() {
               <ContentCarousel
                 items={items}
                 selectedId={selectedId}
-                onSelect={setSelectedId}
-                onExpand={setExpandedId}
+                onSelect={(id) => {
+                  if (isLoading) return;
+                  setSelectedId(id);
+                }}
+                onExpand={(id) => {
+                  if (isLoading) return;
+                  setExpandedId(id);
+                }}
                 isLoading={isLoading}
               />
             </main>
@@ -76,6 +84,7 @@ function App() {
   );
 
   function handleOpen(item: ContentItem) {
+    if (isLoading) return;
     const targetUrl = item.url ?? item.mediaUrl;
     if (!targetUrl) return;
 

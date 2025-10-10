@@ -25,7 +25,7 @@ export function ContentCarousel({
 
         <div className="relative">
           <div className="flex gap-4 overflow-x-auto pb-2">
-            {Array.from({ length: 3 }).map((_, index) => (
+            {Array.from({ length: 5 }).map((_, index) => (
               <div
                 key={index}
                 className="snap-start w-56 flex-shrink-0 rounded-xl border border-slate-200 bg-white shadow-sm animate-pulse"
