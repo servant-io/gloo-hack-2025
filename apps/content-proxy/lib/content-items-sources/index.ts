@@ -37,7 +37,7 @@ export const SUPPORTED_CONTENT_ITEMS_SOURCES_TYPES = [
 export function toContentItemsSourceName(
   fullName: string | null | undefined
 ): string {
-  if (!fullName || typeof fullName !== 'string') return "";
+  if (!fullName || typeof fullName !== 'string') return '';
 
   return fullName.slice(0, 200);
 }
@@ -45,7 +45,7 @@ export function toContentItemsSourceName(
 export function toContentItemsSourceShortDescription(
   fullDescription: string | null | undefined
 ): string {
-  if (!fullDescription || typeof fullDescription !== 'string') return "";
+  if (!fullDescription || typeof fullDescription !== 'string') return '';
 
   return fullDescription.slice(0, 500);
 }
