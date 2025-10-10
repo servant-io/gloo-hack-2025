@@ -45,10 +45,10 @@ Common cases where 'useEffect is NOT needed:
 - Cleanup that must happen when component unmounts
 
 reminder on widgets
+
 - Create src/<entry>/index.jsx with <entry>-root.
   - Add entry to build-all.mts targets; run pnpm build.
-  - Register widget in server with bundleUrls(entry) and a tool that returns _meta pointing to
+  - Register widget in server with bundleUrls(entry) and a tool that returns \_meta pointing to
     that template.
   - Define Zod schema; return exact structuredContent the widget expects.
   - openai connection needs to be refreshed if/when widget files change
-  
