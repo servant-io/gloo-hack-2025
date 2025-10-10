@@ -72,7 +72,7 @@ export default function ScrollAnimation() {
     },
     {
       number: 3,
-      title: 'Publishers receive micropayments instantly',
+      title: 'Creators receive micropayments instantly',
       opacity: step3Opacity,
       icon: (
         <svg

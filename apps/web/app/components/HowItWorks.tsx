@@ -5,7 +5,7 @@ import { Upload, Network, Gauge, Zap, BarChart3 } from 'lucide-react';
 const steps = [
   {
     icon: Upload,
-    title: 'Publishers Upload',
+    title: 'Creators Upload',
     description: 'Simple drag-drop interface for content',
     color: 'bg-chart-1/10 text-chart-1',
   },

@@ -21,7 +21,7 @@ export default function Hero() {
 
             <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-md px-4 py-3">
               <span className="text-sm text-muted-foreground">
-                Publishers earned
+                Creators earned
               </span>
               <AnimatedCounter
                 start={247893}

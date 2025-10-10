@@ -58,7 +58,7 @@ export default function Header() {
                 data-testid="button-login"
               >
                 <LogIn className="h-4 w-4 mr-2" />
-                Publisher Login
+                Creator Login
               </Button>
             )}
           </div>
