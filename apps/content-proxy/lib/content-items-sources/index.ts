@@ -36,16 +36,16 @@ export const SUPPORTED_CONTENT_ITEMS_SOURCES_TYPES = [
 
 export function toContentItemsSourceName(
   fullName: string | null | undefined
-): string | undefined {
-  if (!fullName || typeof fullName !== 'string') return;
+): string {
+  if (!fullName || typeof fullName !== 'string') return "";
 
   return fullName.slice(0, 200);
 }
 
 export function toContentItemsSourceShortDescription(
   fullDescription: string | null | undefined
-): string | undefined {
-  if (!fullDescription || typeof fullDescription !== 'string') return;
+): string {
+  if (!fullDescription || typeof fullDescription !== 'string') return "";
 
   return fullDescription.slice(0, 500);
 }
