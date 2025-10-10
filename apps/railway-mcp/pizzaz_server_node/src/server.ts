@@ -677,19 +677,29 @@ async function searchSupabase(
     };
   }
 
-  // Use PostgreSQL full-text search for better relevance and performance
-  // This provides ranking, stemming, and better multi-word query handling
-  const searchQuery = query.trim();
+  // Simple ILIKE search across relevant columns
+  // Split query into individual terms and search for any of them
+  const terms = query
+    .trim()
+    .split(/\s+/)
+    .filter((term) => term.length > 0);
 
-  if (searchQuery.length === 0) {
+  if (terms.length === 0) {
     return { rows: [], errorText: 'Empty query' };
   }
 
-  // Use full-text search with ranking
-  const fulltextQuery = `search_vector.fts.${encodeURIComponent(searchQuery)}`;
+  // Create OR conditions for each term across all searchable columns
+  const termConditions = terms.map((term) => {
+    const pattern = `*${encodeURIComponent(term)}*`;
+    return `title.ilike.${pattern},description.ilike.${pattern},og_title.ilike.${pattern},og_description.ilike.${pattern},series_title.ilike.${pattern},full_text.ilike.${pattern},url.ilike.${pattern}`;
+  });
+
+  const or = `or=(${termConditions.join(',')})`;
+
   const params = new URLSearchParams({
     select: '*',
     limit: String(limit),
+    order: 'source.asc', // Order by source to get balanced results
   });
 
   if (contentType) {
@@ -697,10 +707,9 @@ async function searchSupabase(
     params.append('content_type', `eq.${contentType}`);
   }
 
-  // Append the full-text search filter
   const url = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/${encodeURIComponent(
     table
-  )}?${params.toString()}&${fulltextQuery}`;
+  )}?${params.toString()}&${or}`;
 
   try {
     const res = await fetch(url, {
