@@ -677,17 +677,16 @@ async function searchSupabase(
     };
   }
 
-  // Fuzzy via ilike across relevant columns from content_items schema
-  // title, description, og_title, og_description, series_title, full_text, url
-  const pattern = `*${encodeURIComponent(query)}*`;
-  const or =
-    `or=(title.ilike.${pattern},` +
-    `description.ilike.${pattern},` +
-    `og_title.ilike.${pattern},` +
-    `og_description.ilike.${pattern},` +
-    `series_title.ilike.${pattern},` +
-    `full_text.ilike.${pattern},` +
-    `url.ilike.${pattern})`;
+  // Use PostgreSQL full-text search for better relevance and performance
+  // This provides ranking, stemming, and better multi-word query handling
+  const searchQuery = query.trim();
+
+  if (searchQuery.length === 0) {
+    return { rows: [], errorText: 'Empty query' };
+  }
+
+  // Use full-text search with ranking
+  const fulltextQuery = `search_vector.fts.${encodeURIComponent(searchQuery)}`;
   const params = new URLSearchParams({
     select: '*',
     limit: String(limit),
@@ -698,10 +697,10 @@ async function searchSupabase(
     params.append('content_type', `eq.${contentType}`);
   }
 
-  // Append the OR filter (not via URLSearchParams to keep PostgREST syntax intact)
+  // Append the full-text search filter
   const url = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/${encodeURIComponent(
     table
-  )}?${params.toString()}&${or}`;
+  )}?${params.toString()}&${fulltextQuery}`;
 
   try {
     const res = await fetch(url, {
