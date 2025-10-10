@@ -1,10 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { useWidgetProps } from '../use-widget-props';
 import { ContentCarousel } from './components/ContentCarousel';
 import { ContentExpandedCard } from './components/ContentExpandedCard';
-import { ContentHeader } from './components/ContentHeader';
 import { rowsToContentItems } from './transform';
 import type { ContentItem } from './types';
 
@@ -25,7 +24,8 @@ function App() {
   const isLoading = rawVideos === undefined || rawVideos === null;
 
   const items = useMemo(
-    () => rowsToContentItems(Array.isArray(rawVideos) ? rawVideos : []),
+    () =>
+      rowsToContentItems(Array.isArray(rawVideos) ? (rawVideos as any[]) : []),
     [rawVideos]
   );
   const [selectedId, setSelectedId] = useState<string | null>(
@@ -40,8 +40,7 @@ function App() {
     }
   }, [isLoading, items]);
 
-  const query = typeof props?.query === 'string' ? props.query : '';
-  const limit = typeof props?.limit === 'number' ? props.limit : null;
+
   const expandedItem = useMemo(() => {
     if (!expandedId) return null;
     return items.find((item) => item.id === expandedId) ?? null;
@@ -52,8 +51,6 @@ function App() {
       <div className="rounded-3xl overflow-hidden">
         <div className="min-h-full w-full bg-gradient-to-br from-slate-50 to-white text-slate-900 p-4 sm:p-6">
           <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-            <ContentHeader query={query} total={items.length} limit={limit} />
-
             <main>
               <ContentCarousel
                 items={items}
