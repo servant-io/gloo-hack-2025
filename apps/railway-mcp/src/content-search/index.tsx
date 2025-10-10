@@ -7,6 +7,7 @@ import { ContentDetailsPanel } from "./components/ContentDetailsPanel";
 import { ContentHeader } from "./components/ContentHeader";
 import { rowsToContentItems } from "./transform";
 import type { ContentItem } from "./types";
+import { ContentExpandedCard } from "./components/ContentExpandedCard";
 
 type ContentSearchProps = {
   videos?: unknown[];
@@ -27,9 +28,11 @@ function App() {
   const [selectedId, setSelectedId] = useState<string | null>(
     items[0]?.id ?? null
   );
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
     setSelectedId(items[0]?.id ?? null);
+    setExpandedId(null);
   }, [items]);
 
   const selectedItem: ContentItem | null = useMemo(() => {
@@ -39,6 +42,10 @@ function App() {
 
   const query = typeof props?.query === "string" ? props.query : "";
   const limit = typeof props?.limit === "number" ? props.limit : null;
+  const expandedItem = useMemo(() => {
+    if (!expandedId) return null;
+    return items.find((item) => item.id === expandedId) ?? null;
+  }, [expandedId, items]);
 
   return (
     <div className="min-h-full w-full bg-gradient-to-br from-slate-50 to-white text-slate-900 p-4 sm:p-6">
@@ -50,10 +57,23 @@ function App() {
             items={items}
             selectedId={selectedItem?.id ?? null}
             onSelect={setSelectedId}
+            onExpand={setExpandedId}
           />
-          <ContentDetailsPanel item={selectedItem} onOpen={handleOpen} />
+          <ContentDetailsPanel
+            item={selectedItem}
+            onOpen={handleOpen}
+            onExpand={(item) => setExpandedId(item.id)}
+          />
         </main>
       </div>
+
+      {expandedItem ? (
+        <ContentExpandedCard
+          item={expandedItem}
+          onClose={() => setExpandedId(null)}
+          onOpenExternal={handleOpen}
+        />
+      ) : null}
     </div>
   );
 

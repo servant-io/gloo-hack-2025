@@ -47,12 +47,15 @@ Re-implement the desired UI components directly inside `apps/railway-mcp`, using
 - For Phase 1, the widget relies solely on `useWidgetProps` tool output (no direct Supabase calls from the browser).
 - Minimal component set: start with `VideoCarousel` + `TimelineNode`. Optionally add a lightweight preview card with mocked text.
 - Ensure Tailwind styles load via the per-entry and global CSS import path used by `build-all.mts`.
+- Extend carousel cards with an expandable overlay that embeds the video player for richer previews.
 
 ## Progress (2025-10-10)
 - Scaffolded new entry at `src/content-search/index.tsx` with carousel and preview panel components tailored to MCP data.
 - Added transform utilities and shared types to normalize Supabase rows for the UI.
 - Registered the `content-search` widget/tool in `pizzaz_server_node/src/server.ts` and added the build target to `build-all.mts`.
 - `pnpm build` currently fails inside the sandbox (`EPERM` opening a tsx IPC pipe); needs re-run in a non-restricted environment.
+- Implemented expandable preview overlay with embedded video playback triggered from carousel/detail actions (local verification pending due to sandbox build limits).
+- Implemented expandable preview overlay with embedded video playback triggered from carousel/detail actions (local verification pending due to sandbox build limits).
 
 ## Outcomes (to fill on completion)
 - Summary of changed files and impact.

@@ -3,9 +3,14 @@ import type { ContentItem } from "../types";
 type ContentDetailsPanelProps = {
   item: ContentItem | null;
   onOpen: (item: ContentItem) => void;
+  onExpand: (item: ContentItem) => void;
 };
 
-export function ContentDetailsPanel({ item, onOpen }: ContentDetailsPanelProps) {
+export function ContentDetailsPanel({
+  item,
+  onOpen,
+  onExpand,
+}: ContentDetailsPanelProps) {
   if (!item) {
     return (
       <aside className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm text-slate-500">
@@ -64,6 +69,13 @@ export function ContentDetailsPanel({ item, onOpen }: ContentDetailsPanelProps) 
       </dl>
 
       <div className="mt-auto flex flex-col gap-3">
+        <button
+          type="button"
+          onClick={() => onExpand(item)}
+          className="inline-flex items-center justify-center rounded-full border border-indigo-200 bg-white px-4 py-2 text-sm font-semibold text-indigo-600 shadow-sm transition hover:border-indigo-300 hover:text-indigo-700"
+        >
+          Preview inline
+        </button>
         <button
           type="button"
           onClick={() => onOpen(item)}

@@ -4,12 +4,14 @@ type ContentCarouselProps = {
   items: ContentItem[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  onExpand: (id: string) => void;
 };
 
 export function ContentCarousel({
   items,
   selectedId,
   onSelect,
+  onExpand,
 }: ContentCarouselProps) {
   if (items.length === 0) {
     return (
@@ -32,16 +34,25 @@ export function ContentCarousel({
         <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scroll-smooth">
           {items.map((item) => {
             const isSelected = item.id === selectedId;
+            const cardClasses = `snap-start w-56 flex-shrink-0 rounded-xl border transition shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+              isSelected
+                ? "border-indigo-500 bg-indigo-50"
+                : "border-slate-200 bg-white hover:border-indigo-200"
+            }`;
+
             return (
-              <button
+              <div
                 key={item.id}
-                type="button"
+                role="button"
+                tabIndex={0}
                 onClick={() => onSelect(item.id)}
-                className={`snap-start w-56 flex-shrink-0 text-left rounded-xl border transition shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
-                  isSelected
-                    ? "border-indigo-500 bg-indigo-50"
-                    : "border-slate-200 bg-white hover:border-indigo-200"
-                }`}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onSelect(item.id);
+                  }
+                }}
+                className={`${cardClasses} text-left`}
               >
                 <div className="aspect-video w-full overflow-hidden rounded-t-xl bg-slate-100">
                   {item.thumbnail ? (
@@ -57,7 +68,7 @@ export function ContentCarousel({
                     </div>
                   )}
                 </div>
-                <div className="p-4">
+                <div className="p-4 flex flex-col gap-2">
                   <p className="text-sm font-semibold text-slate-900 line-clamp-2">
                     {item.title}
                   </p>
@@ -81,8 +92,18 @@ export function ContentCarousel({
                       </span>
                     ) : null}
                   </div>
+                  <button
+                    type="button"
+                    className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-indigo-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onExpand(item.id);
+                    }}
+                  >
+                    Preview
+                  </button>
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>
