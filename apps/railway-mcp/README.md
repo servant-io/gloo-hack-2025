@@ -74,7 +74,7 @@ The assets are exposed at [`http://localhost:4444`](http://localhost:4444) with 
 
 To reduce deployment complexity, the build now emits both hashed and plain filenames. Use plain filenames in production and point the MCP server at them.
 
-1) Build and serve assets as a Railway Static Site or Node service
+1. Build and serve assets as a Railway Static Site or Node service
 
 ```bash
 pnpm install
@@ -85,7 +85,7 @@ pnpm run build
 
 The build produces both hashed (e.g., `video-list-2d2b.js`) and plain copies (`video-list.js`, `video-list.css`).
 
-2) Configure the MCP server to use plain filenames
+2. Configure the MCP server to use plain filenames
 
 Set these env vars on the MCP service (Node):
 
@@ -95,7 +95,7 @@ Set these env vars on the MCP service (Node):
 With plain mode enabled, the server generates widget markup like:
 
 ```html
-<link rel="stylesheet" href="https://<assets>/video-list.css">
+<link rel="stylesheet" href="https://<assets>/video-list.css" />
 <script type="module" src="https://<assets>/video-list.js"></script>
 ```
 
@@ -123,6 +123,7 @@ The Node MCP server loads widget bundles from `ASSETS_ORIGIN`. Recommended setti
 - `ASSETS_USE_PLAIN=1` – Prefer plain filenames for simpler deploys.
 
 Optional (advanced):
+
 - `ASSETS_VERSION` – Pin a versioned hash (e.g., `2d2b`). If omitted and not using plain mode, the server attempts to read `/assets/manifest.json` at `ASSETS_ORIGIN`.
 
 If `ASSETS_ORIGIN` is not set, the server falls back to the demo CDN.

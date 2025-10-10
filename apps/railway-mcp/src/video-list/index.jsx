@@ -1,13 +1,14 @@
-import React from "react";
-import { createRoot } from "react-dom/client";
-import { useWidgetProps } from "../use-widget-props";
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { useWidgetProps } from '../use-widget-props';
 
 function Item({ v }) {
-  const title = v?.title || v?.og_title || v?.series_title || v?.id || "Untitled";
+  const title =
+    v?.title || v?.og_title || v?.series_title || v?.id || 'Untitled';
   const thumb = v?.thumbnail_url || v?.poster_images?.thumbnail || null;
   const href = v?.url || null;
-  const source = v?.source || "";
-  const type = v?.content_type || "";
+  const source = v?.source || '';
+  const type = v?.content_type || '';
 
   const open = (e) => {
     if (!href) return;
@@ -15,7 +16,7 @@ function Item({ v }) {
     if (window?.openai?.openExternal) {
       window.openai.openExternal({ href });
     } else {
-      window.open(href, "_blank", "noopener,noreferrer");
+      window.open(href, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -32,7 +33,7 @@ function Item({ v }) {
         <div className="text-sm font-medium truncate">{title}</div>
         <div className="text-xs text-black/60 truncate">
           {source}
-          {source && type ? " · " : ""}
+          {source && type ? ' · ' : ''}
           {type}
         </div>
       </div>
@@ -49,7 +50,7 @@ function Item({ v }) {
 }
 
 function App() {
-  const props = useWidgetProps(() => ({ videos: [], query: "" }));
+  const props = useWidgetProps(() => ({ videos: [], query: '' }));
   const videos = Array.isArray(props?.videos) ? props.videos : [];
 
   return (
@@ -68,5 +69,4 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("video-list-root")).render(<App />);
-
+createRoot(document.getElementById('video-list-root')).render(<App />);

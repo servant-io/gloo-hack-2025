@@ -1,7 +1,7 @@
-import { ContentItem, VideoRow } from "./types";
+import { ContentItem, VideoRow } from './types';
 
 function toStringOrNull(value: unknown): string | null {
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     const trimmed = value.trim();
     return trimmed.length > 0 ? trimmed : null;
   }
@@ -9,10 +9,10 @@ function toStringOrNull(value: unknown): string | null {
 }
 
 function toNumberOrNull(value: unknown): number | null {
-  if (typeof value === "number" && Number.isFinite(value)) {
+  if (typeof value === 'number' && Number.isFinite(value)) {
     return value;
   }
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
   }
@@ -23,17 +23,17 @@ function readPosterThumbnail(row: VideoRow): string | null {
   const field = row.poster_images;
   if (!field) return null;
 
-  if (typeof field === "object" && field !== null) {
+  if (typeof field === 'object' && field !== null) {
     if (
-      "thumbnail" in field &&
-      typeof (field as Record<string, unknown>).thumbnail === "string"
+      'thumbnail' in field &&
+      typeof (field as Record<string, unknown>).thumbnail === 'string'
     ) {
       return toStringOrNull((field as Record<string, unknown>).thumbnail);
     }
 
     if (Array.isArray(field)) {
-      const first = field.find((entry) => typeof entry === "string");
-      if (typeof first === "string") {
+      const first = field.find((entry) => typeof entry === 'string');
+      if (typeof first === 'string') {
         return toStringOrNull(first);
       }
     }
@@ -43,16 +43,19 @@ function readPosterThumbnail(row: VideoRow): string | null {
 }
 
 function coerceBoolean(value: unknown): boolean {
-  if (typeof value === "boolean") return value;
-  if (typeof value === "number") return value !== 0;
-  if (typeof value === "string") {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value !== 0;
+  if (typeof value === 'string') {
     const normalized = value.trim().toLowerCase();
-    return normalized === "true" || normalized === "1";
+    return normalized === 'true' || normalized === '1';
   }
   return false;
 }
 
-function inferIsPremium(row: VideoRow, durationSeconds: number | null): boolean {
+function inferIsPremium(
+  row: VideoRow,
+  durationSeconds: number | null
+): boolean {
   if (coerceBoolean(row.is_premium)) return true;
   if (durationSeconds && durationSeconds > 600) return true;
   return false;
@@ -71,7 +74,7 @@ function normalizeRow(row: VideoRow, index: number): ContentItem {
     toStringOrNull(row.og_description) ??
     toStringOrNull(row.description) ??
     toStringOrNull(row.series_title) ??
-    "";
+    '';
 
   const thumbnail =
     toStringOrNull(row.thumbnail_url) ?? readPosterThumbnail(row) ?? null;

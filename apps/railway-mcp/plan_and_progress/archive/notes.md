@@ -28,12 +28,14 @@ Updated 2025-10-09
 **Push Live — Assets (Plain Mode — recommended)**
 
 Option A: Railway Static Site
+
 - Root Directory: `apps/railway-mcp`
 - Build: `pnpm install && pnpm run build`
 - Output Directory: `assets`
 - Resulting URL is your `ASSETS_ORIGIN`.
 
 Option B: Railway Node Service (serving static via `serve`)
+
 - Root Directory: `apps/railway-mcp`
 - Build: `pnpm install && pnpm run build`
 - Start: `pnpm run serve:railway` (binds `$PORT`)
@@ -53,6 +55,7 @@ Option B: Railway Node Service (serving static via `serve`)
   - Endpoints: `GET /mcp` (SSE), `POST /mcp/messages?sessionId=...`.
 
 Runtime note on `tsx` (start script)
+
 - If `tsx` is pruned in production: set `NIXPACKS_NODE_INSTALL_DEV=true` on the MCP service, or switch to a precompile flow (build to JS and run with `node`).
 
 **Change Cycle**

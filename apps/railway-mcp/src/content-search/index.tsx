@@ -40,7 +40,6 @@ function App() {
     }
   }, [isLoading, items]);
 
-
   const expandedItem = useMemo(() => {
     if (!expandedId) return null;
     return items.find((item) => item.id === expandedId) ?? null;
