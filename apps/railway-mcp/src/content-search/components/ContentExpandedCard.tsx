@@ -54,7 +54,7 @@ export function ContentExpandedCard({
               )}
             </div>
 
-            <div className="flex flex-wrap gap-2 text-xs uppercase tracking-wide text-slate-300">
+          <div className="flex flex-wrap gap-2 text-xs uppercase tracking-wide text-slate-300">
               {item.contentType ? (
                 <span className="rounded-full bg-white/10 px-3 py-1">
                   {item.contentType}
@@ -132,13 +132,14 @@ export function ContentExpandedCard({
 }
 
 function pickVideoSource(item: ContentItem): string | null {
+  if (item.mediaUrl) return item.mediaUrl;
   if (!item.url) return null;
-  if (item.contentType && item.contentType.toLowerCase().includes('video')) {
+  if (item.contentType && item.contentType.toLowerCase().includes("video")) {
     return item.url;
   }
 
   const lower = item.url.toLowerCase();
-  if (lower.endsWith('.mp4') || lower.endsWith('.m4v') || lower.endsWith('.webm')) {
+  if (lower.endsWith(".mp4") || lower.endsWith(".m4v") || lower.endsWith(".webm")) {
     return item.url;
   }
 

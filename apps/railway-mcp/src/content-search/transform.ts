@@ -76,11 +76,13 @@ function normalizeRow(row: VideoRow, index: number): ContentItem {
   const thumbnail =
     toStringOrNull(row.thumbnail_url) ?? readPosterThumbnail(row) ?? null;
 
-  const url =
-    toStringOrNull(row.mp4_url) ??
-    toStringOrNull(row.url) ??
-    toStringOrNull(row.media_url) ??
-    null;
+  const mediaUrl =
+    toStringOrNull(row.mp4_url) ?? toStringOrNull(row.media_url) ?? null;
+
+  const canonicalUrl =
+    toStringOrNull(row.url) ?? toStringOrNull(row.full_text_url) ?? null;
+
+  const url = canonicalUrl ?? mediaUrl;
 
   const seriesTitle = toStringOrNull(row.series_title);
   const durationSeconds = toNumberOrNull(row.duration_seconds);
@@ -94,6 +96,7 @@ function normalizeRow(row: VideoRow, index: number): ContentItem {
     description,
     thumbnail,
     url,
+    mediaUrl,
     seriesTitle,
     durationSeconds,
     isPremium: inferIsPremium(row, durationSeconds),

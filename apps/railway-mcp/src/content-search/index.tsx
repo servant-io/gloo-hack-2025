@@ -78,14 +78,15 @@ function App() {
   );
 
   function handleOpen(item: ContentItem) {
-    if (!item.url) return;
+    const targetUrl = item.url ?? item.mediaUrl;
+    if (!targetUrl) return;
 
     if (window?.openai?.openExternal) {
-      window.openai.openExternal({ href: item.url });
+      window.openai.openExternal({ href: targetUrl });
       return;
     }
 
-    window.open(item.url, "_blank", "noopener,noreferrer");
+    window.open(targetUrl, "_blank", "noopener,noreferrer");
   }
 }
 

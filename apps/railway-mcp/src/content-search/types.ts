@@ -4,6 +4,7 @@ export type ContentItem = {
   description: string;
   thumbnail: string | null;
   url: string | null;
+  mediaUrl: string | null;
   seriesTitle: string | null;
   durationSeconds: number | null;
   isPremium: boolean;

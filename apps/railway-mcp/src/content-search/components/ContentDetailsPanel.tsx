@@ -72,17 +72,18 @@ export function ContentDetailsPanel({
         <button
           type="button"
           onClick={() => onExpand(item)}
-          className="inline-flex items-center justify-center rounded-full border border-indigo-200 bg-white px-4 py-2 text-sm font-semibold text-indigo-600 shadow-sm transition hover:border-indigo-300 hover:text-indigo-700"
+          disabled={!item.mediaUrl}
+          className="inline-flex items-center justify-center rounded-full border border-indigo-200 bg-white px-4 py-2 text-sm font-semibold text-indigo-600 shadow-sm transition hover:border-indigo-300 hover:text-indigo-700 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
         >
-          Preview inline
+          {item.mediaUrl ? "Preview inline" : "Preview unavailable"}
         </button>
         <button
           type="button"
           onClick={() => onOpen(item)}
-          disabled={!item.url}
+          disabled={!item.url && !item.mediaUrl}
           className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
         >
-          {item.url ? "Open content" : "Link unavailable"}
+          {item.url || item.mediaUrl ? "Open content" : "Link unavailable"}
         </button>
         {item.isPremium ? (
           <p className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
