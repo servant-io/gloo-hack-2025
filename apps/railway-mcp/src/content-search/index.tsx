@@ -3,11 +3,10 @@ import { createRoot } from "react-dom/client";
 
 import { useWidgetProps } from "../use-widget-props";
 import { ContentCarousel } from "./components/ContentCarousel";
-import { ContentDetailsPanel } from "./components/ContentDetailsPanel";
+import { ContentExpandedCard } from "./components/ContentExpandedCard";
 import { ContentHeader } from "./components/ContentHeader";
 import { rowsToContentItems } from "./transform";
 import type { ContentItem } from "./types";
-import { ContentExpandedCard } from "./components/ContentExpandedCard";
 
 type ContentSearchProps = {
   videos?: unknown[];
@@ -35,11 +34,6 @@ function App() {
     setExpandedId(null);
   }, [items]);
 
-  const selectedItem: ContentItem | null = useMemo(() => {
-    if (!selectedId) return items[0] ?? null;
-    return items.find((item) => item.id === selectedId) ?? items[0] ?? null;
-  }, [items, selectedId]);
-
   const query = typeof props?.query === "string" ? props.query : "";
   const limit = typeof props?.limit === "number" ? props.limit : null;
   const expandedItem = useMemo(() => {
@@ -52,17 +46,12 @@ function App() {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
         <ContentHeader query={query} total={items.length} limit={limit} />
 
-        <main className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]">
+        <main>
           <ContentCarousel
             items={items}
-            selectedId={selectedItem?.id ?? null}
+            selectedId={selectedId}
             onSelect={setSelectedId}
             onExpand={setExpandedId}
-          />
-          <ContentDetailsPanel
-            item={selectedItem}
-            onOpen={handleOpen}
-            onExpand={(item) => setExpandedId(item.id)}
           />
         </main>
       </div>

@@ -54,7 +54,7 @@ Re-implement the desired UI components directly inside `apps/railway-mcp`, using
 - Added transform utilities and shared types to normalize Supabase rows for the UI.
 - Registered the `content-search` widget/tool in `pizzaz_server_node/src/server.ts` and added the build target to `build-all.mts`.
 - `pnpm build` currently fails inside the sandbox (`EPERM` opening a tsx IPC pipe); needs re-run in a non-restricted environment.
-- Implemented expandable preview overlay with embedded video playback triggered from carousel/detail actions (local verification pending due to sandbox build limits).
+- Implemented expandable preview overlay with embedded video playback launched directly from carousel cards (detail sidebar removed to keep layout stable). Verification still pending due to sandbox build limits.
 - Implemented expandable preview overlay with embedded video playback triggered from carousel/detail actions (local verification pending due to sandbox build limits).
 
 ## Outcomes (to fill on completion)
