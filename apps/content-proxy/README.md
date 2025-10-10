@@ -22,7 +22,14 @@ Key environment variables (`.env.local`):
 POSTGRES_URL=postgresql://postgres:postgres@localhost:5433/content-proxy_dev
 CONTENT_PROXY_ALLOWED_ORIGINS=http://localhost:3000
 CONTENT_PROXY_RATE_PER_BYTE=0.000002
+GLOO_AI_CLIENT_ID=xXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxX_Xx
+GLOO_AI_CLIENT_SECRET=xXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxX_Xx
+YOUTUBE_API_KEY=xXxXxXxXxXxXxXxXxXxXxXxXxXxXxXxX_Xx
 ```
+
+### How to get my YouTube API key for development?
+
+Create a Google Project "Development" and [follow these steps](https://docs.themeum.com/tutor-lms/tutorials/get-youtube-api-key/) to get your API key. Then, update it in your `.env.local`.
 
 ## Daily Commands
 
