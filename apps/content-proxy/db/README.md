@@ -115,7 +115,7 @@ Many-to-many relationship between profiles and API keys.
 
 ### Content Retrieval Flow
 
-1. **Client Request** → API endpoints (`/api/content`, `/api/content/search`)
+1. **Client Request** → API endpoints (`/api/content`, `/api/content/search/v1`)
 2. **Database Query** → Content service queries `content_items` with `publishers` join
 3. **Response** → Returns paginated content with publisher information
 
@@ -129,7 +129,7 @@ Many-to-many relationship between profiles and API keys.
 
 ### Search Flow
 
-1. **Search Query** → Client sends search term to `/api/content/search`
+1. **Search Query** → Client sends search term to `/api/content/search/v1`
 2. **Full-Text Search** → Database performs ILIKE search on `name` and `short_description`
 3. **Results** → Returns matching content items with publisher information
 
@@ -145,7 +145,7 @@ flowchart TD
     API[Next.js API Routes]
     ContentAPI[Content API]
     ContentListAPI["GET /api/content"]
-    ContentSearchAPI["GET /api/content/search"]
+    ContentSearchAPI["GET /api/content/search/v1"]
     PersonalizationAPI[Personalization Actions]
 
     %% Business Logic Layer

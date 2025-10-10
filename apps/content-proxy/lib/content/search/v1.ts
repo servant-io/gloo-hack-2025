@@ -1,4 +1,4 @@
-import type { ContentItem } from './types';
+import type { ContentItem } from '../types';
 
 /**
  * Simple fuzzy search implementation
