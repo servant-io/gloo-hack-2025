@@ -44,7 +44,7 @@ export default function ProblemSolution() {
               <li className="flex items-start gap-2">
                 <span className="text-destructive">•</span>
                 <span>
-                  Publishers&rsquo; valuable content sits trapped in private
+                  Creators&rsquo; valuable content sits trapped in private
                   systems—LMS platforms, walled APIs, and inaccessible databases
                 </span>
               </li>
@@ -77,7 +77,7 @@ export default function ProblemSolution() {
               <li className="flex items-start gap-2">
                 <span className="text-destructive">•</span>
                 <span>
-                  Publishers can&rsquo;t track how, when, or where their content
+                  Creators can&rsquo;t track how, when, or where their content
                   is being used by AI systems
                 </span>
               </li>
@@ -111,8 +111,8 @@ export default function ProblemSolution() {
               Secure, Metered, and Fair Access
             </h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              Kingdom Connect provides an OAuth-gated content metering system
-              that lets AI agents access, measure, and pay for trusted publisher
+              Faith Connection provides an OAuth-gated content metering system
+              that lets AI agents access, measure, and pay for trusted creator
               content.
             </p>
           </div>

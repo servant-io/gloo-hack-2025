@@ -4,6 +4,7 @@ import { Button } from '@repo/ui/button';
 import { LogIn, LayoutDashboard, LogOut } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 export default function Header() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -19,9 +20,15 @@ export default function Header() {
       <div className="container mx-auto max-w-7xl px-4 md:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded bg-gradient-to-br from-primary to-chart-2" />
+            <Image
+              src="/assets/images/faith-connect-icon.png"
+              alt="Faith Connection"
+              width={32}
+              height={32}
+              className="h-8 w-8"
+            />
             <span className="font-heading text-xl font-bold text-foreground">
-              Kingdom Connect
+              Faith Connection
             </span>
           </div>
 
@@ -54,7 +61,7 @@ export default function Header() {
                 data-testid="button-login"
               >
                 <LogIn className="h-4 w-4 mr-2" />
-                Publisher Login
+                Creator Login
               </Button>
             )}
           </div>

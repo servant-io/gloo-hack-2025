@@ -25,7 +25,7 @@ export default function SocialProof() {
               Early Access Partners
             </h2>
             <p className="text-muted-foreground mb-8">
-              Leading seminaries and publishers are already earning with Kingdom
+              Leading seminaries and creators are already earning with Kingdom
               Connect
             </p>
 

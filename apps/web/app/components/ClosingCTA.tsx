@@ -34,7 +34,7 @@ export default function ClosingCTA() {
               className="bg-white text-primary hover:bg-white/90"
               data-testid="button-publisher-access"
             >
-              Publisher Access
+              Creator Access
             </Button>
             <Button
               size="lg"
