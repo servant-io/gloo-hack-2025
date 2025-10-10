@@ -46,28 +46,32 @@ function App() {
   }, [expandedId, items]);
 
   return (
-    <div className="min-h-full w-full bg-gradient-to-br from-slate-50 to-white text-slate-900 p-4 sm:p-6">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-        <ContentHeader query={query} total={items.length} limit={limit} />
+    <div className="min-h-full w-full">
+      <div className="rounded-3xl overflow-hidden">
+        <div className="min-h-full w-full bg-gradient-to-br from-slate-50 to-white text-slate-900 p-4 sm:p-6">
+          <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+            <ContentHeader query={query} total={items.length} limit={limit} />
 
-        <main>
-          <ContentCarousel
-            items={items}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-            onExpand={setExpandedId}
-            isLoading={isLoading}
-          />
-        </main>
+            <main>
+              <ContentCarousel
+                items={items}
+                selectedId={selectedId}
+                onSelect={setSelectedId}
+                onExpand={setExpandedId}
+                isLoading={isLoading}
+              />
+            </main>
+          </div>
+
+          {expandedItem ? (
+            <ContentExpandedCard
+              item={expandedItem}
+              onClose={() => setExpandedId(null)}
+              onOpenExternal={handleOpen}
+            />
+          ) : null}
+        </div>
       </div>
-
-      {expandedItem ? (
-        <ContentExpandedCard
-          item={expandedItem}
-          onClose={() => setExpandedId(null)}
-          onOpenExternal={handleOpen}
-        />
-      ) : null}
     </div>
   );
 
