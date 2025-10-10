@@ -5,7 +5,7 @@ type ContentHeaderProps = {
 };
 
 export function ContentHeader({ query, total, limit }: ContentHeaderProps) {
-  const formattedQuery = query.trim().length > 0 ? query.trim() : "Everything";
+  const formattedQuery = query.trim().length > 0 ? query.trim() : 'Everything';
 
   return (
     <header className="sticky top-0 z-10 bg-white/90 backdrop-blur border border-slate-200 rounded-2xl p-4 shadow-sm">
@@ -21,7 +21,7 @@ export function ContentHeader({ query, total, limit }: ContentHeaderProps) {
         <div className="flex items-center gap-2 text-sm text-slate-600">
           <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 font-medium text-slate-700">
             <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden />
-            {total} result{total === 1 ? "" : "s"}
+            {total} result{total === 1 ? '' : 's'}
           </span>
           {limit ? (
             <span className="hidden sm:inline text-xs text-slate-400">

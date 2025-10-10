@@ -3,11 +3,12 @@
 - Status: In Progress (2025-10-10)
 
 ## Objective
-Re-implement the desired UI components directly inside `apps/railway-mcp`, using the layouts/interactions as inspiration from `apps/openai-content-widget`. Preserve existing MCP tool/widget contracts and Supabase-backed shapes. Phase 1 targets strict parity: show thumbnails and titles from the existing `video-list` tool output. Enhanced interactions (bookmarks, credits, AI summaries, series groups) are stubbed/mocked until APIs are wired. Note the canonical documentation provided by the creator of apps sdk is the pizzaz components like pizzaz-carousel. 
 
+Re-implement the desired UI components directly inside `apps/railway-mcp`, using the layouts/interactions as inspiration from `apps/openai-content-widget`. Preserve existing MCP tool/widget contracts and Supabase-backed shapes. Phase 1 targets strict parity: show thumbnails and titles from the existing `video-list` tool output. Enhanced interactions (bookmarks, credits, AI summaries, series groups) are stubbed/mocked until APIs are wired. Note the canonical documentation provided by the creator of apps sdk is the pizzaz components like pizzaz-carousel.
 
 ## High-Level Steps
-- Audit both implementations and identify minimal component set to re-implement (e.g., `VideoCarousel`, `TimelineNode`, optionally `ExpandedPreviewCard`). You may rename things as you deem fit - timelinenode is probably more appropriate as carousel. 
+
+- Audit both implementations and identify minimal component set to re-implement (e.g., `VideoCarousel`, `TimelineNode`, optionally `ExpandedPreviewCard`). You may rename things as you deem fit - timelinenode is probably more appropriate as carousel.
 - Create internal component(s) under `src/content-search/components/` designed for MCP data directly.
 - Add a tiny transform utility under `src/content-search/transform.ts` to normalize Supabase rows to the internal `VideoItem` view model (still within MCP schema assumptions).
 - Scaffold a new widget entry `src/content-search/index.tsx` that renders the updated UI and reads data via `useWidgetProps`.
@@ -18,6 +19,7 @@ Re-implement the desired UI components directly inside `apps/railway-mcp`, using
 - Provide mock/static props for features not yet wired (AI content, credits, bookmarks) to match component expectations.
 
 ## Done Criteria
+
 - Parity: invoking the new tool renders a list of up to N results showing thumbnail, title, source/type (if present), and an "Open" action identical to current behavior.
 - Data contract unchanged: server returns `structuredContent: { videos: [...], query, limit }` compatible with `useWidgetProps` defaults.
 - Build + bundle: `pnpm build` includes `content-search.css/js` in `assets/` and `manifest.json` updated.
@@ -27,6 +29,7 @@ Re-implement the desired UI components directly inside `apps/railway-mcp`, using
 - Lint/typecheck pass in this package; zero ESLint disables beyond config.
 
 ## Verification
+
 - Build assets: `pnpm build` (from `apps/railway-mcp`).
 - Run server: `pnpm --filter railway-mcp start` or equivalent.
 - Tools visible: confirm via MCP client `list_tools` contains `content-search` and existing tools unaffected.
@@ -34,6 +37,7 @@ Re-implement the desired UI components directly inside `apps/railway-mcp`, using
 - UI render: widget shows carousel/list with thumbnails and titles; clicking an item opens `url` in new tab (via `window.openai.openExternal` when present).
 
 ## Implementation Notes
+
 - Internal view model (from MCP/Supabase row → `VideoItem` used by the content_search components):
   - `id`: `id` or fallback index
   - `title`: `title` | `og_title` | `series_title` | `id`
@@ -50,6 +54,7 @@ Re-implement the desired UI components directly inside `apps/railway-mcp`, using
 - Extend carousel cards with an expandable overlay that embeds the video player for richer previews.
 
 ## Progress (2025-10-10)
+
 - Scaffolded new entry at `src/content-search/index.tsx` with carousel and preview panel components tailored to MCP data.
 - Added transform utilities and shared types to normalize Supabase rows for the UI.
 - Registered the `content-search` widget/tool in `pizzaz_server_node/src/server.ts` and added the build target to `build-all.mts`.
@@ -58,11 +63,13 @@ Re-implement the desired UI components directly inside `apps/railway-mcp`, using
 - Implemented expandable preview overlay with embedded video playback triggered from carousel/detail actions (local verification pending due to sandbox build limits).
 
 ## Outcomes (to fill on completion)
+
 - Summary of changed files and impact.
 - Links to PR/commits.
 - Screenshots or short clip of content_search widget rendering tool output.
 
 ## Follow-ups
+
 - Wire real AI completion flows used by any preview card (replace mocks).
 - Connect credits/bookmarks state and persistence.
 - Add series grouping display (`SeriesGroup`) for larger result sets.
