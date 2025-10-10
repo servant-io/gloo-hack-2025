@@ -48,7 +48,7 @@ export default function InteractiveDemo() {
             Try It Right Now
           </h2>
           <p className="text-muted-foreground">
-            See how Kingdom Connect tracks and meters AI queries in real-time
+            See how Faith Connection tracks and meters AI queries in real-time
           </p>
         </div>
 

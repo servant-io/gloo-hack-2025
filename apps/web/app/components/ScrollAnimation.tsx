@@ -32,7 +32,7 @@ export default function ScrollAnimation() {
   const steps = [
     {
       number: 1,
-      title: 'AI queries content through a Kingdom Connect-enabled app',
+      title: 'AI queries content through a Faith Connection-enabled app',
       opacity: step1Opacity,
       icon: (
         <svg
@@ -52,7 +52,7 @@ export default function ScrollAnimation() {
     },
     {
       number: 2,
-      title: 'Kingdom Connect tracks usage in real-time',
+      title: 'Faith Connection tracks usage in real-time',
       opacity: step2Opacity,
       icon: (
         <svg

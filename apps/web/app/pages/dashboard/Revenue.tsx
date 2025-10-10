@@ -170,7 +170,7 @@ export default function Revenue() {
             <div>
               <div className="font-medium text-foreground">Platform Fee</div>
               <div className="text-sm text-muted-foreground">
-                Kingdom Connect service fee
+                Faith Connection service fee
               </div>
             </div>
             <div className="text-right">

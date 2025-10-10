@@ -12,7 +12,7 @@ export default function Hero() {
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
           <div className="space-y-8">
             <h1 className="font-heading text-5xl md:text-6xl lg:text-7xl font-bold leading-tight text-foreground">
-              AI Reads. Publishers Earn. Simple.
+              AI Reads. Creators Earn. Simple.
             </h1>
 
             <p className="text-lg md:text-xl text-muted-foreground max-w-xl">

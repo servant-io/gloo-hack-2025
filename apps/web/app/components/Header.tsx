@@ -19,9 +19,13 @@ export default function Header() {
       <div className="container mx-auto max-w-7xl px-4 md:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded bg-gradient-to-br from-primary to-chart-2" />
+            <img
+              src="/assets/images/faith-connect-icon.png"
+              alt="Faith Connection"
+              className="h-8 w-8"
+            />
             <span className="font-heading text-xl font-bold text-foreground">
-              Kingdom Connect
+              Faith Connection
             </span>
           </div>
 

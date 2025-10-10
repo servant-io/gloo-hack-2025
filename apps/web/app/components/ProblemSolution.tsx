@@ -111,7 +111,7 @@ export default function ProblemSolution() {
               Secure, Metered, and Fair Access
             </h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              Kingdom Connect provides an OAuth-gated content metering system
+              Faith Connection provides an OAuth-gated content metering system
               that lets AI agents access, measure, and pay for trusted publisher
               content.
             </p>
