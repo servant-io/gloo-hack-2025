@@ -23,6 +23,7 @@ const targets: string[] = [
   "pizzaz-albums",
   "pizzaz-video",
   "video-list",
+  "content-search",
 ];
 const builtNames: string[] = [];
 

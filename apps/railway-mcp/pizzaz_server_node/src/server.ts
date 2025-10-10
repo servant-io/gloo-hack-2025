@@ -157,6 +157,22 @@ const widgets: PizzazWidget[] = [
     responseText: 'Rendered a pizza list!',
   },
   {
+    id: 'content-search',
+    title: 'Show Content Search',
+    templateUri: 'ui://widget/content-search.html',
+    invoking: 'Gathering rich content',
+    invoked: 'Served curated content',
+    html: (() => {
+      const { css, js } = bundleUrls('content-search');
+      return `
+<div id="content-search-root"></div>
+<link rel="stylesheet" href="${css}">
+<script type="module" src="${js}"></script>
+      `.trim();
+    })(),
+    responseText: 'Rendered enhanced content search!',
+  },
+  {
     id: 'video-list-widget',
     title: 'Show Video List',
     templateUri: 'ui://widget/video-list.html',
@@ -211,6 +227,22 @@ const videoWidgetInputSchema = {
   additionalProperties: false,
 } as const;
 
+const contentSearchInputSchema = {
+  type: 'object',
+  properties: {
+    query: {
+      type: 'string',
+      description: 'Keywords to search within Supabase content items.',
+    },
+    limit: {
+      type: 'number',
+      description: 'Maximum number of results to return (default 8, max 20).',
+    },
+  },
+  required: ['query'],
+  additionalProperties: false,
+} as const;
+
 // Define a dedicated tool for video search via Supabase REST.
 // Separate from widget tools to avoid changing existing pizza flows.
 const videoListInputSchema = {
@@ -244,6 +276,8 @@ const tools: Tool[] = [
     inputSchema:
       widget.id === 'video-list-widget'
         ? videoWidgetInputSchema
+        : widget.id === 'content-search'
+        ? contentSearchInputSchema
         : toolInputSchema,
     title: widget.title,
     _meta: widgetMeta(widget),
@@ -327,6 +361,67 @@ function createPizzazServer(): Server {
   server.setRequestHandler(
     CallToolRequestSchema,
     async (request: CallToolRequest) => {
+      if (request.params.name === 'content-search') {
+        const widget = widgetsById.get('content-search');
+        if (!widget) {
+          throw new Error('content-search widget not registered');
+        }
+
+        const args = z
+          .object({
+            query: z.string().min(1),
+            limit: z.number().int().min(1).max(20).optional(),
+          })
+          .parse(request.params.arguments ?? {});
+
+        const limit = args.limit ?? 8;
+
+        const { rows, errorText } = await searchSupabase(
+          SUPABASE_DEFAULT_TABLE,
+          args.query,
+          limit,
+          'video'
+        );
+
+        if (errorText) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: `content-search error: ${errorText}`,
+              },
+            ],
+            structuredContent: {
+              videos: [],
+              query: args.query,
+              limit,
+              error: errorText,
+            },
+            _meta: widgetMeta(widget),
+          };
+        }
+
+        const summary =
+          rows.length === 0
+            ? `No content found for "${args.query}".`
+            : `Curated ${rows.length} item${rows.length === 1 ? '' : 's'} for "${args.query}".`;
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: summary,
+            },
+          ],
+          structuredContent: {
+            videos: rows,
+            query: args.query,
+            limit,
+          },
+          _meta: widgetMeta(widget),
+        };
+      }
+
       // Handle the video-list widget directly: query in, results out
       if (request.params.name === 'video-list-widget') {
         const widget = widgetsById.get('video-list-widget')!;
@@ -564,6 +659,7 @@ httpServer.listen(port, () => {
   console.log(
     `  Message post endpoint: POST http://localhost:${port}${postPath}?sessionId=...`
   );
+  console.log('  Tool available: content-search (widget)');
   console.log('  Tool available: video-list (Supabase search)');
 });
 
