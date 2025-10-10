@@ -191,6 +191,15 @@ const seededContentItemsSources: ContentItemsSource[] = [
     autoSync: false,
     instructions: {},
   },
+  {
+    id: '96a9c7860e8b',
+    publisherId: PublisherIds.ACU,
+    type: 'youtube-channel',
+    name: 'YouTube channel @AustinChristianUniversity',
+    url: 'https://www.youtube.com/@AustinChristianUniversity',
+    autoSync: false,
+    instructions: {},
+  },
 ];
 
 const seededContentItems: ContentItem[] = [

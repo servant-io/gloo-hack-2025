@@ -228,6 +228,18 @@ const seededApiKeys: ApiKey[] = [
     name: 'Testing API Key',
     description: 'Used for automated testing and CI/CD pipelines',
   },
+  {
+    id: '44d641bb-4612-4e55-9670-5e31e6cb97e4',
+    key: generateApiKey(),
+    name: 'Development "Carey Nieuwhof"',
+    description: 'Local development as publisher "Carey Nieuwhof"',
+  },
+  {
+    id: 'fcad602f-c4c2-4c93-96d4-2d917887d66b',
+    key: generateApiKey(),
+    name: 'Development "ACU"',
+    description: 'Local development as publisher "ACU"',
+  },
 ];
 
 // Profile-API key mappings - dynamically reference the seeded profiles
@@ -246,19 +258,15 @@ const seededProfileApiKeyMappings: ProfileApiKeyLkp[] = [
   },
 ];
 
-// Publisher-API key mappings - dynamically reference the seeded profiles
+// Publisher-API key mappings - dynamically reference the seeded publishers
 const seededPublisherApiKeyMappings: PublisherApiKeyLkp[] = [
   {
-    publisherId: PublisherIds.CAREY_NIEUWHOF, // Production Service
-    apiKeyId: 'a1b2c3d4-e5f6-7890-1234-567890123456', // Production API Key
+    publisherId: PublisherIds.CAREY_NIEUWHOF,
+    apiKeyId: '44d641bb-4612-4e55-9670-5e31e6cb97e4',
   },
   {
-    publisherId: PublisherIds.CAREY_NIEUWHOF, // Development Service
-    apiKeyId: 'b2c3d4e5-f6a7-8901-2345-678901234567', // Development API Key
-  },
-  {
-    publisherId: PublisherIds.CAREY_NIEUWHOF, // Testing Service
-    apiKeyId: 'c3d4e5f6-a7b8-9012-3456-789012345678', // Testing API Key
+    publisherId: PublisherIds.ACU,
+    apiKeyId: 'fcad602f-c4c2-4c93-96d4-2d917887d66b',
   },
 ];
 

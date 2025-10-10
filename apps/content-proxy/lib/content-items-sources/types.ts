@@ -29,9 +29,15 @@ export type Rss2ItunesTypeContentItemsSource = BaseContentItemsSource & {
   instructions: object;
 };
 
+export type YouTubeChannelContentItemsSource = BaseContentItemsSource & {
+  type: 'youtube-channel';
+  instructions: object;
+};
+
 export type ContentItemsSource =
   | CsvTypeContentItemsSource
-  | Rss2ItunesTypeContentItemsSource;
+  | Rss2ItunesTypeContentItemsSource
+  | YouTubeChannelContentItemsSource;
 
 export interface SourcedContentItem {
   contentUrl: string;

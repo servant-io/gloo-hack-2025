@@ -27,6 +27,7 @@
     "dotenv": "catalog:",
     "drizzle-kit": "catalog:",
     "drizzle-orm": "catalog:",
+    "googleapis": "^162.0.0",
     "lodash": "catalog:",
     "next": "catalog:",
     "papaparse": "^5.5.3",

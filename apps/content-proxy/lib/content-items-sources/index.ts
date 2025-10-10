@@ -6,9 +6,11 @@ import type {
   CsvTypeContentItemsSource,
   Rss2ItunesTypeContentItemsSource,
   SourcedContentItem,
+  YouTubeChannelContentItemsSource,
 } from './types';
 import csvSchema from '@/lib/content-items-sources/schemas/csv.schema.json';
 import rss2ItunesSchema from '@/lib/content-items-sources/schemas/rss2-itunes.schema.json';
+import youtubeChannelSchemaSchema from '@/lib/content-items-sources/schemas/youtube-channel.schema.json';
 import Ajv from 'ajv';
 import { generatePrimaryKey } from '@/lib/db';
 import {
@@ -20,11 +22,33 @@ import {
   extractContentItemsFromParsedRss2Itunes,
   parseRss2Itunes,
 } from '@/lib/content-items-sources/type-rss2-itunes';
+import {
+  extractYouTubeChannelVideos,
+  getYouTubeChannelUploadsPlaylistId,
+  isValidYouTubeChannelHandle,
+} from '@/lib/content-items-sources/type-youtube';
 
 export const SUPPORTED_CONTENT_ITEMS_SOURCES_TYPES = [
   'csv',
   'rss2-itunes',
+  'youtube-channel',
 ] as const;
+
+export function toContentItemsSourceName(
+  fullName: string | null | undefined
+): string | undefined {
+  if (!fullName || typeof fullName !== 'string') return;
+
+  return fullName.slice(0, 200);
+}
+
+export function toContentItemsSourceShortDescription(
+  fullDescription: string | null | undefined
+): string | undefined {
+  if (!fullDescription || typeof fullDescription !== 'string') return;
+
+  return fullDescription.slice(0, 500);
+}
 
 /**
  * Get paginated content items sources using database join
@@ -139,6 +163,15 @@ export async function validateContentItemsSourceData(data: {
         statusCode: number;
         response: string;
       }
+    | {
+        type: 'youtube-channel';
+        name: string;
+        url: string;
+        autoSync: boolean;
+        instructions: YouTubeChannelContentItemsSource['instructions'];
+        statusCode: number;
+        response: string;
+      }
     | null;
 }> {
   if (typeof data !== 'object' || data === null)
@@ -215,9 +248,7 @@ export async function validateContentItemsSourceData(data: {
     };
 
     return { valid: true, data: newContentItemsSourceData };
-  }
-
-  if (type === 'rss2-itunes') {
+  } else if (type === 'rss2-itunes') {
     const validate = ajv.compile(rss2ItunesSchema);
     const contentItemsSourceData: Pick<
       Rss2ItunesTypeContentItemsSource,
@@ -293,6 +324,70 @@ export async function validateContentItemsSourceData(data: {
       type,
       statusCode: response.status,
       response: rssXmlText,
+      instructions: {},
+      ...contentItemsSourceData,
+    };
+
+    return { valid: true, data: newContentItemsSourceData };
+  } else if (type === 'youtube-channel') {
+    const validate = ajv.compile(youtubeChannelSchemaSchema);
+    const contentItemsSourceData: Pick<
+      YouTubeChannelContentItemsSource,
+      'name' | 'url' | 'autoSync'
+    > = {
+      name: data.name,
+      url: data.url,
+      autoSync: data.autoSync || false,
+    };
+    const isValidYouTubeChannelType = validate(contentItemsSourceData);
+
+    if (!isValidYouTubeChannelType) {
+      return {
+        valid: false,
+        message: 'Invalid YouTube channel data format',
+        data: null,
+      };
+    }
+
+    if (!data.url.startsWith('https://www.youtube.com/@')) {
+      return {
+        valid: false,
+        message: 'Invalid YouTube channel URL',
+        data: null,
+      };
+    }
+
+    const channelHandle = `@${data.url.split('@')[1]}`;
+    if (!isValidYouTubeChannelHandle(channelHandle)) {
+      return {
+        valid: false,
+        message: 'Invalid YouTube channel handle format',
+        data: null,
+      };
+    }
+
+    const uploadsPlaylistId = await getYouTubeChannelUploadsPlaylistId(
+      data.url
+    );
+    if (!uploadsPlaylistId) {
+      return {
+        valid: false,
+        message: `YouTube channel ${channelHandle} has no uploads`,
+        data: null,
+      };
+    }
+
+    try {
+      new URL(contentItemsSourceData.url);
+      // TODO: validate that URL is unique
+    } catch {
+      return { valid: false, message: 'Invalid URL format', data: null };
+    }
+
+    const newContentItemsSourceData = {
+      type,
+      statusCode: 200,
+      response: JSON.stringify({ channelHandle, uploadsPlaylistId }),
       instructions: {},
       ...contentItemsSourceData,
     };
@@ -448,7 +543,7 @@ async function syncContentItemsFromSource({
             .update(contentItems)
             .set({
               ...(item.name !== newData.name && {
-                name: newData.name?.slice(0, 200),
+                name: toContentItemsSourceName(newData.name),
               }),
               ...(item.shortDescription !== newData.shortDescription && {
                 shortDescription: newData.shortDescription,
@@ -468,10 +563,12 @@ async function syncContentItemsFromSource({
                 id: generatePrimaryKey(),
                 publisherId,
                 contentItemsSourceId,
-                name: (item.name || '').slice(0, 200),
+                name: toContentItemsSourceName(item.name),
                 type: item.type,
                 contentUrl: item.contentUrl,
-                shortDescription: item.shortDescription,
+                shortDescription: toContentItemsSourceShortDescription(
+                  item.shortDescription
+                ),
                 thumbnailUrl: item.thumbnailUrl,
                 createdAt: now,
                 updatedAt: now,
@@ -635,9 +732,12 @@ export async function triggerFetchContentItemsForSource(
         });
       }
       sourcedContentItems = extractContentItemsFromParsedRss2Itunes(rssxml);
+    } else if (contentItemsSource.type === 'youtube-channel') {
+      const source = contentItemsSource as YouTubeChannelContentItemsSource;
+      sourcedContentItems = await extractYouTubeChannelVideos(source.url);
     }
 
-    if (sourcedContentItems.length)
+    if (sourcedContentItems.length) {
       syncContentItemsFromSource({
         statusCode,
         responseText,
@@ -645,6 +745,13 @@ export async function triggerFetchContentItemsForSource(
         publisherId,
         contentItemsSourceId: id,
       });
+    } else {
+      await markContentItemsSourceAsSynced({
+        id,
+        statusCode,
+        responseText,
+      });
+    }
 
     return {
       id,

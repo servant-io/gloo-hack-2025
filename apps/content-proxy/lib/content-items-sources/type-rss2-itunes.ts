@@ -1,3 +1,7 @@
+import {
+  toContentItemsSourceName,
+  toContentItemsSourceShortDescription,
+} from '@/lib/content-items-sources';
 import { ContentItem } from '@/lib/content/types';
 import XML from 'xml2js';
 
@@ -51,11 +55,13 @@ export const extractContentItemsFromParsedRss2Itunes = (rssxml: {
       // all items that were not sourced succesfully
       .filter((item) => typeof item?.enclosure?.$?.url === 'string')
       .map((item) => ({
-        name: item.title,
+        name: toContentItemsSourceName(item.title),
         type: 'audio' as ContentItem['type'],
         // TODO: mimetype
-        contentUrl: item?.enclosure?.$?.url,
-        shortDescription: item['itunes:subtitle'],
+        contentUrl: item!.enclosure!.$!.url,
+        shortDescription: toContentItemsSourceShortDescription(
+          item['itunes:subtitle']
+        ),
         thumbnailUrl: item['itunes:image']?.$?.href,
       }))
   );

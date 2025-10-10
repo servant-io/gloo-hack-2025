@@ -1,3 +1,7 @@
+import {
+  toContentItemsSourceName,
+  toContentItemsSourceShortDescription,
+} from '@/lib/content-items-sources';
 import { CsvTypeContentItemsSource } from '@/lib/content-items-sources/types';
 import { ContentItem } from '@/lib/content/types';
 import CSV from 'papaparse';
@@ -38,9 +42,11 @@ export const extractContentItemsFromParsedCsv = (
       ? row[indices.type]
       : defaultContentItemType) as ContentItem['type'],
     // TODO: mimetype
-    ...(indices.name && { name: row[indices.name] }),
+    ...(indices.name && { name: toContentItemsSourceName(row[indices.name]) }),
     ...(indices.shortDescription && {
-      shortDescription: row[indices.shortDescription],
+      shortDescription: toContentItemsSourceShortDescription(
+        row[indices.shortDescription]
+      ),
     }),
     ...(indices.thumbnailUrl && { thumbnailUrl: row[indices.thumbnailUrl] }),
   }));
