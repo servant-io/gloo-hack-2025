@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import {
   createServer,
   type IncomingMessage,
@@ -24,13 +25,15 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 
+// --- Supabase config (env-driven) ---
+const SUPABASE_URL = process.env.SUPABASE_URL ?? '';
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY ?? '';
+const SUPABASE_DEFAULT_TABLE = process.env.SUPABASE_TABLE ?? 'content_items';
+
 // Dynamic asset configuration
 // Point ASSETS_ORIGIN to where your built assets are hosted (e.g. your Railway static service).
 // Set ASSETS_VERSION to the 4-char hash that build-all.mts appends to filenames.
-// Falls back to the OpenAI demo CDN and version for local/testing.
-const ASSETS_ORIGIN =
-  process.env.ASSETS_ORIGIN ??
-  'https://persistent.oaistatic.com/ecosystem-built-assets';
+const ASSETS_ORIGIN = process.env.ASSETS_ORIGIN ?? '';
 let ASSETS_VERSION = process.env.ASSETS_VERSION ?? '';
 
 async function detectAssetsVersion() {
@@ -51,19 +54,18 @@ async function detectAssetsVersion() {
         return ASSETS_VERSION;
       }
     }
-  } catch {
-    // ignore and fall through to default
+  } catch (err) {
+    console.warn(
+      `⚠️  Could not fetch manifest.json from ${ASSETS_ORIGIN}. Using plain mode.`
+    );
   }
-  ASSETS_VERSION = '0038'; // fallback to demo version
+
   return ASSETS_VERSION;
 }
 
 function bundleUrls(name: string) {
   const base = `${ASSETS_ORIGIN}/${name}-${ASSETS_VERSION}`;
-  return {
-    css: `${base}.css`,
-    js: `${base}.js`,
-  } as const;
+  return { css: `${base}.css`, js: `${base}.js` } as const;
 }
 
 type PizzazWidget = {
@@ -155,20 +157,36 @@ const widgets: PizzazWidget[] = [
     responseText: 'Rendered a pizza list!',
   },
   {
-    id: 'pizza-video',
-    title: 'Show Pizza Video',
-    templateUri: 'ui://widget/pizza-video.html',
-    invoking: 'Hand-tossing a video',
-    invoked: 'Served a fresh video',
+    id: 'content-search',
+    title: 'Show Content Search',
+    templateUri: 'ui://widget/content-search.html',
+    invoking: 'Gathering rich content',
+    invoked: 'Served curated content',
     html: (() => {
-      const { css, js } = bundleUrls('pizzaz-video');
+      const { css, js } = bundleUrls('content-search');
       return `
-<div id="pizzaz-video-root"></div>
+<div id="content-search-root"></div>
 <link rel="stylesheet" href="${css}">
 <script type="module" src="${js}"></script>
       `.trim();
     })(),
-    responseText: 'Rendered a pizza video!',
+    responseText: 'Rendered enhanced content search!',
+  },
+  {
+    id: 'video-list-widget',
+    title: 'Show Video List',
+    templateUri: 'ui://widget/video-list.html',
+    invoking: 'Assembling video list',
+    invoked: 'Served a fresh video list',
+    html: (() => {
+      const { css, js } = bundleUrls('video-list');
+      return `
+<div id="video-list-root"></div>
+<link rel="stylesheet" href="${css}">
+<script type="module" src="${js}"></script>
+      `.trim();
+    })(),
+    responseText: 'Rendered a video list!',
   },
 ];
 
@@ -196,13 +214,76 @@ const toolInputParser = z.object({
   pizzaTopping: z.string(),
 });
 
-const tools: Tool[] = widgets.map((widget) => ({
-  name: widget.id,
-  description: widget.title,
-  inputSchema: toolInputSchema,
-  title: widget.title,
-  _meta: widgetMeta(widget),
-}));
+// Minimal schema for the video-list widget: query in, results out
+const videoWidgetInputSchema = {
+  type: 'object',
+  properties: {
+    query: {
+      type: 'string',
+      description: 'Search query for the widget to fetch and display results.',
+    },
+  },
+  required: ['query'],
+  additionalProperties: false,
+} as const;
+
+const contentSearchInputSchema = {
+  type: 'object',
+  properties: {
+    query: {
+      type: 'string',
+      description: 'Keywords to search within Supabase content items.',
+    },
+    limit: {
+      type: 'number',
+      description: 'Maximum number of results to return (default 8, max 20).',
+    },
+  },
+  required: ['query'],
+  additionalProperties: false,
+} as const;
+
+// Define a dedicated tool for video search via Supabase REST.
+// Separate from widget tools to avoid changing existing pizza flows.
+const videoListInputSchema = {
+  type: 'object',
+  properties: {
+    query: {
+      type: 'string',
+      description: 'Fuzzy search query for videos',
+    },
+    limit: {
+      type: 'number',
+      description: 'Max results (default 5, max 50)',
+    },
+  },
+  required: ['query'],
+  additionalProperties: false,
+} as const;
+
+const videoListTool: Tool = {
+  name: 'video-list',
+  description:
+    'Search Supabase public.content_items and return up to 5 results.',
+  inputSchema: videoListInputSchema,
+  title: 'Video List (Supabase Search)',
+};
+
+const tools: Tool[] = [
+  ...widgets.map((widget) => ({
+    name: widget.id,
+    description: widget.title,
+    inputSchema:
+      widget.id === 'video-list-widget'
+        ? videoWidgetInputSchema
+        : widget.id === 'content-search'
+          ? contentSearchInputSchema
+          : toolInputSchema,
+    title: widget.title,
+    _meta: widgetMeta(widget),
+  })),
+  videoListTool,
+];
 
 const resources: Resource[] = widgets.map((widget) => ({
   uri: widget.templateUri,
@@ -280,14 +361,166 @@ function createPizzazServer(): Server {
   server.setRequestHandler(
     CallToolRequestSchema,
     async (request: CallToolRequest) => {
-      const widget = widgetsById.get(request.params.name);
+      if (request.params.name === 'content-search') {
+        const widget = widgetsById.get('content-search');
+        if (!widget) {
+          throw new Error('content-search widget not registered');
+        }
 
+        const args = z
+          .object({
+            query: z.string().min(1),
+            limit: z.number().int().min(1).max(20).optional(),
+          })
+          .parse(request.params.arguments ?? {});
+
+        const limit = args.limit ?? 8;
+
+        const { rows, errorText } = await searchSupabase(
+          SUPABASE_DEFAULT_TABLE,
+          args.query,
+          limit
+        );
+
+        if (errorText) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: `content-search error: ${errorText}`,
+              },
+            ],
+            structuredContent: {
+              videos: [],
+              query: args.query,
+              limit,
+              error: errorText,
+            },
+            _meta: widgetMeta(widget),
+          };
+        }
+
+        const summary =
+          rows.length === 0
+            ? `No content found for "${args.query}".`
+            : `Curated ${rows.length} item${rows.length === 1 ? '' : 's'} for "${args.query}".`;
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: summary,
+            },
+          ],
+          structuredContent: {
+            videos: rows,
+            query: args.query,
+            limit,
+          },
+          _meta: widgetMeta(widget),
+        };
+      }
+
+      // Handle the video-list widget directly: query in, results out
+      if (request.params.name === 'video-list-widget') {
+        const widget = widgetsById.get('video-list-widget')!;
+        const args = z
+          .object({ query: z.string().min(1) })
+          .parse(request.params.arguments ?? {});
+
+        const { rows, errorText } = await searchSupabase(
+          SUPABASE_DEFAULT_TABLE,
+          args.query,
+          5
+        );
+
+        if (errorText) {
+          return {
+            content: [
+              { type: 'text', text: `video-list-widget error: ${errorText}` },
+            ],
+            structuredContent: { videos: [] },
+            _meta: widgetMeta(widget),
+          };
+        }
+
+        return {
+          content: [{ type: 'text', text: 'Video results ready.' }],
+          structuredContent: { videos: rows },
+          _meta: widgetMeta(widget),
+        };
+      }
+
+      // Handle the custom video-list tool separately (not a widget-backed tool)
+      if (request.params.name === 'video-list') {
+        const args = z
+          .object({
+            query: z.string().min(1),
+            limit: z.number().int().min(1).max(50).optional(),
+          })
+          .parse(request.params.arguments ?? {});
+
+        const limit = args.limit ?? 5;
+
+        const { rows, errorText } = await searchSupabase(
+          SUPABASE_DEFAULT_TABLE,
+          args.query,
+          limit
+        );
+
+        if (errorText) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: `video-list error: ${errorText}`,
+              },
+            ],
+            structuredContent: {
+              videos: [],
+              error: errorText,
+            },
+          };
+        }
+
+        const summary =
+          rows.length === 0
+            ? `No videos found for query: "${args.query}".`
+            : `Found ${rows.length} video(s) for "${args.query}":\n` +
+              rows
+                .map((r: Record<string, unknown>, idx: number) => {
+                  const title = String(
+                    r.title ?? r.name ?? r.id ?? `#${idx + 1}`
+                  );
+                  return `- ${title}`;
+                })
+                .join('\n');
+
+        // Attach widget metadata so the host renders our video list widget
+        const videoWidget = widgetsById.get('video-list-widget');
+        return {
+          content: [
+            {
+              type: 'text',
+              text: summary,
+            },
+          ],
+          structuredContent: {
+            videos: rows,
+            query: args.query,
+            limit,
+          },
+          _meta: videoWidget ? widgetMeta(videoWidget) : undefined,
+        };
+      }
+
+      // Default: treat as a widget-backed pizza tool
+      const widget = widgetsById.get(request.params.name);
       if (!widget) {
         throw new Error(`Unknown tool: ${request.params.name}`);
       }
 
       const args = toolInputParser.parse(request.params.arguments ?? {});
-
       return {
         content: [
           {
@@ -425,4 +658,79 @@ httpServer.listen(port, () => {
   console.log(
     `  Message post endpoint: POST http://localhost:${port}${postPath}?sessionId=...`
   );
+  console.log('  Tool available: content-search (widget)');
+  console.log('  Tool available: video-list (Supabase search)');
 });
+
+// --- helpers ---
+async function searchSupabase(
+  table: string,
+  query: string,
+  limit: number,
+  contentType?: 'video' | 'message'
+): Promise<{ rows: any[]; errorText?: string }> {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    return {
+      rows: [],
+      errorText:
+        'Missing SUPABASE_URL or SUPABASE_ANON_KEY environment variables.',
+    };
+  }
+
+  // Simple ILIKE search across relevant columns
+  // Split query into individual terms and search for any of them
+  const terms = query
+    .trim()
+    .split(/\s+/)
+    .filter((term) => term.length > 0);
+
+  if (terms.length === 0) {
+    return { rows: [], errorText: 'Empty query' };
+  }
+
+  // Create OR conditions for each term across all searchable columns
+  const termConditions = terms.map((term) => {
+    const pattern = `*${encodeURIComponent(term)}*`;
+    return `title.ilike.${pattern},description.ilike.${pattern},og_title.ilike.${pattern},og_description.ilike.${pattern},series_title.ilike.${pattern},full_text.ilike.${pattern},url.ilike.${pattern}`;
+  });
+
+  const or = `or=(${termConditions.join(',')})`;
+
+  const params = new URLSearchParams({
+    select: '*',
+    limit: String(limit),
+    order: 'source.asc', // Order by source to get balanced results
+  });
+
+  if (contentType) {
+    // PostgREST style equality filter
+    params.append('content_type', `eq.${contentType}`);
+  }
+
+  const url = `${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/${encodeURIComponent(
+    table
+  )}?${params.toString()}&${or}`;
+
+  try {
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Prefer: 'count=exact',
+      },
+    });
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      return { rows: [], errorText: `Supabase error ${res.status}: ${text}` };
+    }
+
+    const data = (await res.json()) as any[];
+    return { rows: Array.isArray(data) ? data : [] };
+  } catch (err: any) {
+    return { rows: [], errorText: String(err?.message ?? err) };
+  }
+}

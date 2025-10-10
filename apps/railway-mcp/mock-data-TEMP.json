@@ -1,0 +1,196 @@
+{
+  "query": "acts",
+  "limit": 10,
+  "videos": [
+    {
+      "id": "a4941f6f5f5f",
+      "source": "bibleproject",
+      "content_type": "video",
+      "title": "Book of Acts Summary | Watch an Overview Video (Part 1)",
+      "description": "What is the book of Acts about in the Bible? Watch as we explain its major themes and gain a deeper understanding of its place in the biblical story.",
+      "url": "https://bibleproject.com/videos/acts-1-12",
+      "media_url": "https://stream.mux.com/zEm8b16B4p7NWXnDvS5nu25nSExRoI6EKP5GhHAWg2Q/high.mp4",
+      "thumbnail_url": "https://ik.imagekit.io/bpweb1/web/media/video-images/new-testament-overview/acts-1-12/tr:q-65,w-720/acts-1-12_16.9.jpg",
+      "upload_date": "2016-10-04",
+      "duration_seconds": 496,
+      "series_title": "New Testament Overviews",
+      "poster_images": [
+        "https://d1bsmz3sdihplr.cloudfront.net/media/Posters%20Download/49-Acts-FNL.jpg"
+      ],
+      "og_title": "Book of Acts Summary | Watch an Overview Video (Part 1)",
+      "og_description": "What is the book of Acts about in the Bible? Watch as we explain its major themes and gain a deeper understanding of its place in the biblical story.",
+      "bible_book": "Acts"
+    },
+    {
+      "id": "a9da9dacefd3",
+      "source": "bibleproject",
+      "content_type": "video",
+      "title": "Book of Acts Summary | Watch an Overview Video (Part 2)",
+      "description": "What is the book of Acts about in the Bible? Watch as we explain its major themes and gain a deeper understanding of its place in the biblical story.",
+      "url": "https://bibleproject.com/videos/acts-13-28",
+      "media_url": "https://stream.mux.com/JGLOuBLC800dwIB2EWj027EN9e6K42poyigmI600moX00008/high.mp4",
+      "thumbnail_url": "https://ik.imagekit.io/bpweb1/web/media/video-images/new-testament-overview/acts-13-28/tr:q-65,w-720/acts-13-28_16.9.jpg",
+      "upload_date": "2016-10-10",
+      "duration_seconds": 484,
+      "series_title": "New Testament Overviews",
+      "poster_images": [
+        "https://d1bsmz3sdihplr.cloudfront.net/media/Posters%20Download/49-Acts-FNL.jpg"
+      ],
+      "og_title": "Book of Acts Summary | Watch an Overview Video (Part 2)",
+      "og_description": "What is the book of Acts about in the Bible? Watch as we explain its major themes and gain a deeper understanding of its place in the biblical story.",
+      "bible_book": "Acts"
+    },
+    {
+      "id": "9ed804520520",
+      "source": "bibleproject",
+      "content_type": "video",
+      "title": "Book of Romans Summary | Watch an Overview Video (Part 1)",
+      "description": "What is the book of Romans about in the Bible? Watch as we explain its major themes and gain a deeper understanding of its place in the biblical story.",
+      "url": "https://bibleproject.com/videos/romans-1-4",
+      "media_url": "https://stream.mux.com/JOwtd4wJBaE4tNEpG29osk7YpsfJGd1hvFP9RL2nPWY/high.mp4",
+      "thumbnail_url": "https://ik.imagekit.io/bpweb1/web/media/video-images/new-testament-overview/romans-1-4/tr:q-65,w-720/romans-1-4_16.9.jpg",
+      "upload_date": "2016-10-19",
+      "duration_seconds": 467,
+      "series_title": "New Testament Overviews",
+      "poster_images": [
+        "https://d1bsmz3sdihplr.cloudfront.net/media/Posters%20Download/50_Romans.jpg"
+      ],
+      "og_title": "Book of Romans Summary | Watch an Overview Video (Part 1)",
+      "og_description": "What is the book of Romans about in the Bible? Watch as we explain its major themes and gain a deeper understanding of its place in the biblical story.",
+      "bible_book": "Romans"
+    },
+    {
+      "id": "bc5ddd7dd002",
+      "source": "bibleproject",
+      "content_type": "video",
+      "title": "Book of Romans Summary | Watch an Overview Video (Part 2)",
+      "description": "What is the book of Romans about in the Bible? Watch as we explain its major themes and gain a deeper understanding of its place in the biblical story.",
+      "url": "https://bibleproject.com/videos/romans-5-16",
+      "media_url": "https://stream.mux.com/01O8p00kAKeMNeSBelNy100lSoMoFcCZ01W6rU1McatNQ8w/high.mp4",
+      "thumbnail_url": "https://ik.imagekit.io/bpweb1/web/media/video-images/new-testament-overview/romans-5-16/tr:q-65,w-720/romans-5-16_16.9.jpg",
+      "upload_date": "2016-10-19",
+      "duration_seconds": 551,
+      "series_title": "New Testament Overviews",
+      "poster_images": [
+        "https://d1bsmz3sdihplr.cloudfront.net/media/Posters%20Download/50_Romans.jpg"
+      ],
+      "og_title": "Book of Romans Summary | Watch an Overview Video (Part 2)",
+      "og_description": "What is the book of Romans about in the Bible? Watch as we explain its major themes and gain a deeper understanding of its place in the biblical story.",
+      "bible_book": "Romans"
+    },
+    {
+      "id": "a222f340d2b1",
+      "source": "bibleproject",
+      "content_type": "video",
+      "title": "Book of 1 Corinthians Summary | Watch an Overview Video",
+      "description": "What is the book of 1 Corinthians about in the Bible? Watch as we explain its major themes and gain a deeper understanding of its place in the biblical story.",
+      "url": "https://bibleproject.com/videos/1-corinthians",
+      "media_url": "https://stream.mux.com/WieKKhX26bqP4x9OKvQUmBKSHvk38EcEeTilyn5lXP4/high.mp4",
+      "thumbnail_url": "https://ik.imagekit.io/bpweb1/web/media/video-images/new-testament-overview/1-corinthians/tr:q-65,w-720/1-corinthians_16.9.jpg",
+      "upload_date": "2015-05-18",
+      "duration_seconds": 527,
+      "series_title": "New Testament Overviews",
+      "poster_images": [
+        "https://d1bsmz3sdihplr.cloudfront.net/media/Posters%20Download/52-53-Corinthians.jpg"
+      ],
+      "og_title": "Book of 1 Corinthians Summary | Watch an Overview Video",
+      "og_description": "What is the book of 1 Corinthians about in the Bible? Watch as we explain its major themes and gain a deeper understanding of its place in the biblical story.",
+      "bible_book": "1 Corinthians"
+    },
+    {
+      "id": "5c2fc1dfed31",
+      "source": "bibleproject",
+      "content_type": "video",
+      "title": "Book of 2 Corinthians Summary | Watch an Overview Video",
+      "description": "What is the book of 2 Corinthians about in the Bible? Watch as we explain its major themes and gain a deeper understanding of its place in the biblical story.",
+      "url": "https://bibleproject.com/videos/2-corinthians",
+      "media_url": "https://stream.mux.com/XoW027eYYCX1FQvly9RAOIeH02KL012t4n2L3B1IosUSyI/high.mp4",
+      "thumbnail_url": "https://ik.imagekit.io/bpweb1/web/media/video-images/new-testament-overview/2-corinthians/tr:q-65,w-720/2-corinthians_16.9.jpg",
+      "upload_date": "2016-11-03",
+      "duration_seconds": 518,
+      "series_title": "New Testament Overviews",
+      "poster_images": [
+        "https://d1bsmz3sdihplr.cloudfront.net/media/Posters%20Download/53-2-Corinthians-FNL2.jpg"
+      ],
+      "og_title": "Book of 2 Corinthians Summary | Watch an Overview Video",
+      "og_description": "What is the book of 2 Corinthians about in the Bible? Watch as we explain its major themes and gain a deeper understanding of its place in the biblical story.",
+      "bible_book": "2 Corinthians"
+    },
+    {
+      "id": "060837108363",
+      "source": "bibleproject",
+      "content_type": "video",
+      "title": "Book of Galatians Summary | Watch an Overview Video",
+      "description": "What is the book of Galatians about in the Bible? Watch as we explain its major themes and gain a deeper understanding of its place in the biblical story.",
+      "url": "https://bibleproject.com/videos/galatians",
+      "media_url": "https://stream.mux.com/4IfSvOSllmXJrS81fhXR01HAs7zscrlEX9r4D9F9M4dg/high.mp4",
+      "thumbnail_url": "https://ik.imagekit.io/bpweb1/web/media/video-images/new-testament-overview/galatians/tr:q-65,w-720/galatians_16.9.jpg",
+      "upload_date": "2016-11-09",
+      "duration_seconds": 544,
+      "series_title": "New Testament Overviews",
+      "poster_images": [
+        "https://d1bsmz3sdihplr.cloudfront.net/media/Posters%20Download/54-Galatians-FNL.jpg"
+      ],
+      "og_title": "Book of Galatians Summary | Watch an Overview Video",
+      "og_description": "What is the book of Galatians about in the Bible? Watch as we explain its major themes and gain a deeper understanding of its place in the biblical story.",
+      "bible_book": "Galatians"
+    },
+    {
+      "id": "f6bb1507c25b",
+      "source": "bibleproject",
+      "content_type": "video",
+      "title": "Book of Ephesians Summary | Watch an Overview Video",
+      "description": "What is the book of Ephesians about in the Bible? Watch as we explain its major themes and gain a deeper understanding of its place in the biblical story.",
+      "url": "https://bibleproject.com/videos/ephesians",
+      "media_url": "https://stream.mux.com/fBwEIh2ZQL901mFJZAw7f02aRqFRHNdinm8w1T01m023I02M/high.mp4",
+      "thumbnail_url": "https://ik.imagekit.io/bpweb1/web/media/video-images/new-testament-overview/ephesians/tr:q-65,w-720/ephesians_16.9.jpg",
+      "upload_date": "2016-11-10",
+      "duration_seconds": 537,
+      "series_title": "New Testament Overviews",
+      "poster_images": [
+        "https://d1bsmz3sdihplr.cloudfront.net/media/Posters%20Download/55-Ephesians-FNL.jpg"
+      ],
+      "og_title": "Book of Ephesians Summary | Watch an Overview Video",
+      "og_description": "What is the book of Ephesians about in the Bible? Watch as we explain its major themes and gain a deeper understanding of its place in the biblical story.",
+      "bible_book": "Ephesians"
+    },
+    {
+      "id": "1eed3db9a0ef",
+      "source": "bibleproject",
+      "content_type": "video",
+      "title": "Book of Philippians Summary | Watch an Overview Video",
+      "description": "What is the book of Philippians about in the Bible? Watch as we explain its major themes and gain a deeper understanding of its place in the biblical story.",
+      "url": "https://bibleproject.com/videos/philippians",
+      "media_url": "https://stream.mux.com/02ih3eMgX8BhfWNCQvCAAx64o6tp702Y300pspD00KtyHqY/high.mp4",
+      "thumbnail_url": "https://ik.imagekit.io/bpweb1/web/media/video-images/new-testament-overview/philemon/tr:q-65,w-720/philemon_16.9.jpg",
+      "upload_date": "2016-11-15",
+      "duration_seconds": 554,
+      "series_title": "New Testament Overviews",
+      "poster_images": [
+        "https://d1bsmz3sdihplr.cloudfront.net/media/Posters%20Download/56-Philippians-FNL.jpg"
+      ],
+      "og_title": "Book of Philippians Summary | Watch an Overview Video",
+      "og_description": "What is the book of Philippians about in the Bible? Watch as we explain its major themes and gain a deeper understanding of its place in the biblical story.",
+      "bible_book": "Philippians"
+    },
+    {
+      "id": "d528037c7796",
+      "source": "bibleproject",
+      "content_type": "video",
+      "title": "Book of Colossians Summary | Watch an Overview Video",
+      "description": "What is the book of Colossians about in the Bible? Watch as we explain its major themes and gain a deeper understanding of its place in the biblical story.",
+      "url": "https://bibleproject.com/videos/colossians",
+      "media_url": "https://stream.mux.com/V01bN4sEe00pnK3q3dpeTcXb76puDljNGzQVXljgz8BZA/high.mp4",
+      "thumbnail_url": "https://ik.imagekit.io/bpweb1/web/media/video-images/new-testament-overview/colossians/tr:q-65,w-720/colossians_16.9.jpg",
+      "upload_date": "2016-11-01",
+      "duration_seconds": 557,
+      "series_title": "New Testament Overviews",
+      "poster_images": [
+        "https://d1bsmz3sdihplr.cloudfront.net/media/Posters%20Download/57%20Colossians%20PRF.jpg"
+      ],
+      "og_title": "Book of Colossians Summary | Watch an Overview Video",
+      "og_description": "What is the book of Colossians about in the Bible? Watch as we explain its major themes and gain a deeper understanding of its place in the biblical story.",
+      "bible_book": "Colossians"
+    }
+  ]
+}

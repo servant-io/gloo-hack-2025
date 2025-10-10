@@ -1,0 +1,6 @@
+[phases.setup]
+nixPkgs = ['nodejs', 'pnpm']
+
+[start]
+cmd = 'pnpm run serve:railway'
+
