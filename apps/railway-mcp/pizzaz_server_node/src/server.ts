@@ -277,8 +277,8 @@ const tools: Tool[] = [
       widget.id === 'video-list-widget'
         ? videoWidgetInputSchema
         : widget.id === 'content-search'
-        ? contentSearchInputSchema
-        : toolInputSchema,
+          ? contentSearchInputSchema
+          : toolInputSchema,
     title: widget.title,
     _meta: widgetMeta(widget),
   })),
@@ -379,8 +379,7 @@ function createPizzazServer(): Server {
         const { rows, errorText } = await searchSupabase(
           SUPABASE_DEFAULT_TABLE,
           args.query,
-          limit,
-          'video'
+          limit
         );
 
         if (errorText) {
