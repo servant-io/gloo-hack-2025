@@ -28,7 +28,7 @@
     "drizzle-kit": "catalog:",
     "drizzle-orm": "catalog:",
     "lodash": "catalog:",
-    "next": "catalog:",
+    "next": "15.5.8",
     "pg": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
