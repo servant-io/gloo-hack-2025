@@ -3,6 +3,7 @@ import { transformForDatabase } from './dataTransform';
 
 // We'll fetch the video data dynamically
 const VIDEO_DATA_URL = '/extracted_video_data_all.json';
+type RawVideoData = Parameters<typeof transformForDatabase>[0];
 
 /**
  * Seeds the database with video content from JSON
@@ -12,13 +13,13 @@ export async function seedDatabase() {
 
   // Fetch video data from public folder
   const response = await fetch(VIDEO_DATA_URL);
-  const videoData: unknown[] = await response.json();
+  const videoData = (await response.json()) as RawVideoData[];
 
   console.log(`Processing ${videoData.length} videos`);
 
   // Transform all videos
   const transformedVideos = videoData.map((video) =>
-    transformForDatabase(video as any)
+    transformForDatabase(video)
   );
 
   // Insert in batches to avoid timeout

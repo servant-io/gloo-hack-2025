@@ -4,12 +4,18 @@ import { seedDatabase } from './utils/seedDatabase';
 import { DEFAULT_MOCK_QUERY } from './config/mockUserQuery';
 import { Loader2 } from 'lucide-react';
 
+declare global {
+  interface Window {
+    resetScriptureJourney: () => void;
+  }
+}
+
 function App() {
   const [isSeeding, setIsSeeding] = useState(false);
   const [seedError, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    (window as any).resetScriptureJourney = () => {
+    window.resetScriptureJourney = () => {
       localStorage.removeItem('scripture-journey-seeded');
       window.location.reload();
     };

@@ -223,20 +223,25 @@ export async function generateFollowUpContent(
 
 function generateFallbackRelevanceText(
   contentList: ContentMetadata[],
-  _userQuery: string,
-  _conversationContext?: string
+  userQuery: string,
+  conversationContext?: string
 ): AIContentSections {
   const videoCount = contentList.length;
   const seriesTitles = [
     ...new Set(contentList.map((c) => c.seriesTitle).filter(Boolean)),
   ].join(' and ');
+  const seriesDescription = seriesTitles || 'this topic';
+  const queryDetails = userQuery ? ` in response to "${userQuery}"` : '';
+  const contextDetails = conversationContext
+    ? ` This also considers the context you've shared: "${conversationContext}".`
+    : '';
 
   return {
-    overview: `This collection of ${videoCount} videos explores ${seriesTitles}, providing deep insights into the biblical narrative and its theological significance. The content examines key passages and themes, helping viewers understand how these books fit into the broader story of Scripture and God's redemptive plan for humanity.`,
+    overview: `This collection of ${videoCount} videos explores ${seriesDescription}, providing deep insights into the biblical narrative and its theological significance${queryDetails}. The content examines key passages and themes, helping viewers understand how these books fit into the broader story of Scripture and God's redemptive plan for humanity.${contextDetails}`,
 
     keyThemes: `**Universal Salvation**: The content presents Jesus as the Savior for all humanity, breaking down barriers between different groups of people.\n\n**The Holy Spirit**: Explores how the Spirit's power and guidance drive the biblical narrative.\n\n**Prayer and Worship**: Emphasizes prayer as essential to following God's will and experiencing His power.\n\n**Journey and Mission**: Shows how physical journeys mirror spiritual journeys as people respond to God's call.`,
 
-    relevance: `These videos directly address your question about ${seriesTitles} by examining the biblical text through careful narrative analysis and theological reflection. The content explores the unified story of God's redemptive plan. Videos like "${contentList[0]?.title || 'Introduction'}" provide crucial context for understanding the historical and theological purposes, helping you grasp not just individual stories, but how they fit together in God's overarching plan.`,
+    relevance: `These videos directly address your question${userQuery ? ` about "${userQuery}"` : ''} by examining the biblical text through careful narrative analysis and theological reflection. The content explores the unified story of God's redemptive plan with a focus on ${seriesDescription}.${contextDetails} Videos like "${contentList[0]?.title || 'Introduction'}" provide crucial context for understanding the historical and theological purposes, helping you grasp not just individual stories, but how they fit together in God's overarching plan.`,
   };
 }
 

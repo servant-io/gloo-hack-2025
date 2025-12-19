@@ -38,7 +38,7 @@ export function ExpandedPreviewCard({
   isBookmarked,
   hasCredits,
   onClose,
-  onWatchNow: _onWatchNow,
+  onWatchNow,
   onToggleBookmark,
 }: ExpandedPreviewCardProps) {
   const [responseHistory, setResponseHistory] = useState<AIResponse[]>([]);
@@ -197,6 +197,17 @@ export function ExpandedPreviewCard({
 
               {/* Action Buttons */}
               <div className="flex gap-3">
+                <button
+                  onClick={onWatchNow}
+                  disabled={video.isPremium && !hasCredits}
+                  className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                    video.isPremium && !hasCredits
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
+                  }`}
+                >
+                  Watch now
+                </button>
                 <button
                   onClick={onToggleBookmark}
                   className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${

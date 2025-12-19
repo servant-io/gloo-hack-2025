@@ -35,6 +35,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
     "@eslint/eslintrc": "catalog:",
     "@tailwindcss/postcss": "catalog:",
     "@types/node": "catalog:",
